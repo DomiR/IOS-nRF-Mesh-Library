@@ -26,7 +26,11 @@ public extension Data {
         self = data
     }
     
-    public init(fromInteger anInteger: UInt16) {
+    public init(fromInt anInteger: Int) {
+        self = Data([UInt8((anInteger & 0xFF00) >> 8), UInt8(anInteger & 0x00FF)])
+    }
+    
+    public init(fromInt16 anInteger: UInt16) {
         self = Data([UInt8((anInteger & 0xFF00) >> 8), UInt8(anInteger & 0x00FF)])
     }
     
