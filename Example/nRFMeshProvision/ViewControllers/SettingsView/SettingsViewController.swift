@@ -91,12 +91,12 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UITableView
         let meshState = meshManager.stateManager().state()
         presentInputViewWithTitle("Please enter a Key",
                                   message: "16 Bytes",
-                                  placeholder: meshState.netKey.hexString(),
+                                  placeholder: meshState.netKeys[0].key.hexString(),
                                   generationEnabled: true) { (aKey) -> Void in
                                     if var aKey = aKey {
                                         aKey = aKey.lowercased().replacingOccurrences(of: "0x", with: "")
                                         if aKey.count == 32 {
-                                            meshState.netKey = Data(hexString: aKey)!
+                                            meshState.netKeys[0].key = Data(hexString: aKey)!
                                             self.updateProvisioningDataUI()
                                         } else {
                                             print("Key must be exactly 16 bytes")
@@ -109,13 +109,13 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UITableView
         let meshState = meshManager.stateManager().state()
         presentInputViewWithTitle("Please enter a Key Index",
                                   message: "2 Bytes",
-                                  placeholder: meshState.keyIndex.hexString(),
+                                  placeholder: meshState.netKeys[0].index.hexString(),
                                   generationEnabled: false) { (aKeyIndex) -> Void in
             if var aKeyIndex = aKeyIndex {
                 aKeyIndex = aKeyIndex.lowercased().replacingOccurrences(of: "0x", with: "")
                 if aKeyIndex.count == 4 {
-                    meshState.keyIndex = Data(hexString: aKeyIndex)!
-                    print("New Key index = \(meshState.keyIndex.hexString())")
+                    meshState.netKeys[0].index = Data(hexString: aKeyIndex)!
+                    print("New Key index = \(meshState.netKeys[0].index.hexString())")
                     self.updateProvisioningDataUI()
                 } else {
                     print("Key index must be exactly 2 bytes")
@@ -141,10 +141,10 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UITableView
         flagPresentationController?.sourceRect = flagsCell!.contentView.frame
         flagPresentationController?.delegate = self
         present(flagSettingsView!, animated: true, completion: nil)
-        flagSettingsView?.setFlagData(meshState.flags, andCompletionHandler: { (newFlags) -> (Void) in
+        flagSettingsView?.setFlagData(meshState.netKeys[0].flags, andCompletionHandler: { (newFlags) -> (Void) in
             self.deselectSelectedRow()
             if let newFlags = newFlags {
-                meshState.flags = newFlags
+                meshState.netKeys[0].flags = newFlags
                 self.updateProvisioningDataUI()
             }
         })
@@ -154,12 +154,12 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UITableView
         let meshState = meshManager.stateManager().state()
         presentInputViewWithTitle("Please enter IV Index",
                                   message: "4 Bytes",
-                                  placeholder: meshState.IVIndex.hexString(),
+                                  placeholder: meshState.netKeys[0].phase.hexString(),
                                   generationEnabled: false) { (anIVIndex) -> Void in
                                     if var anIVIndex = anIVIndex {
                                         anIVIndex = anIVIndex.lowercased().replacingOccurrences(of: "0x", with: "")
                                         if anIVIndex.count == 8 {
-                                            meshState.IVIndex = Data(hexString: anIVIndex)!
+                                            meshState.netKeys[0].phase = Data(hexString: anIVIndex)!
                                             self.updateProvisioningDataUI()
                                         } else {
                                             print("IV Index must be exactly 4 bytes")
@@ -332,7 +332,8 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UITableView
         //Shaking the iOS device will generate a new Key
         if motion == .motionShake {
             let newKey = generateNewKey()
-            meshState.netKey = newKey
+            meshState.netKeys[0].oldKey = meshState.netKeys[0].key
+            meshState.netKeys[0].key = newKey
             self.updateProvisioningDataUI()
         }
     }
@@ -452,11 +453,11 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UITableView
             }
         } else if section == 1 {
             if row == 0 {
-                return "0x\(meshState.netKey.hexString())"
+                return "0x\(meshState.netKeys[0].key.hexString())"
             } else if row == 1 {
-                return "0x\(meshState.keyIndex.hexString())"
+                return "0x\(meshState.netKeys[0].index.hexString())"
             } else if row == 2 {
-                let flags = meshState.flags
+                let flags = meshState.netKeys[0].flags
                 var readableFlags = [String]()
                 if flags[0] & 0x80 == 0x80 {
                     readableFlags.append("Key refresh phase: 2")
@@ -470,7 +471,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UITableView
                 }
                 return readableFlags.joined(separator: ", ")
             } else if row == 3 {
-                return "0x\(meshState.IVIndex.hexString())"
+                return "0x\(meshState.netKeys[0].phase.hexString())"
             } else {
                 return "N/A"
             }

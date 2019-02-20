@@ -112,7 +112,7 @@ class ReconnectionViewController: UITableViewController {
             centralManager.delegate = self
             //Scanning requires comparing network identity to the current calculated one, we do this once
             //to avoid recalculation on every discovery
-            let netKey = meshManager.stateManager().state().netKey
+            let netKey = meshManager.stateManager().state().netKeys[0].key
             currentNetworkIdentity = OpenSSLHelper().calculateK3(withN: netKey)
         } else {
             print("Mesh Manager not present!")

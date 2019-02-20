@@ -215,10 +215,10 @@ class MeshProvisioningDataTableViewController: UITableViewController, UITextFiel
 
     func didSelectAppKeyWithIndex(_ anIndex: Int) {
         let meshState = meshManager.stateManager().state()
-        netKeyIndex = meshState.keyIndex
+        netKeyIndex = meshState.netKeys[0].index
         let appKey = meshState.appKeys[anIndex]
-        appKeyName = appKey.keys.first
-        appKeyData = appKey.values.first
+        appKeyName = appKey.name
+        appKeyData = appKey.key
         let anAppKeyIndex = UInt16(anIndex)
         appKeyIndex = Data([UInt8((anAppKeyIndex & 0xFF00) >> 8), UInt8(anAppKeyIndex & 0x00FF)])
         appKeyCell.textLabel?.text = appKeyName
@@ -385,7 +385,7 @@ extension MeshProvisioningDataTableViewController {
     // MARK: - Provisioning and Configuration
     private func verifyNodeIdentity(_ identityData: Data, withUnicast aUnicast: Data) -> Bool{
         let dataToVerify = Data(identityData.dropFirst())
-        let netKey = stateManager.state().netKey
+        let netKey = stateManager.state().netKeys[0].key
         let hash = Data(dataToVerify.dropLast(8))
         let random = Data(dataToVerify.dropFirst(8))
         let helper = OpenSSLHelper()
@@ -437,7 +437,7 @@ extension MeshProvisioningDataTableViewController {
 
     private func provisionNode(_ aNode: UnprovisionedMeshNode) {
         let meshStateObject = stateManager.state()
-        let netKeyIndex = meshStateObject.keyIndex
+        let netKeyIndex = meshStateObject.netKeys[0].index
         
         //Pack the Network Key
         let netKeyOctet1 = netKeyIndex[0] << 4
@@ -447,10 +447,10 @@ extension MeshProvisioningDataTableViewController {
         let secondOctet = netKeyIndex[1] << 4
         let packedNetKey = Data([firstOctet, secondOctet])
         
-        let nodeProvisioningdata = ProvisioningData(netKey: meshStateObject.netKey,
+        let nodeProvisioningdata = ProvisioningData(netKey: meshStateObject.netKeys[0].key,
                                                     keyIndex: packedNetKey,
-                                                    flags: meshStateObject.flags,
-                                                    ivIndex: meshStateObject.IVIndex,
+                                                    flags: meshStateObject.netKeys[0].flags,
+                                                    ivIndex: meshStateObject.netKeys[0].phase,
                                                     friendlyName: nodeName,
                                                     unicastAddress: self.nodeAddress)
         targetNode.provision(withProvisioningData: nodeProvisioningdata)

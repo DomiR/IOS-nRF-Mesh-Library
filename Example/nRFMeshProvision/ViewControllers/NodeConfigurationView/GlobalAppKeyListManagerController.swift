@@ -61,11 +61,9 @@ class GlobalAppKeyListManagerController: UITableViewController, ProvisionedMeshN
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "GlobalAppKeyEntryCell", for: indexPath)
-        if let keyDictionary = stateManager?.state().appKeys[indexPath.row] {
-            let keyName = keyDictionary.keys.first
-            let keyValue = keyDictionary.values.first
-            cell.textLabel?.text = "\(keyName!)"
-            cell.detailTextLabel?.text = "0x\(keyValue!.hexString())"
+        if let keyEntry = stateManager?.state().appKeys[indexPath.row] {
+            cell.textLabel?.text = "\(keyEntry.name)"
+            cell.detailTextLabel?.text = "0x\(keyEntry.key.hexString())"
         }
         return cell
     }
@@ -89,7 +87,7 @@ class GlobalAppKeyListManagerController: UITableViewController, ProvisionedMeshN
                 if let keyIndex = selectedIndex {
                     if keyIndex > self.nodeEntry!.appKeys.count - 1 {
                         //This key doesn't exist, let's add it
-                        if let keyData = self.stateManager?.state().appKeys[keyIndex].values.first {
+                        if let keyData = self.stateManager?.state().appKeys[keyIndex].key {
                             self.proxyNode?.appKeyAdd(keyData, atIndex: Data([0x00, UInt8(keyIndex)]), forNetKeyAtIndex: Data([0x00,0x00]), onDestinationAddress: self.nodeEntry!.nodeUnicast!)
                         }
                     }

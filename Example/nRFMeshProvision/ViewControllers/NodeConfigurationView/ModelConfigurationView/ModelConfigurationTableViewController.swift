@@ -105,7 +105,7 @@ class ModelConfigurationTableViewController: UITableViewController, ProvisionedM
             }
         }
         let appKey = meshstateManager.state().appKeys[Int(anAppKeyIndex)]
-        let selectedAppKeyName = appKey.keys.first!
+        let selectedAppKeyName = appKey.name
         if !keyFound {
             showstatusCodeAlert(withTitle: "AppKey is not on the node's list",
                                 andMessage: "\"\(selectedAppKeyName)\" has not been added to this node's AppKey list and unbinding cannot be performed on this model.")
@@ -134,7 +134,7 @@ class ModelConfigurationTableViewController: UITableViewController, ProvisionedM
             }
         }
         let appKey = meshstateManager.state().appKeys[Int(anAppKeyIndex)]
-        let selectedAppKeyName = appKey.keys.first!
+        let selectedAppKeyName = appKey.name
         if !keyFound {
             showstatusCodeAlert(withTitle: "AppKey is not available",
                             andMessage: "\"\(selectedAppKeyName)\" has not been added to this node's AppKey list and cannot be bound to this model.")

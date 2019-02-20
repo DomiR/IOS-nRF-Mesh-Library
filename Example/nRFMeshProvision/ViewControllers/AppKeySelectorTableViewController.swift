@@ -45,11 +45,9 @@ class AppKeySelectorTableViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let aCell = tableView.dequeueReusableCell(withIdentifier: "AppKeySelectionCell", for: indexPath)
-        let aKey = meshStateManager.state().appKeys[indexPath.row]
-        let keyName = aKey.keys.first!
-        let keyValue = aKey.values.first!
-        aCell.textLabel?.text = keyName
-        aCell.detailTextLabel?.text = "0x\(keyValue.hexString())"
+        let keyEntry = meshStateManager.state().appKeys[indexPath.row]
+        aCell.textLabel?.text = "\(keyEntry.name)"
+        aCell.detailTextLabel?.text = "0x\(keyEntry.key.hexString())"
         return aCell
     }
 }

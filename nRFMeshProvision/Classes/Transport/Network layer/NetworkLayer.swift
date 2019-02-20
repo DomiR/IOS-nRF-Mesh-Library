@@ -17,8 +17,8 @@ public struct NetworkLayer {
     public init(withStateManager aStateManager: MeshStateManager,
                 andSegmentAcknowlegdement aSegmentAckBlock: SegmentedMessageAcknowledgeBlock? = nil) {
         stateManager = aStateManager
-        netKey = aStateManager.meshState.netKey
-        ivIndex = aStateManager.meshState.IVIndex
+        netKey = aStateManager.meshState.netKeys[0].key
+        ivIndex = aStateManager.meshState.netKeys[0].phase
         sslHelper = OpenSSLHelper()
         lowerTransport = LowerTransportLayer(withStateManager: aStateManager,
                                              andSegmentedAcknowlegdeMent: aSegmentAckBlock)

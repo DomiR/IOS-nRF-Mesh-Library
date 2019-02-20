@@ -23,7 +23,7 @@ public struct UpperTransportLayer {
         var nonce: TransportNonce!
         
         if isApplicationKey {
-            key = stateManager!.state().appKeys[0].values.first!
+            key = stateManager!.state().appKeys.first?.key
             nonce = TransportNonce(appNonceWithIVIndex: anIVIndex, isSegmented: true, seq: aSEQ, src: aSRC, dst: aDST)
         } else {
             key = stateManager!.state().deviceKeyForUnicast(aSRC)

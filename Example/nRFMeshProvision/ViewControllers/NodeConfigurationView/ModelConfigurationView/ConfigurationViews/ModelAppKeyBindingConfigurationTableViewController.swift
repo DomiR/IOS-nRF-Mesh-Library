@@ -52,9 +52,10 @@ class ModelAppKeyBindingConfigurationTableViewController: UITableViewController 
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let aCell = tableView.dequeueReusableCell(withIdentifier: "AppKeyBindCell", for: indexPath)
-        let appKeyDictionary = stateManager.state().appKeys[indexPath.row]
-        aCell.textLabel?.text = appKeyDictionary.keys.first!
-        aCell.detailTextLabel?.text = "0x\(appKeyDictionary.values.first!.hexString())"
+        if let keyEntry = stateManager?.state().appKeys[indexPath.row] {
+            aCell.textLabel?.text = "\(keyEntry.name)"
+            aCell.detailTextLabel?.text = "0x\(keyEntry.key.hexString())"
+        }
         return aCell
     }
 }

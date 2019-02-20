@@ -8,7 +8,7 @@
 import Foundation
 
 public class MeshStateManager: NSObject {
-    
+
     public private (set) var meshState: MeshState!
 
     private override init() {
@@ -18,7 +18,7 @@ public class MeshStateManager: NSObject {
     public init(withState aState: MeshState) {
         meshState = aState
     }
-   
+
     public func state() -> MeshState {
         //restoreState()
         return meshState
@@ -41,7 +41,7 @@ public class MeshStateManager: NSObject {
             }
         }
     }
-    
+
     public func restoreState() {
         print("Restoring state \(self.debugDescription) on Thread \(Thread.current) (is main: \(Thread.current === Thread.main))")
         if let documentsPath = MeshStateManager.getDocumentDirectory() {
@@ -62,50 +62,31 @@ public class MeshStateManager: NSObject {
     }
 
     public func generateState() -> Bool {
-        
+
         let networkKey = generateRandomKey()
-        
+
         guard networkKey != nil else {
             print("Failed to generate network key")
             return false
         }
-        let keyIndex = Data([0x00, 0x00])
-        let flags = Data([0x00])
-        let ivIndex = Data([0x00, 0x00, 0x00, 0x00])
-        let unicastAddress = Data([0x7F, 0xFF]) //TODO: check if we get composition data now
+
+        let netKey = NetworkKeyEntry(withName: "Main NetKey", andKey: networkKey!, oldKey: nil, atIndex: Data([0x00, 0x00]), phase: Data([0x00, 0x00, 0x00, 0x00]), andMinSecurity: .high)
+        let unicastAddress = Data([0x7F, 0xFF])
         let globalTTL: UInt8 = 5
         let networkName = "My Network"
-        let appkey1 = generateRandomKey()
-        let appkey2 = generateRandomKey()
-        let appkey3 = generateRandomKey()
-        
-        // FIXME: add network identify
-        /*
-        public static byte[] calculateIdentityKey(final byte[] n) {
-            final byte[] salt = calculateSalt(NKIK);
-            ByteBuffer buffer = ByteBuffer.allocate(ID128.length + 1);
-            buffer.put(ID128);
-            buffer.put((byte) 0x01);
-            final byte[] p = buffer.array();
-            return calculateK1(n, salt, p);
-        }
-        */
-        
-        guard appkey1 != nil, appkey2 != nil, appkey3 != nil else {
-            print("Failed to generate appkeys")
-            return false
-        }
-        
-        let appKeys = [["AppKey 1": appkey1!],
-                       ["AppKey 2": appkey2!],
-                       ["AppKey 3": appkey3!]]
-        let newState = MeshState(withNodeList: [], netKey: networkKey!, keyIndex: keyIndex,
-                                 IVIndex: ivIndex, globalTTL: globalTTL, unicastAddress: unicastAddress,
-                                 flags: flags, appKeys: appKeys, andName: networkName)
+
+        let appKeys: [AppKeyEntry] = [
+            AppKeyEntry(withName: "AppKey 1", andKey: generateRandomKey()!, atIndex: 0),
+            AppKeyEntry(withName: "AppKey 2", andKey: generateRandomKey()!, atIndex: 1),
+            AppKeyEntry(withName: "AppKey 3", andKey: generateRandomKey()!, atIndex: 2)
+        ]
+
+        let provisioner = MeshProvisionerEntry(withName: "iOS Provisioner", uuid: UUID(), andUnicastRange: AllocatedUnicastRange(withLowAddress: "0x0001", andHighAddress: "0x0100"))
+        let newState = MeshState(withName: networkName, version: "1.0", identifier: UUID(), timestamp: Date(), provisionerList: [provisioner], nodeList: [], netKeys: [netKey], globalTTL: globalTTL, unicastAddress: unicastAddress, andAppKeys: appKeys)
         self.meshState = newState
-        
+
         return true
-    
+
     }
 
     public func deleteState() -> Bool {
@@ -123,7 +104,7 @@ public class MeshStateManager: NSObject {
             }
         }
         return false;
-    
+
     }
 
     // MARK: - Static accessors
@@ -145,7 +126,7 @@ public class MeshStateManager: NSObject {
             return false
         }
     }
-    
+
     public static func generateState() -> MeshStateManager? {
         let aStateManager = MeshStateManager()
         if aStateManager.generateState() {
@@ -159,7 +140,7 @@ public class MeshStateManager: NSObject {
     private static func getDocumentDirectory() -> String? {
         return NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first
     }
-    
+
     // MARK: - Generation helper
     private func generateRandomKey() -> Data? {
         return OpenSSLHelper().generateRandom()

@@ -43,7 +43,9 @@ class AppKeyManagerTableViewController: UITableViewController, UITextFieldDelega
     }
 
     func storeKeyWithName(_ aKeyName: String, withData someKeyData: Data) {
-        self.meshState.state().appKeys.append([aKeyName: someKeyData])
+        let topIndex = self.meshState.state().appKeys.count
+        let newKeyEntry = AppKeyEntry(withName: aKeyName, andKey: someKeyData, atIndex: topIndex)
+        self.meshState.state().appKeys.append(newKeyEntry)
         self.meshState.saveState()
         tableView.reloadData()
     }
@@ -75,9 +77,9 @@ class AppKeyManagerTableViewController: UITableViewController, UITextFieldDelega
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "AppKeyCell", for: indexPath)
-        let keyValue = meshState.state().appKeys[indexPath.row]
-        cell.textLabel?.text = keyValue.keys.first!
-        cell.detailTextLabel?.text = "0x\(keyValue.values.first!.hexString())"
+        let keyEntry = meshState.state().appKeys[indexPath.row]
+        cell.textLabel?.text = "\(keyEntry.name)"
+        cell.detailTextLabel?.text = "0x\(keyEntry.key.hexString())"
         return cell
     }
 

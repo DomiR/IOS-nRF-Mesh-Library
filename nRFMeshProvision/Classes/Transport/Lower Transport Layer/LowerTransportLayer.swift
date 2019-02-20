@@ -111,7 +111,7 @@ public class LowerTransportLayer {
                             UInt8(seqZero[1] << 2)])
         payload.append(Data(blockData))
         let opcode  = Data([0x00]) //Segment ACK Opcode
-        let ackMessage = ControlMessagePDU(withPayload: payload, opcode: opcode, netKey: aState.netKey, seq: SequenceNumber(), ivIndex: aState.IVIndex, source: aState.unicastAddress, andDst: dst)
+        let ackMessage = ControlMessagePDU(withPayload: payload, opcode: opcode, netKey: aState.netKeys[0].key, seq: SequenceNumber(), ivIndex: aState.netKeys[0].phase, source: aState.unicastAddress, andDst: dst)
         var ackData = Data([0x00]) //Network PDU
         let networkPDU = ackMessage.assembleNetworkPDU()!.first!
         ackData.append(Data(networkPDU))
