@@ -8,8 +8,9 @@
 import Foundation
 
 public struct CompositionElement: Codable {
-    
+
     // MARK: - Properties
+    var index: Int?
     var location                    : Data
     var sigModelCount               : Int
     var vendorModelCount            : Int
@@ -47,16 +48,16 @@ public struct CompositionElement: Codable {
         allModels.append(contentsOf: sigModels)
         allModels.append(contentsOf: vendorModels)
     }
-    
+
     // MARK: - Accessors
     public func publishAddressForModelId(_ aModelId: Data) -> Data? {
         return modelPublishAddress[aModelId]
     }
-    
+
     public func subscriptionAddressesForModelId(_ aModelId: Data) -> [Data]? {
         return modelSubscriptionAddresses[aModelId]
     }
-    
+
     public func boundAppKeyIndexForModelId(_ aModelId: Data) -> Data? {
         return modelKeyBindings[aModelId]
     }
@@ -115,8 +116,21 @@ public struct CompositionElement: Codable {
     public func totalModelCount() -> Int {
         return allModels.count
     }
-    
+
     public func elementLocation() -> Data {
         return location;
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case index
+        case location
+        case sigModelCount
+        case vendorModelCount
+        case sigModels
+        case vendorModels
+        case allModels = "models"
+        case modelKeyBindings
+        case modelPublishAddress
+        case modelSubscriptionAddresses
     }
 }

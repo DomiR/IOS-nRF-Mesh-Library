@@ -23,7 +23,7 @@ public struct SetFilterTypeMessage {
     public func assemblePayload(withMeshState aState: MeshState, toAddress aDestinationAddress: Data) -> [Data]? {
 //        let deviceKey = aState.deviceKeyForUnicast(aDestinationAddress)
          let controlMessage = ControlMessagePDU(withPayload: filterType, opcode: opcode, netKey: aState.netKeys[0].key, seq: SequenceNumber(), ivIndex: aState.netKeys[0].phase, source: aState.unicastAddress, andDst: aDestinationAddress)
-//        let controlMessage = ControlMessagePDU(withPayload: filterType, opcode: opcode, netKey: aState.netKey, seq: Data([0x00, 0x00, 0x01]), ivIndex: aState.IVIndex, source: aState.unicastAddress, andDst: aDestinationAddress)
+//        let controlMessage = ControlMessagePDU(withPayload: filterType, opcode: opcode, netKey: aState.netKeys[0].key, seq: Data([0x00, 0x00, 0x01]), ivIndex: aState.netKeys[0].phase, source: aState.unicastAddress, andDst: aDestinationAddress)
         let networkPDU = controlMessage.assembleNetworkPDU()
         return networkPDU
     }

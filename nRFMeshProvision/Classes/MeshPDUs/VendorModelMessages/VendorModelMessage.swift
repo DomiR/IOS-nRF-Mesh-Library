@@ -18,9 +18,9 @@ public struct VendorModelMessage {
     
     public func assemblePayload(withMeshState aState: MeshState, toAddress aDestinationAddress: Data) -> [Data]? {
         let deviceKey = aState.deviceKeyForUnicast(aDestinationAddress)
-        print("assemble vendor message: \(aDestinationAddress.hexString()) with opcode: \(opcode.hexString()) withPayload: \(payload.hexString()) with deviceKey: \(deviceKey?.hexString() ?? "none") and netKey: \(aState.netKey.hexString()) and source: \(aState.unicastAddress.hexString())")
-        let appKey = aState.appKeys[0].values.first!
-        let accessMessage = AccessMessagePDU(withPayload: payload, opcode: opcode, appKey: appKey, netKey: aState.netKey, seq: SequenceNumber(), ivIndex: aState.IVIndex, source: aState.unicastAddress, andDst: aDestinationAddress)
+        print("assemble vendor message: \(aDestinationAddress.hexString()) with opcode: \(opcode.hexString()) withPayload: \(payload.hexString()) with deviceKey: \(deviceKey?.hexString() ?? "none") and netKey: \(aState.netKeys[0].key.hexString()) and source: \(aState.unicastAddress.hexString())")
+        let appKey = aState.appKeys[0].key;
+        let accessMessage = AccessMessagePDU(withPayload: payload, opcode: opcode, appKey: appKey, netKey: aState.netKeys[0].key, seq: SequenceNumber(), ivIndex: aState.netKeys[0].phase, source: aState.unicastAddress, andDst: aDestinationAddress)
         let networkPDU = accessMessage.assembleNetworkPDU()
         return networkPDU
     }
