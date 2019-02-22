@@ -17,6 +17,12 @@ public struct MeshProvisionerEntry: Codable {
         uuid                    = aUUID
         allocatedUnicastRange   = aRange
     }
+    
+    enum CodingKeys: String, CodingKey {
+        case provisionerName
+        case uuid = "UUID"
+        case allocatedUnicastRange
+    }
 }
 
 public struct AllocatedUnicastRange: Codable {

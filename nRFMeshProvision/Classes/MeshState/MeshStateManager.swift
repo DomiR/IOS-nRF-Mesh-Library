@@ -29,7 +29,7 @@ public class MeshStateManager: NSObject {
         let encodedData = try? JSONEncoder().encode(self.meshState)
         print("-----")
         print("Saved state")
-        self.meshState.provisionedNodes.forEach {  print("node: \($0.nodeId.hexString()) deviceKey: \($0.deviceKey.hexString()) netKey \(self.meshState.netKey.hexString())  nodeUnicast: \($0.nodeUnicast?.hexString() ?? "null")") }
+        self.meshState.provisionedNodes.forEach {  print("node: \($0.nodeId.hexString()) deviceKey: \($0.deviceKey.hexString()) netKey \(self.meshState.netKeys[0].key.hexString())  nodeUnicast: \($0.nodeUnicast?.hexString() ?? "null")") }
         print("-----")
         if let documentsPath = MeshStateManager.getDocumentDirectory() {
             let filePath = documentsPath.appending("/meshState.bin")
@@ -57,6 +57,7 @@ public class MeshStateManager: NSObject {
                 print("-----")
             } catch {
                 print("Error reading state from file")
+                self.generateState();
             }
         }
     }

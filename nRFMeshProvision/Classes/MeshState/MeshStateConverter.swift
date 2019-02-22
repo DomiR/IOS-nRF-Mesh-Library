@@ -10,5 +10,6 @@ import Foundation
 public class MeshStateConverter {
     public func convertStateToJSON(aState : MeshState) -> String {
         return "Mesh"
+        
     }
 }
