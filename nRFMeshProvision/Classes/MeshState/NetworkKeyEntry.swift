@@ -8,39 +8,78 @@
 import Foundation
 
 public class NetworkKeyEntry: Codable {
-    public var name         : String
-    public var index        : Data
-    public var key          : Data
-    public var oldKey       : Data?
-    public var phase        : Data
-    public var flags        : Data
-    public var minSecurity  : NetworkKeySecurityLevel
-    public var timestamp    : Date
-    
+    public var name: String
+    public var index: Data
+    public var key: Data
+    public var oldKey: Data?
+    public var phase: Data
+    public var flags: Data
+    public var minSecurity: NetworkKeySecurityLevel
+    public var timestamp: Date
+
     public init(withName aName: String, andKey aKey: Data, oldKey anOldKey: Data?, atIndex anIndex: Data, atTimeStamp aTimeStamp: Date, phase aPhase: Data, andMinSecurity aMinSecurity: NetworkKeySecurityLevel) {
-        name        = aName
-        index       = anIndex
-        key         = aKey
-        oldKey      = anOldKey
-        phase       = aPhase
+        name = aName
+        index = anIndex
+        key = aKey
+        oldKey = anOldKey
+        phase = aPhase
         minSecurity = aMinSecurity
-        timestamp   = aTimeStamp
-        flags       = Data([0x00])
+        timestamp = aTimeStamp
+        flags = Data([0x00])
     }
-    
-    public init(withName aName: String, andKey aKey: Data,oldKey anOldKey: Data?, atIndex anIndex: Data, phase aPhase: Data, andMinSecurity aMinSecurity: NetworkKeySecurityLevel) {
-        name        = aName
-        index       = anIndex
-        key         = aKey
-        oldKey      = anOldKey
-        phase       = aPhase
+
+    public init(withName aName: String, andKey aKey: Data, oldKey anOldKey: Data?, atIndex anIndex: Data, phase aPhase: Data, andMinSecurity aMinSecurity: NetworkKeySecurityLevel) {
+        name = aName
+        index = anIndex
+        key = aKey
+        oldKey = anOldKey
+        phase = aPhase
         minSecurity = aMinSecurity
-        flags       = Data([0x00])
-        timestamp   = Date()
+        flags = Data([0x00])
+        timestamp = Date()
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case index
+        case key
+        case oldKey
+        case phase
+        case flags
+        case minSecurity
+        case timestamp
+    }
+
+    public required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        name = try values.decode(String.self, forKey: .name)
+        let indexInt = try values.decode(UInt16.self, forKey: .index)
+        index = Data(fromInt16: indexInt);
+        let keyString = try values.decode(String.self, forKey: .key)
+        key = Data(hexString: keyString) ?? OpenSSLHelper().generateRandom()
+        let oldKeyString = try values.decode(String.self, forKey: .key)
+        oldKey = Data(hexString: oldKeyString) ?? OpenSSLHelper().generateRandom()
+        let phaseInt = try values.decode(UInt32.self, forKey: .index)
+        phase = Data(fromInt32: phaseInt);
+        flags = try values.decode(Data.self, forKey: .flags)
+        minSecurity = try values.decode(NetworkKeySecurityLevel.self, forKey: .minSecurity)
+        timestamp = try values.decode(Date.self, forKey: .timestamp) // TODO: convert to android compatible format
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+        try container.encode(index.int16, forKey: .index)
+        try container.encode(key.hexString(), forKey: .key)
+        try container.encode(oldKey?.hexString(), forKey: .oldKey)
+        try container.encode(phase.uint32, forKey: .phase)
+        try container.encode(flags, forKey: .flags)
+        try container.encode(minSecurity, forKey: .minSecurity)
+        try container.encode(timestamp, forKey: .timestamp)
     }
 }
 
-public enum NetworkKeySecurityLevel: String, Codable {
-    case low   = "low"
-    case high  = "high"
+public enum NetworkKeySecurityLevel: Int, Codable {
+    case low = 0
+    case high = 1
 }
