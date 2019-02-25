@@ -41,6 +41,7 @@ public class MeshNodeEntry: NSObject, Codable {
         nodeName = aName
         provisionedTimeStamp = aProvisioningTimestamp
         nodeId = anId
+        UUID = anId.hexString();
         deviceKey = aDeviceKey
         appKeys = [Data]()
     }
