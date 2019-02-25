@@ -102,7 +102,7 @@ public class MeshNodeEntry: NSObject, Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(UUID, forKey: .UUID)
         try container.encode(deviceKey.hexString(), forKey: .deviceKey)
-        try container.encode(nodeUnicast, forKey: .nodeUnicast)
+        try container.encode(nodeUnicast?.hexString(), forKey: .nodeUnicast)
         try container.encode(nodeName, forKey: .nodeName)
         try container.encode(companyIdentifier?.hexString(), forKey: .companyIdentifier)
         try container.encode(productIdentifier?.hexString(), forKey: .productIdentifier)
