@@ -102,15 +102,15 @@ class AppKeyDeleteConfiguratorState: NSObject, ConfiguratorStateProtocol {
                     if appKeyStatus.statusCode == .success {
                         //Store newly added AppKey to the node's global list
                         let state = self.stateManager.state()
-                        if let anIndex = state.provisionedNodes.index(where: { $0.nodeUnicast == destinationAddress}) {
-                            let aNodeEntry = state.provisionedNodes[anIndex]
-                            state.provisionedNodes.remove(at: anIndex)
+                        if let anIndex = state.nodes.index(where: { $0.nodeUnicast == destinationAddress}) {
+                            let aNodeEntry = state.nodes[anIndex]
+                            state.nodes.remove(at: anIndex)
                             if let appKeyIndex = aNodeEntry.appKeys.index(of: appKeyStatus.appKeyIndex) {
                                 aNodeEntry.appKeys.remove(at: appKeyIndex)
                             } else {
                                 print("App key index wasn't stored")
                             }
-                            state.provisionedNodes.append(aNodeEntry)
+                            state.nodes.append(aNodeEntry)
                             stateManager.saveState()
                         }
                     } else {

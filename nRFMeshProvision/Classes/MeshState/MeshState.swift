@@ -8,13 +8,13 @@
 import Foundation
 
 public class MeshState: NSObject, Codable {
-    public var name             : String
+    public var meshName         : String
     public var provisioners     : [MeshProvisionerEntry]
     public var meshUUID         : UUID
     public var version          : String
-    public var timeStamp        : Date
+    public var timestamp        : Date
     public var nextUnicast      : Data
-    public var provisionedNodes : [MeshNodeEntry]
+    public var nodes            : [MeshNodeEntry]
     public var netKeys          : [NetworkKeyEntry]
     public var appKeys          : [AppKeyEntry]
     public var globalTTL        : Data
@@ -24,7 +24,7 @@ public class MeshState: NSObject, Codable {
 
 
     public func deviceKeyForUnicast(_ aUnicastAddress: Data) -> Data? {
-        for aNode in provisionedNodes {
+        for aNode in nodes {
             if aNode.nodeUnicast == aUnicastAddress {
                 return aNode.deviceKey
             }
@@ -33,11 +33,11 @@ public class MeshState: NSObject, Codable {
     }
 
     public init(withName aName: String, version aVersion: String, identifier anIdentifier: UUID, timestamp aTimestamp: Date, provisionerList: [MeshProvisionerEntry], nodeList aNodeList: [MeshNodeEntry], netKeys aNetKeyList: [NetworkKeyEntry], globalTTL aTTL: UInt8, unicastAddress aUnicastAddress: Data, andAppKeys anAppKeyList: [AppKeyEntry]) {
-        name                = aName
+        meshName            = aName
         version             = aVersion
         meshUUID            = anIdentifier
-        timeStamp           = aTimestamp
-        provisionedNodes    = aNodeList
+        timestamp           = aTimestamp
+        nodes               = aNodeList
         provisioners        = provisionerList
         netKeys             = aNetKeyList
         globalTTL           = Data([aTTL])
@@ -58,18 +58,53 @@ public class MeshState: NSObject, Codable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case name = "meshName"
+        case schema = "$schema"
+        case meshName
         case provisioners
         case meshUUID
         case version
-        case timeStamp = "timestamp"
+        case timestamp
         case nextUnicast
-        case provisionedNodes = "nodes"
+        case nodes
         case netKeys
         case appKeys
         case globalTTL
         case unicastAddress
-        case schema = "$schema"
         case id
+    }
+
+    required public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        meshName = try values.decode(String.self, forKey: .meshName)
+        provisioners = try values.decode([MeshProvisionerEntry].self, forKey: .provisioners)
+        meshUUID = try values.decode(UUID.self, forKey: .meshUUID)
+        version = try values.decode(String.self, forKey: .version)
+        timestamp = (try? values.decode(Date.self, forKey: .timestamp)) ?? Date() // TODO: needs to be converted to TAI as android does it that way
+        nodes = try values.decode([MeshNodeEntry].self, forKey: .nodes)
+        nextUnicast = try values.decode(Data.self, forKey: .nextUnicast) // TODO: we need to calculate this from the node list
+        netKeys = try values.decode([NetworkKeyEntry].self, forKey: .netKeys)
+        appKeys = try values.decode([AppKeyEntry].self, forKey: .appKeys)
+        globalTTL = (try? values.decode(Data.self, forKey: .globalTTL)) ?? Data([8])
+        let unicastAddressString = try values.decode(String.self, forKey: .unicastAddress)
+        unicastAddress = Data(hexString: unicastAddressString) ?? Data([0x7F, 0xFF]) // must not pe present when exported from android
+        schema = try values.decode(String.self, forKey: .schema)
+        id = try values.decode(String.self, forKey: .id)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(meshName, forKey: .meshName)
+        try container.encode(provisioners, forKey: .provisioners)
+        try container.encode(meshUUID, forKey: .meshUUID)
+        try container.encode(version, forKey: .version)
+        try container.encode(timestamp, forKey: .timestamp)
+        try container.encode(nextUnicast, forKey: .nextUnicast)
+        try container.encode(nodes, forKey: .nodes)
+        try container.encode(netKeys, forKey: .netKeys)
+        try container.encode(appKeys, forKey: .appKeys)
+        try container.encode(globalTTL, forKey: .globalTTL)
+        try container.encode(unicastAddress.hexString(), forKey: .unicastAddress)
+        try container.encode(schema, forKey: .schema)
+        try container.encode(id, forKey: .id)
     }
 }

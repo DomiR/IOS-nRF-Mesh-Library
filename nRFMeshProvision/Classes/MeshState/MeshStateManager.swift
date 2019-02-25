@@ -25,12 +25,7 @@ public class MeshStateManager: NSObject {
     }
 
     public func saveState() {
-        print("Saving state \(self.debugDescription) on Thread \(Thread.current) (is main: \(Thread.current === Thread.main))")
         let encodedData = try? JSONEncoder().encode(self.meshState)
-        print("-----")
-        print("Saved state")
-        self.meshState.provisionedNodes.forEach {  print("node: \($0.nodeId.hexString()) deviceKey: \($0.deviceKey.hexString()) netKey \(self.meshState.netKeys[0].key.hexString())  nodeUnicast: \($0.nodeUnicast?.hexString() ?? "null")") }
-        print("-----")
         if let documentsPath = MeshStateManager.getDocumentDirectory() {
             let filePath = documentsPath.appending("/meshState.bin")
             let fileURL = URL(fileURLWithPath: filePath)
@@ -43,7 +38,6 @@ public class MeshStateManager: NSObject {
     }
 
     public func restoreState() {
-        print("Restoring state \(self.debugDescription) on Thread \(Thread.current) (is main: \(Thread.current === Thread.main))")
         if let documentsPath = MeshStateManager.getDocumentDirectory() {
             let filePath = documentsPath.appending("/meshState.bin")
             let fileURL = URL(fileURLWithPath: filePath)
@@ -51,13 +45,9 @@ public class MeshStateManager: NSObject {
                 let data = try Data(contentsOf: fileURL)
                 let decodedState = try JSONDecoder().decode(MeshState.self, from: data)
                 self.meshState = decodedState
-                print("-----")
-                print("Restored state")
-                self.meshState.provisionedNodes.forEach {  print("node: \($0.nodeId.hexString()) deviceKey: \($0.deviceKey.hexString()) nodeUnicast: \($0.nodeUnicast?.hexString() ?? "null")") }
-                print("-----")
             } catch {
                 print("Error reading state from file")
-                self.generateState();
+                let _ = self.generateState();
             }
         }
     }
@@ -82,7 +72,7 @@ public class MeshStateManager: NSObject {
             AppKeyEntry(withName: "AppKey 3", andKey: generateRandomKey()!, atIndex: 2)
         ]
 
-        let provisioner = MeshProvisionerEntry(withName: "iOS Provisioner", uuid: UUID(), andUnicastRange: AllocatedUnicastRange(withLowAddress: "0x0001", andHighAddress: "0x0100"))
+        let provisioner = MeshProvisionerEntry(withName: "nRF Mesh Provisioner", uuid: UUID(), andUnicastRange: AllocatedUnicastRange(withLowAddress: "0000", andHighAddress: "7F7E"))
         let newState = MeshState(withName: networkName, version: "1.0", identifier: UUID(), timestamp: Date(), provisionerList: [provisioner], nodeList: [], netKeys: [netKey], globalTTL: globalTTL, unicastAddress: unicastAddress, andAppKeys: appKeys)
         self.meshState = newState
 

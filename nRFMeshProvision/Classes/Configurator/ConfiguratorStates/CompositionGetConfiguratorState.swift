@@ -119,16 +119,16 @@ class CompositionGetConfiguratorState: NSObject, ConfiguratorStateProtocol {
                     
                     //Save new state.
                     let state = stateManager.state()
-                    if let anIndex = state.provisionedNodes.index(where: { $0.nodeUnicast == self.destinationAddress}) {
-                        let aNodeEntry = state.provisionedNodes[anIndex]
-                        state.provisionedNodes.remove(at: anIndex)
+                    if let anIndex = state.nodes.index(where: { $0.nodeUnicast == self.destinationAddress}) {
+                        let aNodeEntry = state.nodes[anIndex]
+                        state.nodes.remove(at: anIndex)
                         aNodeEntry.companyIdentifier = compositionStatus.companyIdentifier
                         aNodeEntry.productVersion = compositionStatus.productVersion
                         aNodeEntry.productIdentifier = compositionStatus.productIdentifier
                         aNodeEntry.featureFlags = compositionStatus.features
                         aNodeEntry.replayProtectionCount = compositionStatus.replayProtectionCount
                         aNodeEntry.elements = compositionStatus.elements
-                        state.provisionedNodes.append(aNodeEntry)
+                        state.nodes.append(aNodeEntry)
                         // FIXME: we do this manually and do not depend on getting the composition data while provisioning
                         //Set unicast to current set value, to allow the user to force override addresses
                         //state.nextUnicast = destinationAddress
