@@ -85,7 +85,6 @@ public class MeshState: NSObject, Codable {
             timestamp = Date();
         }
         nodes = try values.decode([MeshNodeEntry].self, forKey: .nodes)
-        nextUnicast = try values.decode(Data.self, forKey: .nextUnicast) // TODO: we need to calculate this from the node list
         netKeys = try values.decode([NetworkKeyEntry].self, forKey: .netKeys)
         appKeys = try values.decode([AppKeyEntry].self, forKey: .appKeys)
         globalTTL = (try? values.decode(Data.self, forKey: .globalTTL)) ?? Data([8])
@@ -93,6 +92,13 @@ public class MeshState: NSObject, Codable {
         unicastAddress = Data(hexString: unicastAddressString) ?? Data([0x7F, 0xFF]) // must not pe present when exported from android
         schema = try values.decode(String.self, forKey: .schema)
         id = try values.decode(String.self, forKey: .id)
+        
+        // we calculate next available address from max node address + element count of same node
+        // nextUnicast = try values.decode(Data.self, forKey: .nextUnicast) // TODO: we need to calculate this from the node list
+        let nextUnicastAddress = nodes.reduce(0) { (maxAddress, node) -> UInt16 in
+            return max(maxAddress, ((node.nodeUnicast?.uint16 ?? 0) + UInt16(node.elements?.count ?? 0)))
+        }
+        nextUnicast = Data.init(fromInt16: nextUnicastAddress)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -102,7 +108,7 @@ public class MeshState: NSObject, Codable {
         try container.encode(meshUUID, forKey: .meshUUID)
         try container.encode(version, forKey: .version)
         try container.encode(timestamp.hexString(), forKey: .timestamp)
-        try container.encode(nextUnicast, forKey: .nextUnicast)
+        // try container.encode(nextUnicast, forKey: .nextUnicast)
         try container.encode(nodes, forKey: .nodes)
         try container.encode(netKeys, forKey: .netKeys)
         try container.encode(appKeys, forKey: .appKeys)
