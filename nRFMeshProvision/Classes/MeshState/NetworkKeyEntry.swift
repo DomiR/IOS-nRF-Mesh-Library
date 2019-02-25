@@ -61,7 +61,7 @@ public class NetworkKeyEntry: Codable {
         oldKey = Data(hexString: oldKeyString) ?? OpenSSLHelper().generateRandom()
         let phaseInt = try values.decode(UInt32.self, forKey: .index)
         phase = Data(fromInt32: phaseInt);
-        flags = try values.decode(Data.self, forKey: .flags)
+        flags = try values.decodeIfPresent(Data.self, forKey: .flags) ?? Data([0x00]);
         minSecurity = try values.decode(NetworkKeySecurityLevel.self, forKey: .minSecurity)
         timestamp = try values.decode(Date.self, forKey: .timestamp) // TODO: convert to android compatible format
     }
