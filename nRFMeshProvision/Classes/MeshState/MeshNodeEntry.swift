@@ -12,7 +12,7 @@ public class MeshNodeEntry: NSObject, Codable {
 
     public var UUID: String?
     public let nodeName: String // TODO: investigate why correct name is not set
-    public let provisionedTimeStamp: Date
+    public let provisionedTimeStamp: Date?
     public let nodeId: Data
     public let deviceKey: Data
     public var appKeys: [Data]
@@ -83,7 +83,7 @@ public class MeshNodeEntry: NSObject, Codable {
         productIdentifier = Data(hexString: productIdentifierString)
         let productVersionString = try values.decode(String.self, forKey: .productVersion)
         productVersion = Data(hexString: productVersionString)
-        provisionedTimeStamp = try values.decode(Date.self, forKey: .provisionedTimeStamp) // TODO: use android ait
+        provisionedTimeStamp = try values.decodeIfPresent(Date.self, forKey: .provisionedTimeStamp) // TODO: use android ait
         nodeId = try values.decode(Data.self, forKey: .nodeId)
         appKeys = try values.decode([Data].self, forKey: .appKeys)
         let replayProtectionCountString = try values.decode(String.self, forKey: .replayProtectionCount)
@@ -107,7 +107,7 @@ public class MeshNodeEntry: NSObject, Codable {
         try container.encode(companyIdentifier?.hexString(), forKey: .companyIdentifier)
         try container.encode(productIdentifier?.hexString(), forKey: .productIdentifier)
         try container.encode(productVersion?.hexString(), forKey: .productVersion)
-        try container.encode(provisionedTimeStamp, forKey: .provisionedTimeStamp)
+        try container.encodeIfPresent(provisionedTimeStamp, forKey: .provisionedTimeStamp)
         try container.encode(nodeId, forKey: .nodeId)
         try container.encode(appKeys, forKey: .appKeys)
         try container.encode(replayProtectionCount?.hexString(), forKey: .replayProtectionCount)
