@@ -67,9 +67,9 @@ public class MeshStateManager: NSObject {
         let networkName = "My Network"
 
         let appKeys: [AppKeyEntry] = [
-            AppKeyEntry(withName: "AppKey 1", andKey: generateRandomKey()!, atIndex: 0),
-            AppKeyEntry(withName: "AppKey 2", andKey: generateRandomKey()!, atIndex: 1),
-            AppKeyEntry(withName: "AppKey 3", andKey: generateRandomKey()!, atIndex: 2)
+            AppKeyEntry(withName: "AppKey 1", andKey: generateRandomKey()!, atIndex: 0, onNetKeyIndex: 0),
+            AppKeyEntry(withName: "AppKey 2", andKey: generateRandomKey()!, atIndex: 1, onNetKeyIndex: 0),
+            AppKeyEntry(withName: "AppKey 3", andKey: generateRandomKey()!, atIndex: 2, onNetKeyIndex: 0)
         ]
 
         let provisioner = MeshProvisionerEntry(withName: "nRF Mesh Provisioner", uuid: UUID(), andUnicastRange: AllocatedUnicastRange(withLowAddress: "0000", andHighAddress: "7F7E"))
