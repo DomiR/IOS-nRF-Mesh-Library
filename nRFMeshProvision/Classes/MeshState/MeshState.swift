@@ -79,7 +79,11 @@ public class MeshState: NSObject, Codable {
         provisioners = try values.decode([MeshProvisionerEntry].self, forKey: .provisioners)
         meshUUID = try values.decode(UUID.self, forKey: .meshUUID)
         version = try values.decode(String.self, forKey: .version)
-        timestamp = (try? values.decode(Date.self, forKey: .timestamp)) ?? Date() // TODO: needs to be converted to TAI as android does it that way
+        if let timestampString = try? values.decode(String.self, forKey: .timestamp) {
+            timestamp = Date(hexString: timestampString) ?? Date()
+        } else {
+            timestamp = Date();
+        }
         nodes = try values.decode([MeshNodeEntry].self, forKey: .nodes)
         nextUnicast = try values.decode(Data.self, forKey: .nextUnicast) // TODO: we need to calculate this from the node list
         netKeys = try values.decode([NetworkKeyEntry].self, forKey: .netKeys)
@@ -97,7 +101,7 @@ public class MeshState: NSObject, Codable {
         try container.encode(provisioners, forKey: .provisioners)
         try container.encode(meshUUID, forKey: .meshUUID)
         try container.encode(version, forKey: .version)
-        try container.encode(timestamp, forKey: .timestamp)
+        try container.encode(timestamp.hexString(), forKey: .timestamp)
         try container.encode(nextUnicast, forKey: .nextUnicast)
         try container.encode(nodes, forKey: .nodes)
         try container.encode(netKeys, forKey: .netKeys)

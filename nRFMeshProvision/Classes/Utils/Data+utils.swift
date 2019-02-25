@@ -37,6 +37,18 @@ public extension Data {
     public init(fromInt32 anInteger: UInt32) {
         self = Data([UInt8((anInteger & 0xFF000000) >> 24), UInt8((anInteger & 0x00FF0000) >> 16), UInt8((anInteger & 0x0000FF00) >> 8), UInt8(anInteger & 0x000000FF)])
     }
+    
+    public init(fromInt64 anInteger: UInt64) {
+        self = Data([
+            UInt8((anInteger & 0xFF00000000000000) >> 54),
+            UInt8((anInteger & 0x00FF000000000000) >> 48),
+            UInt8((anInteger & 0x0000FF0000000000) >> 40),
+            UInt8((anInteger & 0x000000FF00000000) >> 32),
+            UInt8((anInteger & 0x00000000FF000000) >> 24),
+            UInt8((anInteger & 0x0000000000FF0000) >> 16),
+            UInt8((anInteger & 0x000000000000FF00) >> 8),
+            UInt8((anInteger & 0x00000000000000FF))])
+    }
 
     public func hexString() -> String {
         return self.reduce("") { string, byte in
@@ -67,6 +79,10 @@ public extension Data {
         return withUnsafeBytes { $0.pointee }
     }
     
+    var uint64: UInt64 {
+        return withUnsafeBytes { $0.pointee }
+    }
+    
     var uint16BigEndian: UInt16 {
         return UInt16(bigEndian: withUnsafeBytes { $0.pointee })
     }
@@ -86,4 +102,5 @@ public extension Data {
     var int32BigEndian: Int32 {
         return Int32(bigEndian: withUnsafeBytes { $0.pointee })
     }
+    
 }
