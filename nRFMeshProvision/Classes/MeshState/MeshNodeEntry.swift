@@ -45,6 +45,20 @@ public class MeshNodeEntry: NSObject, Codable {
         deviceKey = aDeviceKey
         appKeys = [Data]()
     }
+    
+    public func getElementIndex(withUnicast elementAddress: Data) -> Int? {
+        if let nodeUnicastAddress = self.nodeUnicast {
+            if let elements = self.elements {
+                return elements.index(where: { (element) -> Bool in
+                    if let elementIndex = element.index {
+                        return (nodeUnicastAddress.uint16 + UInt16(elementIndex)) == elementAddress.uint16;
+                    }
+                    return false
+                })
+            }
+        }
+        return nil;
+    }
 
     enum CodingKeys: String, CodingKey {
         case UUID

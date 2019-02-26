@@ -104,7 +104,23 @@ class ModelAppBindConfiguratorState: NSObject, ConfiguratorStateProtocol {
             let strippedOpcode = Data(incomingData.dropFirst())
             if let result = networkLayer.incomingPDU(strippedOpcode) {
                 if result is ModelAppStatusMessage {
-                    let modelKeyStatus = result as! ModelAppStatusMessage    
+                    let modelKeyStatus = result as! ModelAppStatusMessage
+                    //Store newly added bound AppKey to global list
+                    let state = self.stateManager.state()
+                    if let anIndex = state.nodes.index(where: { $0.nodeUnicast == destinationAddress}) {
+                        let aNodeEntry = state.nodes[anIndex]
+                        state.nodes.remove(at: anIndex)
+                        if var nodeElements = aNodeEntry.elements {
+                            if let elementIdx = aNodeEntry.getElementIndex(withUnicast: elementAddress) {
+                                var element = nodeElements[elementIdx];
+                                aNodeEntry.elements!.remove(at: elementIdx);
+                                element.setKeyBinding(appKeyIndex, forModelId: modelIdentifier);
+                                aNodeEntry.elements!.append(element)
+                            }
+                        }
+                        state.nodes.append(aNodeEntry)
+                        stateManager.saveState()
+                    }
                     target.delegate?.receivedModelAppStatus(modelKeyStatus)
                 } else {
                     print("Ignoring non model app status message")
