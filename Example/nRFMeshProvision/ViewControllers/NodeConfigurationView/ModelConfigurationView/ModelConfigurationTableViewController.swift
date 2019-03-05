@@ -21,6 +21,66 @@ private enum ModelAppActions {
 }
 
 class ModelConfigurationTableViewController: UITableViewController, ProvisionedMeshNodeDelegate, UITextFieldDelegate {
+    func receivedLightLightnessStatusMessage(_ status: LightLightnessStatusMessage) {
+        
+    }
+    
+    func receivedLightCtlStatusMessage(_ status: LightCtlStatusMessage) {
+        
+    }
+    
+    func receivedLightHslStatusMessage(_ status: LightHslStatusMessage) {
+        
+    }
+    
+    func receivedSceneStatusMessage(_ status: SceneStatusMessage) {
+        
+    }
+    
+    func receivedSceneRegisterStatusMessage(_ status: SceneRegisterStatusMessage) {
+        
+    }
+    
+    func receivedVendorModelStatusMessage(_ status: VendorModelStatusMessage) {
+        
+    }
+    
+    func sentGenericOnOffSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentGenericLevelSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentLightLightnessSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentLightCtlSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentLightHslSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentSceneStoreUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentSceneDeleteUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentSceneRecallUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentVendorModelUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
 
     // MARK: - Outlets & Actions
     @IBOutlet weak var vendorLabel: UILabel!
@@ -297,8 +357,8 @@ class ModelConfigurationTableViewController: UITableViewController, ProvisionedM
             let modelIdx = selectedModelIndexPath.row
             let aModel = nodeEntry.elements![elementIdx].allSigAndVendorModels()[modelIdx]
             let state = meshstateManager.state()
-            if let anIndex = state.provisionedNodes.index(where: { $0.nodeUnicast == nodeEntry.nodeUnicast}) {
-                let aNodeEntry = state.provisionedNodes[anIndex]
+            if let anIndex = state.nodes.index(where: { $0.nodeUnicast == nodeEntry.nodeUnicast}) {
+                let aNodeEntry = state.nodes[anIndex]
                 if var anElement = aNodeEntry.elements?[elementIdx] {
                     if lastModelAppAction == .modelAppBind {
                         anElement.setKeyBinding(modelAppStatusData.appkeyIndex, forModelId: aModel)
@@ -311,12 +371,12 @@ class ModelConfigurationTableViewController: UITableViewController, ProvisionedM
                     }
                 }
                 //and update
-                state.provisionedNodes.remove(at: anIndex)
-                state.provisionedNodes.insert(aNodeEntry, at: anIndex)
+                state.nodes.remove(at: anIndex)
+                state.nodes.insert(aNodeEntry, at: anIndex)
                 meshstateManager.saveState()
                 meshstateManager.restoreState()
                 let targetNodeToUpdate = nodeEntry.nodeUnicast!
-                nodeEntry = meshstateManager.state().provisionedNodes.first { (aNode) -> Bool in
+                nodeEntry = meshstateManager.state().nodes.first { (aNode) -> Bool in
                     return aNode.nodeUnicast == targetNodeToUpdate
                 }
             }
@@ -348,20 +408,20 @@ class ModelConfigurationTableViewController: UITableViewController, ProvisionedM
             let aModel = nodeEntry.elements![elementIdx].allSigAndVendorModels()[modelIdx]
             let state = meshstateManager.state()
             
-            if let anIndex = state.provisionedNodes.index(where: { $0.nodeUnicast == nodeEntry.nodeUnicast}) {
-                let aNodeEntry = state.provisionedNodes[anIndex]
+            if let anIndex = state.nodes.index(where: { $0.nodeUnicast == nodeEntry.nodeUnicast}) {
+                let aNodeEntry = state.nodes[anIndex]
                 if var anElement = aNodeEntry.elements?[elementIdx] {
                     anElement.setPublishAddress(modelPublicationStatusData.publishAddress, forModelId: aModel)
                     aNodeEntry.elements?.remove(at: elementIdx)
                     aNodeEntry.elements?.insert(anElement, at: elementIdx)
                 }
                 //and update
-                state.provisionedNodes.remove(at: anIndex)
-                state.provisionedNodes.insert(aNodeEntry, at: anIndex)
+                state.nodes.remove(at: anIndex)
+                state.nodes.insert(aNodeEntry, at: anIndex)
                 meshstateManager.saveState()
                 meshstateManager.restoreState()
                 let targetNodeToUpdate = nodeEntry.nodeUnicast!
-                nodeEntry = meshstateManager.state().provisionedNodes.first { (aNode) -> Bool in
+                nodeEntry = meshstateManager.state().nodes.first { (aNode) -> Bool in
                     return aNode.nodeUnicast == targetNodeToUpdate
                 }
             }
@@ -391,8 +451,8 @@ class ModelConfigurationTableViewController: UITableViewController, ProvisionedM
             let aModel = nodeEntry.elements![elementIdx].allSigAndVendorModels()[modelIdx]
             let state = meshstateManager.state()
 
-            if let anIndex = state.provisionedNodes.index(where: { $0.nodeUnicast == nodeEntry.nodeUnicast}) {
-                let aNodeEntry = state.provisionedNodes[anIndex]
+            if let anIndex = state.nodes.index(where: { $0.nodeUnicast == nodeEntry.nodeUnicast}) {
+                let aNodeEntry = state.nodes[anIndex]
                 if var anElement = aNodeEntry.elements?[elementIdx] {
                     if lastSubscriptionAction! == .subscriptionAdd {
                         anElement.addSubscriptionAddress(modelSubscriptionStatusData.subscriptionAddress, forModelId: aModel)
@@ -402,12 +462,12 @@ class ModelConfigurationTableViewController: UITableViewController, ProvisionedM
                     aNodeEntry.elements?.remove(at: elementIdx)
                     aNodeEntry.elements?.insert(anElement, at: elementIdx)
                 }
-                state.provisionedNodes.remove(at: anIndex)
-                state.provisionedNodes.insert(aNodeEntry, at: anIndex)
+                state.nodes.remove(at: anIndex)
+                state.nodes.insert(aNodeEntry, at: anIndex)
                 meshstateManager.saveState()
                 meshstateManager.restoreState()
                 let targetNodeToUpdate = nodeEntry.nodeUnicast!
-                nodeEntry = meshstateManager.state().provisionedNodes.first { (aNode) -> Bool in
+                nodeEntry = meshstateManager.state().nodes.first { (aNode) -> Bool in
                     return aNode.nodeUnicast == targetNodeToUpdate
                 }
             }

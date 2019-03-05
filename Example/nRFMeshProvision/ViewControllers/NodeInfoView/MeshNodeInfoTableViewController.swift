@@ -77,7 +77,7 @@ class MeshNodeInfoTableViewController: UITableViewController {
                 cell.textLabel?.text = nodeEntry.nodeName
             case 1:
                 cell.detailTextLabel?.text = "Provisioning Timestamp"
-                cell.textLabel?.text = DateFormatter.localizedString(from: nodeEntry.provisionedTimeStamp,
+                cell.textLabel?.text = DateFormatter.localizedString(from: nodeEntry.provisionedTimeStamp ?? Date(),
                                                                      dateStyle: .short,
                                                                      timeStyle: .short)
             case 2:

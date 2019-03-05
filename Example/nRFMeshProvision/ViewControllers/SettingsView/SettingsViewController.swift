@@ -37,11 +37,11 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UITableView
     func didSelectNetworkNameCell() {
         let meshState = meshManager.stateManager().state()
         presentInputViewWithTitle("Enter a network name", message: "20 charcters",
-                                  placeholder: meshState.name,
+                                  placeholder: meshState.meshName,
                                   generationEnabled: false) { (aName) -> Void in
                                     if let aName = aName {
                                         if aName.count <= 20 {
-                                            meshState.name = aName
+                                            meshState.meshName = aName
                                             self.updateProvisioningDataUI()
                                         } else {
                                             print("Name must shorter than 20 characters")
@@ -443,7 +443,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate, UITableView
         let row = indexPath.row
         if section == 0 {
             if row == 0 {
-                return meshState.name
+                return meshState.meshName
             } else if row == 1 {
                 return "0x\(meshState.globalTTL.hexString())"
             } else if row == 2 {

@@ -57,13 +57,19 @@ public class NetworkKeyEntry: Codable {
         index = Data(fromInt16: indexInt);
         let keyString = try values.decode(String.self, forKey: .key)
         key = Data(hexString: keyString) ?? OpenSSLHelper().generateRandom()
-        let oldKeyString = try values.decode(String.self, forKey: .key)
-        oldKey = Data(hexString: oldKeyString) ?? OpenSSLHelper().generateRandom()
+        if let oldKeyString = try values.decodeIfPresent(String.self, forKey: .key) {
+            oldKey = Data(hexString: oldKeyString)
+        }
         let phaseInt = try values.decode(UInt32.self, forKey: .index)
         phase = Data(fromInt32: phaseInt);
         flags = try values.decodeIfPresent(Data.self, forKey: .flags) ?? Data([0x00]);
         minSecurity = try values.decode(NetworkKeySecurityLevel.self, forKey: .minSecurity)
-        timestamp = try values.decode(Date.self, forKey: .timestamp) // TODO: convert to android compatible format
+        if let timestampString = try? values.decode(String.self, forKey: .timestamp) {
+            timestamp = Date(hexString: timestampString) ?? Date();
+        } else {
+            timestamp = Date();
+        }
+        
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -71,11 +77,11 @@ public class NetworkKeyEntry: Codable {
         try container.encode(name, forKey: .name)
         try container.encode(index.int16, forKey: .index)
         try container.encode(key.hexString(), forKey: .key)
-        try container.encode(oldKey?.hexString(), forKey: .oldKey)
         try container.encode(phase.uint32, forKey: .phase)
         try container.encode(flags, forKey: .flags)
         try container.encode(minSecurity, forKey: .minSecurity)
-        try container.encode(timestamp, forKey: .timestamp)
+        try container.encode(timestamp.hexString(), forKey: .timestamp)
+        try container.encodeIfPresent(oldKey?.hexString(), forKey: .oldKey)
     }
 }
 

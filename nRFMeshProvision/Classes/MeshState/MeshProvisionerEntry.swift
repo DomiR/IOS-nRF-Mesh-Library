@@ -10,9 +10,9 @@ import Foundation
 public struct MeshProvisionerEntry: Codable {
     let provisionerName         : String
     let uuid                    : UUID
-    let allocatedUnicastRange   : AllocatedUnicastRange
+    let allocatedUnicastRange   : [AllocatedUnicastRange]
     
-    init(withName aName: String, uuid aUUID: UUID, andUnicastRange aRange: AllocatedUnicastRange) {
+    init(withName aName: String, uuid aUUID: UUID, andUnicastRange aRange: [AllocatedUnicastRange]) {
         provisionerName         = aName
         uuid                    = aUUID
         allocatedUnicastRange   = aRange

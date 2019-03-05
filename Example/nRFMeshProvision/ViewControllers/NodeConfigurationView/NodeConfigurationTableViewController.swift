@@ -10,6 +10,66 @@ import UIKit
 import nRFMeshProvision
 
 class NodeConfigurationTableViewController: UITableViewController, ProvisionedMeshNodeDelegate {
+    func receivedLightLightnessStatusMessage(_ status: LightLightnessStatusMessage) {
+        
+    }
+    
+    func receivedLightCtlStatusMessage(_ status: LightCtlStatusMessage) {
+        
+    }
+    
+    func receivedLightHslStatusMessage(_ status: LightHslStatusMessage) {
+        
+    }
+    
+    func receivedSceneStatusMessage(_ status: SceneStatusMessage) {
+        
+    }
+    
+    func receivedSceneRegisterStatusMessage(_ status: SceneRegisterStatusMessage) {
+        
+    }
+    
+    func receivedVendorModelStatusMessage(_ status: VendorModelStatusMessage) {
+        
+    }
+    
+    func sentGenericOnOffSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentGenericLevelSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentLightLightnessSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentLightCtlSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentLightHslSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentSceneStoreUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentSceneDeleteUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentSceneRecallUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentVendorModelUnacknowledged(_ destinationAddress: Data) {
+            
+    }
+    
 
     // MARK: - Properties
     private var nodeEntry: MeshNodeEntry!
@@ -29,7 +89,7 @@ class NodeConfigurationTableViewController: UITableViewController, ProvisionedMe
         meshManager.stateManager().restoreState()
         proxyNode = meshManager.proxyNode()
         if let targetUnicast = nodeEntry.nodeUnicast {
-            nodeEntry = meshManager.stateManager().state().provisionedNodes.first { (anEntry) -> Bool in
+            nodeEntry = meshManager.stateManager().state().nodes.first { (anEntry) -> Bool in
                 return anEntry.nodeUnicast == targetUnicast
             }
         }
@@ -182,10 +242,10 @@ class NodeConfigurationTableViewController: UITableViewController, ProvisionedMe
     }
 
     func receivedNodeResetStatus(_ resetStatusData: NodeResetStatusMessage) {
-        var provisionedNodes = meshManager.stateManager().state().provisionedNodes
+        var provisionedNodes = meshManager.stateManager().state().nodes
         if let nodeIndex = provisionedNodes.index(of: nodeEntry) {
             provisionedNodes.remove(at: nodeIndex)
-            meshManager.stateManager().state().provisionedNodes = provisionedNodes
+            meshManager.stateManager().state().nodes = provisionedNodes
             meshManager.stateManager().saveState()
             self.navigationController?.popToRootViewController(animated: true)
         }

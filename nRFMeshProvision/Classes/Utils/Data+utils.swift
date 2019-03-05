@@ -40,7 +40,7 @@ public extension Data {
     
     public init(fromInt64 anInteger: UInt64) {
         self = Data([
-            UInt8((anInteger & 0xFF00000000000000) >> 54),
+            UInt8((anInteger & 0xFF00000000000000) >> 56),
             UInt8((anInteger & 0x00FF000000000000) >> 48),
             UInt8((anInteger & 0x0000FF0000000000) >> 40),
             UInt8((anInteger & 0x000000FF00000000) >> 32),
@@ -79,8 +79,8 @@ public extension Data {
         return withUnsafeBytes { $0.pointee }
     }
     
-    var uint64: UInt64 {
-        return withUnsafeBytes { $0.pointee }
+    var uint64BigEndian: UInt64 {
+        return UInt64(bigEndian: withUnsafeBytes { $0.pointee })
     }
     
     var uint16BigEndian: UInt16 {

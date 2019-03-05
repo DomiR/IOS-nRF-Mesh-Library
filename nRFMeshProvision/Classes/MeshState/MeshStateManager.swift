@@ -23,6 +23,10 @@ public class MeshStateManager: NSObject {
         //restoreState()
         return meshState
     }
+    
+    public func loadState(withState aState: MeshState) {
+        meshState = aState;
+    }
 
     public func saveState() {
         let encodedData = try? JSONEncoder().encode(self.meshState)
@@ -46,7 +50,7 @@ public class MeshStateManager: NSObject {
                 let decodedState = try JSONDecoder().decode(MeshState.self, from: data)
                 self.meshState = decodedState
             } catch {
-                print("Error reading state from file")
+                print("Error reading state from file", error)
                 let _ = self.generateState();
             }
         }
@@ -72,7 +76,7 @@ public class MeshStateManager: NSObject {
             AppKeyEntry(withName: "AppKey 3", andKey: generateRandomKey()!, atIndex: 2, onNetKeyIndex: 0)
         ]
 
-        let provisioner = MeshProvisionerEntry(withName: "nRF Mesh Provisioner", uuid: UUID(), andUnicastRange: AllocatedUnicastRange(withLowAddress: "0000", andHighAddress: "7F7E"))
+        let provisioner = MeshProvisionerEntry(withName: "nRF Mesh Provisioner", uuid: UUID(), andUnicastRange: [AllocatedUnicastRange(withLowAddress: "0000", andHighAddress: "7F7E")])
         let newState = MeshState(withName: networkName, version: "1.0", identifier: UUID(), timestamp: Date(), provisionerList: [provisioner], nodeList: [], netKeys: [netKey], globalTTL: globalTTL, unicastAddress: unicastAddress, andAppKeys: appKeys)
         self.meshState = newState
 

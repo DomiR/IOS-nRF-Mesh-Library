@@ -59,6 +59,7 @@ class StartProvisionProvisioningState: NSObject, ProvisioningStateProtocol {
                                              inviteCapabilities.supportedOutputOOBActions.first!.toByteValue()!,
                                              inviteCapabilities.outputOOBSize])
             }
+            // TODO: select correct capability here
 
             print("Provision Start PDU Sent: \(startPDU.hexString())")
             

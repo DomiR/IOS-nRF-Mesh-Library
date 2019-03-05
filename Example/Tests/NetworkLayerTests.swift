@@ -228,6 +228,8 @@ class NetworkLayerTests: XCTestCase {
         let nonce = TransportNonce(deviceNonceWithIVIndex: ivIndex, isSegmented: true,
                                    szMIC: 0, seq: sequence.sequenceData(),
                                    src: srcAddr, dst: dstAddr)
+        
+        print("nonce \(nonce)")
         let upperParams = UpperTransportPDUParams(withPayload: accessPayloadData, opcode: Data([0x00]),
                                                   IVIndex: ivIndex, key: deviceKey, ttl: Data([0x04]),
                                                   seq: sequence, src: srcAddr, dst: dstAddr,

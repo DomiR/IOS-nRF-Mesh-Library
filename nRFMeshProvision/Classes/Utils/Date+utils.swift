@@ -10,8 +10,8 @@ import Foundation
 public extension Date {
     
     public init?(hexString: String) {
-        let dateData = Data(hexString: hexString);
-        let seconds = Double(dateData?.uint64 ?? 0);
+        let dateData = Data(hexString: hexString.uppercased());
+        let seconds = Double(dateData?.uint64BigEndian ?? 0);
         var datecomponents = DateComponents();
         datecomponents.year = 2000;
         datecomponents.month = 1;
@@ -33,10 +33,11 @@ public extension Date {
         datecomponents.day = 1;
         let gregorianCalendar = Calendar(identifier: .gregorian)
         if let refDate = gregorianCalendar.date(from: datecomponents) {
-            let persicionSeconds = self.timeIntervalSince(refDate);
-            let seconds = round(persicionSeconds)
-            let dataDate = Data(fromInt64: UInt64(seconds))
-            return dataDate.hexString();
+            
+            let persicionSeconds = Date().timeIntervalSince(refDate);
+            let seconds = UInt64(round(persicionSeconds))
+            let dataDate = Data(fromInt64: seconds)
+            return dataDate.hexString().lowercased();
         }
         return "";
    }

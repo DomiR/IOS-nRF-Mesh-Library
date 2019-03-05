@@ -78,8 +78,11 @@ public struct NetworkLayer {
         let k2 = sslHelper.calculateK2(withN: netKey, andP: Data(bytes: [0x00]))
         let nid = k2![0]
         let iviNid = Data([ivi | nid])
+        print("k2", k2?.hexString())
         let encryptionKey = k2![1..<17]
+        print("encryptionKey \(encryptionKey.hexString())")
         let privacyKey = k2![17..<33]
+        print("privacyKey \(privacyKey.hexString())")
         var micSize: UInt8
         let ctlTtl = Data([(lowerTransport.params.ctl[0] << 7) | (lowerTransport.params.ttl[0] & 0x7F)])
         let lowerPDU = lowerTransport.createPDU()
@@ -89,6 +92,7 @@ public struct NetworkLayer {
         
         //Encrypt all PDUs
         for aPDU in lowerPDU {
+            print("lower \(aPDU.hexString())")
             let nonce = TransportNonce(networkNonceWithIVIndex: lowerTransport.params.ivIndex, ctl: lowerTransport.params.ctl, ttl: lowerTransport.params.ttl, seq: sequence.sequenceData(), src: lowerTransport.params.sourceAddress)
             var dataToEncrypt = Data(lowerTransport.params.destinationAddress)
             dataToEncrypt.append(aPDU)

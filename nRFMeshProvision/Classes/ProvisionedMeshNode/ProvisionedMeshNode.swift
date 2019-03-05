@@ -31,6 +31,10 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
 
         super.init()
     }
+    
+    convenience public init(withUnprovisionedNode aNode: UnprovisionedMeshNode, andDelegate aDelegate: ProvisionedMeshNodeDelegate?) {
+        self.init(withStateManager: MeshStateManager.restoreState()!, withUnprovisionedNode: aNode, andDelegate: aDelegate)
+    }
 
     convenience public init(withUnprovisionedNode aNode: UnprovisionedMeshNode) {
         self.init(withStateManager: MeshStateManager.restoreState()!, withUnprovisionedNode: aNode, andDelegate: nil)

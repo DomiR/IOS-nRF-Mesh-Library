@@ -77,27 +77,39 @@ public class MeshState: NSObject, Codable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         meshName = try values.decode(String.self, forKey: .meshName)
         provisioners = try values.decode([MeshProvisionerEntry].self, forKey: .provisioners)
-        meshUUID = try values.decode(UUID.self, forKey: .meshUUID)
+        
+        // android uuids are uppercased
+        let meshUUIDString = try values.decode(String.self, forKey: .meshUUID)
+        meshUUID = UUID(uuidString: meshUUIDString.lowercased()) ?? UUID()
         version = try values.decode(String.self, forKey: .version)
+        
+        // android uses iat format
         if let timestampString = try? values.decode(String.self, forKey: .timestamp) {
             timestamp = Date(hexString: timestampString) ?? Date()
         } else {
             timestamp = Date();
         }
+        
         nodes = try values.decode([MeshNodeEntry].self, forKey: .nodes)
         netKeys = try values.decode([NetworkKeyEntry].self, forKey: .netKeys)
         appKeys = try values.decode([AppKeyEntry].self, forKey: .appKeys)
         globalTTL = (try? values.decode(Data.self, forKey: .globalTTL)) ?? Data([8])
-        let unicastAddressString = try values.decode(String.self, forKey: .unicastAddress)
-        unicastAddress = Data(hexString: unicastAddressString) ?? Data([0x7F, 0xFF]) // must not pe present when exported from android
+        
+        // android does not export this, use default
+        if let unicastAddressString = try values.decodeIfPresent(String.self, forKey: .unicastAddress) {
+            unicastAddress = Data(hexString: unicastAddressString) ?? Data([0x7F, 0xFF])
+        } else {
+            unicastAddress = Data([0x7F, 0xFF])
+        }
+        
         schema = try values.decode(String.self, forKey: .schema)
         id = try values.decode(String.self, forKey: .id)
         
         // we calculate next available address from max node address + element count of same node
-        // nextUnicast = try values.decode(Data.self, forKey: .nextUnicast) // TODO: we need to calculate this from the node list
+        // nextUnicast = try values.decode(Data.self, forKey: .nextUnicast)
         let nextUnicastAddress = nodes.reduce(0) { (maxAddress, node) -> UInt16 in
             return max(maxAddress, ((node.nodeUnicast?.uint16 ?? 0) + UInt16(node.elements?.count ?? 0)))
-        }
+        } + 1
         nextUnicast = Data.init(fromInt16: nextUnicastAddress)
     }
 
@@ -105,7 +117,7 @@ public class MeshState: NSObject, Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(meshName, forKey: .meshName)
         try container.encode(provisioners, forKey: .provisioners)
-        try container.encode(meshUUID, forKey: .meshUUID)
+        try container.encode(meshUUID.uuidString.uppercased(), forKey: .meshUUID)
         try container.encode(version, forKey: .version)
         try container.encode(timestamp.hexString(), forKey: .timestamp)
         // try container.encode(nextUnicast, forKey: .nextUnicast)

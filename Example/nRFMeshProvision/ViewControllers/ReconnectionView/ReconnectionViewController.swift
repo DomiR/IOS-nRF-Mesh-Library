@@ -313,6 +313,66 @@ extension ReconnectionViewController: CBCentralManagerDelegate {
 }
 
 extension ReconnectionViewController: ProvisionedMeshNodeDelegate {
+    func receivedLightLightnessStatusMessage(_ status: LightLightnessStatusMessage) {
+        
+    }
+    
+    func receivedLightCtlStatusMessage(_ status: LightCtlStatusMessage) {
+        
+    }
+    
+    func receivedLightHslStatusMessage(_ status: LightHslStatusMessage) {
+        
+    }
+    
+    func receivedSceneStatusMessage(_ status: SceneStatusMessage) {
+        
+    }
+    
+    func receivedSceneRegisterStatusMessage(_ status: SceneRegisterStatusMessage) {
+        
+    }
+    
+    func receivedVendorModelStatusMessage(_ status: VendorModelStatusMessage) {
+        
+    }
+    
+    func sentGenericOnOffSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentGenericLevelSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentLightLightnessSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentLightCtlSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentLightHslSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentSceneStoreUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentSceneDeleteUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentSceneRecallUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentVendorModelUnacknowledged(_ destinationAddress: Data) {
+            
+    }
+    
     func receivedGenericLevelStatusMessage(_ status: GenericLevelStatusMessage) {
         print("Level status = \(status.levelStatus)")
     }

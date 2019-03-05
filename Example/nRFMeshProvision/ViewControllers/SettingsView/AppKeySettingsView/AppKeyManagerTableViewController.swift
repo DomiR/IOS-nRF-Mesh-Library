@@ -251,7 +251,7 @@ class AppKeyManagerTableViewController: UITableViewController, UITextFieldDelega
             let exportedString = """
             AppKey name: \(aTitle)
             Key: \(aBody)
-            Network name: \(self.meshState.meshState.name)
+            Network name: \(self.meshState.meshState.meshName)
             Exported on: \(timestamp)
             """
 

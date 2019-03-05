@@ -165,7 +165,10 @@ public struct CompositionElement: Codable {
         //try container.encode(allModels, forKey: .allModels)
         var models = [MeshModel]()
         allModels.forEach { (modelId) in
-            models.append(MeshModel(modelId: modelId.hexString(), bind: modelKeyBindings[modelId] != nil ? [modelKeyBindings[modelId]!.hexString()] : nil))
+            let bind = modelKeyBindings[modelId] != nil ? [modelKeyBindings[modelId]!.hexString()] : nil;
+            let subscribe = modelSubscriptionAddresses[modelId] != nil ? modelSubscriptionAddresses[modelId]!.map { $0.hexString() } : nil;
+            let publish = modelPublishAddress[modelId] != nil ? [modelPublishAddress[modelId]!.hexString()] : nil;
+            models.append(MeshModel(modelId: modelId.hexString(), bind: bind, subscribe: subscribe, publish: publish))
         }
         try container.encode(models, forKey: .allModels)
     }
@@ -174,10 +177,14 @@ public struct CompositionElement: Codable {
 public struct MeshModel: Codable {
     var modelId: String
     var bind: [String]?
+    var subscribe: [String]?
+    var publish: [String]?
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(modelId, forKey: .modelId)
         try container.encodeIfPresent(bind, forKey: .bind)
+        try container.encodeIfPresent(subscribe, forKey: .subscribe)
+        try container.encodeIfPresent(publish, forKey: .publish)
     }
 }

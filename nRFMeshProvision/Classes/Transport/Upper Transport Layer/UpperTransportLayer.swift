@@ -123,6 +123,9 @@ public struct UpperTransportLayer {
    
     private func encryptForDevice() -> Data {
         //EncAccessPayload, TransMIC = AES-CCM (DevKey, Device Nonce, AccessPayload)
+        print("payload \(params.payload.hexString())")
+        print("key \(params.key.hexString())")
+        print("nonce \(params.nonce.data.hexString())")
         return sslHelper.calculateCCM(params.payload, withKey: params.key, nonce: params.nonce.data, dataSize: UInt8(params.payload.count), andMICSize: 4)
     }
 }

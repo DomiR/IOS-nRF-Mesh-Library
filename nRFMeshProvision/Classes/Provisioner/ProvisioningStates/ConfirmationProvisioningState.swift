@@ -58,6 +58,7 @@ class ConfirmationProvisioningState: NSObject, ProvisioningStateProtocol {
                 }
             }
         }
+        // TODO: other output possibilities
     }
 
     func didreceiveUserInput(_ anInput: String) {

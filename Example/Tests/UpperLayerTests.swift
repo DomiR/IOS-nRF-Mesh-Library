@@ -28,6 +28,9 @@ class UpperLayerTests: XCTestCase {
                                        seq: testSequence.sequenceData(),
                                        src: testSrc,
                                        dst: testDst)
+        
+        print("testSequence \(testSequence.sequenceData().hexString())")
+        print("nonce \(testNonce.data.hexString())")
         let testOpcode = Data([0x00])
 
         let params = UpperTransportPDUParams(withPayload: testAccessPayload,
@@ -62,14 +65,17 @@ class UpperLayerTests: XCTestCase {
                                     0xC1, 0x7C, 0x2B, 0x82, 0x0C, 0x84, 0xC3, 0xD6])
         let ivIndex         = Data([0x12, 0x34, 0x56, 0x78])
         let opcode          = Data([0x00])
+
+
         let testNonce = TransportNonce(deviceNonceWithIVIndex: ivIndex,
                                        isSegmented: false,
                                        szMIC: 0,
                                        seq: sequence.sequenceData(),
                                        src: srcAddr,
                                        dst: dstAddr)
+                print("nonce \(testNonce.data.hexString())")
         let expectedPDU = Data([0x4B, 0x50, 0x05, 0x7E, 0x40, 0x00, 0x00, 0x01, 0x00, 0x00])
-
+        let expectedEncrypted = Data([0xBB, 0x09, 0xF0, 0xDB, 0xB4, 0xF4, 0xDD, 0xF6, 0xD0, 0x31, 0x62, 0x5A, 0x2B, 0x26])
         let upperParams = UpperTransportPDUParams(withPayload: controlPayload,
                                                   opcode: opcode,
                                                   IVIndex: ivIndex,
@@ -85,5 +91,13 @@ class UpperLayerTests: XCTestCase {
 
         let upperTransportLayer = UpperTransportLayer(withParams: upperParams)
         XCTAssert(expectedPDU == upperTransportLayer.rawData()!, "EXpected upper PDU did not match")
+        guard let encData = upperTransportLayer.encrypt() else {
+            XCTAssert(false, "Encrypted data was not generated")
+            return
+        }
+        print("encData \(encData.hexString())")
+
+        XCTAssert(encData == expectedEncrypted, "Encrypted data + MIC did not match expected value")
+        
     }
 }

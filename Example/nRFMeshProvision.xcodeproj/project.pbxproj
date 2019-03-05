@@ -447,7 +447,7 @@
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
-						DevelopmentTeam = P3R8YQEV4L;
+						DevelopmentTeam = EP8F6V833X;
 						LastSwiftMigration = 0900;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
@@ -457,7 +457,7 @@
 					};
 					607FACE41AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
-						DevelopmentTeam = P3R8YQEV4L;
+						DevelopmentTeam = EP8F6V833X;
 						LastSwiftMigration = 0900;
 						TestTargetID = 607FACCF1AFB9204008FA782;
 					};
@@ -752,7 +752,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
-				DEVELOPMENT_TEAM = P3R8YQEV4L;
+				DEVELOPMENT_TEAM = EP8F6V833X;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = nRFMeshProvision/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
@@ -787,7 +787,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
-				DEVELOPMENT_TEAM = P3R8YQEV4L;
+				DEVELOPMENT_TEAM = EP8F6V833X;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = nRFMeshProvision/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
@@ -820,7 +820,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9020B99520CC4F3B27519D12 /* Pods-nRFMeshProvision_Tests.debug.xcconfig */;
 			buildSettings = {
-				DEVELOPMENT_TEAM = P3R8YQEV4L;
+				DEVELOPMENT_TEAM = EP8F6V833X;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SDKROOT)/System/Library/Frameworks",
@@ -849,7 +849,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6F738D8AED8E08F840E0D44B /* Pods-nRFMeshProvision_Tests.release.xcconfig */;
 			buildSettings = {
-				DEVELOPMENT_TEAM = P3R8YQEV4L;
+				DEVELOPMENT_TEAM = EP8F6V833X;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SDKROOT)/System/Library/Frameworks",

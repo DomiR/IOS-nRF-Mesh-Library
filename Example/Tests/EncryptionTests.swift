@@ -36,6 +36,24 @@ class EncryptionTests: XCTestCase {
         XCTAssert(output == testOutput,
                   "Obfuscated header mismatch!, expected: \(testOutput.hexString()), got \(output!.hexString())")
     }
+    
+    func testCalculateCMAC() {
+        let helper      = OpenSSLHelper()
+        //Test input data.
+        let nValueData  = Data(bytes: [0x32, 0x16, 0xD1, 0x50, 0x98, 0x84, 0xB5, 0x33,
+                                       0x24, 0x85, 0x41, 0x79, 0x2B, 0x87, 0x7F, 0x98])
+        let saltValueData  = Data(bytes: [0x2B, 0xA1, 0x4F, 0xFA, 0x0D, 0xF8, 0x4A, 0x28,
+                                          0x31, 0x93, 0x8D, 0x57, 0xD2, 0x76, 0xCA, 0xB4])
+        //Test output data.
+        let expectedOutput = Data(bytes: [0xC7, 0x64, 0xBE, 0xA2, 0x5C, 0xF9, 0x73, 0x8B,0x08, 0x95, 0x6E, 0xA3, 0xC7, 0x12, 0xD5, 0xAF])
+        
+        //Run test
+        let result = helper.calculateCMAC(nValueData, andKey: saltValueData);
+        
+        //Assert result
+        XCTAssert(result! == expectedOutput,
+                  "Expected 0x\(expectedOutput.hexString()), got 0x\(result!.hexString()) instead")
+    }
 
     func testK1() {
         let helper      = OpenSSLHelper()

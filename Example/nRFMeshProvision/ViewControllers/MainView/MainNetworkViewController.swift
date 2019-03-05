@@ -63,7 +63,7 @@ class MainNetworkViewController: UIViewController, UICollectionViewDataSource, U
 
     public func presentInformationForNodeAtIndex(_ anIndex: Int) {
         let meshState = meshManager.stateManager().state()
-        let aNodeEntry = meshState.provisionedNodes[anIndex]
+        let aNodeEntry = meshState.nodes[anIndex]
         self.performSegue(withIdentifier: "ShowNodeDetails", sender: aNodeEntry)
     }
 
@@ -71,7 +71,7 @@ class MainNetworkViewController: UIViewController, UICollectionViewDataSource, U
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if meshManager != nil {
             let meshState = meshManager.stateManager().state()
-            return meshState.provisionedNodes.count
+            return meshState.nodes.count
         } else {
             return 0
         }
@@ -81,7 +81,7 @@ class MainNetworkViewController: UIViewController, UICollectionViewDataSource, U
         super.viewWillAppear(animated)
         meshManager = (UIApplication.shared.delegate as? AppDelegate)?.meshManager
         collectionView.reloadData()
-        let nodes = meshManager.stateManager().state().provisionedNodes
+        let nodes = meshManager.stateManager().state().nodes
         self.updateEmptyNetworkView(withNodeCount: nodes.count)
     }
 
@@ -114,7 +114,7 @@ class MainNetworkViewController: UIViewController, UICollectionViewDataSource, U
         
         //Auto-rejoin
         if true ==  UserDefaults.standard.value(forKey: UserDefaultsKeys.autoRejoinKey) as? Bool ?? false {
-            if meshManager.stateManager().state().provisionedNodes.count > 0 && !isProxyConnected() {
+            if meshManager.stateManager().state().nodes.count > 0 && !isProxyConnected() {
                 self.performSegue(withIdentifier: "ShowReconnectionView", sender: self)
             }
         }
@@ -123,7 +123,7 @@ class MainNetworkViewController: UIViewController, UICollectionViewDataSource, U
     private func updateConnectionButton() {
         //When we have no network configured, the connection button is
         //not necessary
-        let nodeCount = meshManager.stateManager().state().provisionedNodes.count
+        let nodeCount = meshManager.stateManager().state().nodes.count
         guard nodeCount != 0 else {
             connectionButton.title = nil
             connectionButton.isEnabled = false
@@ -146,7 +146,7 @@ class MainNetworkViewController: UIViewController, UICollectionViewDataSource, U
                                cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let aCell = collectionView.dequeueReusableCell(withReuseIdentifier: "meshNodeCell",
                                                        for: indexPath) as? MeshNodeCollectionViewCell
-        let allNodes = meshManager.stateManager().state().provisionedNodes
+        let allNodes = meshManager.stateManager().state().nodes
         let aNodeEntry = allNodes[indexPath.row]
         aCell?.setupCellWithNodeEntry(aNodeEntry, atIndexPath: indexPath, andNetworkView: self)
 
@@ -189,7 +189,7 @@ class MainNetworkViewController: UIViewController, UICollectionViewDataSource, U
     }
 
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let allNodes = meshManager.stateManager().state().provisionedNodes
+        let allNodes = meshManager.stateManager().state().nodes
         let aNodeEntry = allNodes[indexPath.row]
 
         if shouldPerformSegue(withIdentifier: "ShowNodeConfiguration", sender: nil) {
@@ -265,6 +265,66 @@ extension MainNetworkViewController: CBCentralManagerDelegate {
 
 // MARK: - ProvisionedMeshNodeDelegate Extension
 extension MainNetworkViewController: ProvisionedMeshNodeDelegate {
+    func receivedLightLightnessStatusMessage(_ status: LightLightnessStatusMessage) {
+        
+    }
+    
+    func receivedLightCtlStatusMessage(_ status: LightCtlStatusMessage) {
+        
+    }
+    
+    func receivedLightHslStatusMessage(_ status: LightHslStatusMessage) {
+        
+    }
+    
+    func receivedSceneStatusMessage(_ status: SceneStatusMessage) {
+        
+    }
+    
+    func receivedSceneRegisterStatusMessage(_ status: SceneRegisterStatusMessage) {
+        
+    }
+    
+    func receivedVendorModelStatusMessage(_ status: VendorModelStatusMessage) {
+        
+    }
+    
+    func sentGenericOnOffSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentGenericLevelSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentLightLightnessSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentLightCtlSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentLightHslSetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentSceneStoreUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentSceneDeleteUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentSceneRecallUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
+    func sentVendorModelUnacknowledged(_ destinationAddress: Data) {
+            
+    }
+    
     func receivedGenericLevelStatusMessage(_ status: GenericLevelStatusMessage) {
         print("Level status = \(status.levelStatus)")
     }

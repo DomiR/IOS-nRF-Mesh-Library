@@ -24,7 +24,7 @@ public class MeshNodeEntry: NSObject, Codable {
     public var netKeys: [Data]?
     public var configComplete = false
     public var ttl = Data([0x00, 0x05])
-    public var blacklisted: Bool?
+    public var blacklisted: Bool? = false;
 
     // MARK: -  Node composition
 
@@ -37,13 +37,14 @@ public class MeshNodeEntry: NSObject, Codable {
 
     // MARK: - Initialization
 
-    public init(withName aName: String, provisionDate aProvisioningTimestamp: Date, nodeId anId: Data, andDeviceKey aDeviceKey: Data) {
+    public init(withName aName: String, provisionDate aProvisioningTimestamp: Date, nodeId anId: Data, andDeviceKey aDeviceKey: Data, andNetKeyIndex aNetKeyIdx: Data) {
         nodeName = aName
         provisionedTimeStamp = aProvisioningTimestamp
         nodeId = anId
         UUID = anId.hexString();
         deviceKey = aDeviceKey
         appKeys = [Data]()
+        netKeys = [aNetKeyIdx]
     }
     
     public func getElementIndex(withUnicast elementAddress: Data) -> Int? {
@@ -85,7 +86,8 @@ public class MeshNodeEntry: NSObject, Codable {
 
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        UUID = try values.decode(String.self, forKey: .UUID)
+        let UUID = try values.decode(String.self, forKey: .UUID)
+        self.UUID = UUID;
         let deviceKeyString = try values.decode(String.self, forKey: .deviceKey)
         deviceKey = Data(hexString: deviceKeyString) ?? OpenSSLHelper().generateRandom()
         let nodeUnicastString = try values.decode(String.self, forKey: .nodeUnicast)
@@ -98,13 +100,17 @@ public class MeshNodeEntry: NSObject, Codable {
         let productVersionString = try values.decode(String.self, forKey: .productVersion)
         productVersion = Data(hexString: productVersionString)
         provisionedTimeStamp = try values.decodeIfPresent(Date.self, forKey: .provisionedTimeStamp) // TODO: use android ait
-        nodeId = try values.decode(Data.self, forKey: .nodeId)
-        appKeys = try values.decode([Data].self, forKey: .appKeys)
+        let nodeId = try? values.decode(Data.self, forKey: .nodeId)
+        self.nodeId = nodeId ?? (Data(hexString: (UUID)) ?? Data())
+        let appKeysList = try values.decode([AppKeyIndex].self, forKey: .appKeys)
+        appKeys = appKeysList.compactMap { Data(hexString: $0.index) }
         let replayProtectionCountString = try values.decode(String.self, forKey: .replayProtectionCount)
         replayProtectionCount = Data(hexString: replayProtectionCountString)
-        featureFlags = try values.decode(Data.self, forKey: .featureFlags) // TODO: use android ait
+        let features = try values.decode(Features.self, forKey: .featureFlags)
+        featureFlags = features.asData();
         elements = try values.decode([CompositionElement].self, forKey: .elements)
-        netKeys = try values.decode([Data].self, forKey: .netKeys)
+        let netKeysList = try values.decode([NetKeyIndex].self, forKey: .netKeys)
+        netKeys = netKeysList.map { Data(fromInt16: $0.index) }
         configComplete = try values.decode(Bool.self, forKey: .configComplete)
         let ttlInt = try values.decode(UInt16.self, forKey: .ttl)
         ttl = Data(fromInt16: ttlInt);
@@ -123,14 +129,57 @@ public class MeshNodeEntry: NSObject, Codable {
         try container.encode(productVersion?.hexString(), forKey: .productVersion)
         try container.encodeIfPresent(provisionedTimeStamp, forKey: .provisionedTimeStamp)
         try container.encode(nodeId, forKey: .nodeId)
-        try container.encode(appKeys, forKey: .appKeys)
+        try container.encode(appKeys.map { AppKeyIndex(index: $0.hexString()) }, forKey: .appKeys)
         try container.encode(replayProtectionCount?.hexString(), forKey: .replayProtectionCount)
-        try container.encode(featureFlags, forKey: .featureFlags)
+        try container.encode(Features(withFeatureData: featureFlags), forKey: .featureFlags)
         try container.encode(elements, forKey: .elements)
-        try container.encode(netKeys, forKey: .netKeys)
+        try container.encode(netKeys?.map { NetKeyIndex(index: $0.uint16)}, forKey: .netKeys)
         try container.encode(configComplete, forKey: .configComplete)
         try container.encode(ttl.uint16, forKey: .ttl)
         try container.encode(blacklisted, forKey: .blacklisted)
         try container.encode(security, forKey: .security)
+    }
+}
+
+public struct AppKeyIndex: Codable {
+    var index: String;
+}
+
+public struct NetKeyIndex: Codable {
+    var index: UInt16;
+}
+
+public enum FeatureState: UInt8, Codable {
+    case disabled = 0x00;
+    case enabled = 0x01;
+    case unsupported = 0x02;
+}
+
+public struct Features: Codable {
+    var friend: FeatureState = .disabled;
+    var lowPower: FeatureState = .disabled;
+    var proxy: FeatureState = .disabled;
+    var relay: FeatureState = .disabled;
+    
+    private func isBitSet(b: UInt16, pos: UInt8) -> Bool {
+        return (b & (1 << pos)) != 0;
+    }
+    
+    public init(withFeatureData someFeatureData: Data?) {
+        if let feature = someFeatureData?.uint16 {
+            relay = isBitSet(b: feature, pos: 0) ? .enabled : .unsupported;
+            proxy = isBitSet(b: feature, pos: 1) ? .enabled : .unsupported;
+            friend = isBitSet(b: feature, pos: 2) ? .enabled : .unsupported;
+            lowPower = isBitSet(b: feature, pos: 3) ? .enabled : .unsupported;
+        }
+    }
+    
+    public func asData() -> Data {
+        var feature = UInt8(0);
+        feature |= UInt8(relay == .enabled ? (1 << 0) : 0)
+        feature |= UInt8(proxy == .enabled ? (1 << 1) : 0)
+        feature |= UInt8(friend == .enabled ? (1 << 2) : 0)
+        feature |= UInt8(lowPower == .enabled ? (1 << 3) : 0)
+        return Data([feature]);
     }
 }

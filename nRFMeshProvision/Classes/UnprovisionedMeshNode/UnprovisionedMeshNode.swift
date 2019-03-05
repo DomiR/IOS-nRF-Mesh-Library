@@ -264,7 +264,7 @@ public class UnprovisionedMeshNode: NSObject, UnprovisionedMeshNodeProtocol {
         var anEntry: MeshNodeEntry?
         let timestamp = Date()
         if let deviceKey = deviceKey() {
-            anEntry = MeshNodeEntry(withName: provisioningData.friendlyName, provisionDate: timestamp, nodeId: nodeIdentifier(), andDeviceKey: deviceKey)
+            anEntry = MeshNodeEntry(withName: provisioningData.friendlyName, provisionDate: timestamp, nodeId: nodeIdentifier(), andDeviceKey: deviceKey, andNetKeyIndex: provisioningData.keyIndex)
         }
         return anEntry
     }
