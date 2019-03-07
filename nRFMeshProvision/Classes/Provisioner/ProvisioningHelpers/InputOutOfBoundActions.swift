@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum InputOutOfBoundActions: UInt16 {
+public enum InputOutOfBoundActions: UInt16, OutOfBoundActionsProtocol {
     case noInput            = 0x00
     case push               = 0x01
     case twist              = 0x02

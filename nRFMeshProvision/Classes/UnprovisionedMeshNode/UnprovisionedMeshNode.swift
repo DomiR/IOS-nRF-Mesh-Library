@@ -35,7 +35,7 @@ public class UnprovisionedMeshNode: NSObject, UnprovisionedMeshNodeProtocol {
     private var capabilitiesProvisioningData: Data!
     private var inviteProvisioningData      : Data!
     private var startProvisioningData       : Data!
-    private var userProvisionerInput        : Data!
+    private var provisionerAuthValue        : Data!
     private var calculatedDeviceKey         : Data!
     private var currentInviteCapabilities   : InviteCapabilities!
     
@@ -91,7 +91,19 @@ public class UnprovisionedMeshNode: NSObject, UnprovisionedMeshNodeProtocol {
             anInput(aString)
         })
     }
-
+    
+    func requireDeviceInput(inputActionType: InputOutOfBoundActions, anInput: String) {
+        logDelegate?.logDeviceInputRequired()
+        delegate?.nodeRequiresDeviceInput(self, inputAction: inputActionType, input: anInput)
+    }
+    
+    func requireStaticInput(anInput: @escaping ((String) -> (Void))) {
+        logDelegate?.logStaticInputRequired()
+        delegate?.nodeRequiresStaticInput(self, completionHandler: { (aString) -> (Void) in
+            anInput(aString)
+        })
+    }
+    
     // MARK: - UnprovisionedMeshNodeProtocol
     func provisioningUserData() -> ProvisioningData {
         return self.provisioningData
@@ -151,7 +163,7 @@ public class UnprovisionedMeshNode: NSObject, UnprovisionedMeshNodeProtocol {
     }
    
     func provisionerAuthData() -> Data {
-        return userProvisionerInput
+        return provisionerAuthValue
     }
 
     func parsedCapabilities(_ someCapabilities: InviteCapabilities) {
@@ -209,9 +221,9 @@ public class UnprovisionedMeshNode: NSObject, UnprovisionedMeshNodeProtocol {
         deviceConfirmation = aConfirmationValue
     }
    
-    func receivedProvisionerUserInput(_ aUserInput: Data) {
-        logDelegate?.logUserInputCompleted(withMessage: "0x\(aUserInput.hexString())")
-        userProvisionerInput = aUserInput
+    func receivedProvisionerAuthValue(_ anAuthValue: Data) {
+        logDelegate?.logUserInputCompleted(withMessage: "0x\(anAuthValue.hexString())")
+        provisionerAuthValue = anAuthValue
     }
 
     func switchToState(_ nextState: ProvisioningStateProtocol) {

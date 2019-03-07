@@ -447,12 +447,15 @@ extension MeshProvisioningDataTableViewController {
         let secondOctet = netKeyIndex[1] << 4
         let packedNetKey = Data([firstOctet, secondOctet])
         
+        // TODO: select here which provisioning to choose depending on provisioning capabilities
         let nodeProvisioningdata = ProvisioningData(netKey: meshStateObject.netKeys[0].key,
                                                     keyIndex: packedNetKey,
                                                     flags: meshStateObject.netKeys[0].flags,
                                                     ivIndex: meshStateObject.netKeys[0].phase,
                                                     friendlyName: nodeName,
-                                                    unicastAddress: self.nodeAddress)
+                                                    unicastAddress: self.nodeAddress,
+                                                    oobType: .outputOOB,
+                                                    oobAction: OutputOutOfBoundActions.blink)
         targetNode.provision(withProvisioningData: nodeProvisioningdata)
         stepCompleted(withIndicatorState: false)
     }
@@ -548,6 +551,14 @@ extension MeshProvisioningDataTableViewController: CBCentralManagerDelegate {
 }
 
 extension MeshProvisioningDataTableViewController: UnprovisionedMeshNodeDelegate {
+    func nodeRequiresDeviceInput(_ aNode: UnprovisionedMeshNode, inputAction: InputOutOfBoundActions, input: String) {
+        
+    }
+    
+    func nodeRequiresStaticInput(_ aNode: UnprovisionedMeshNode, completionHandler aHandler: @escaping (String) -> (Void)) {
+        
+    }
+    
     func nodeCompletedProvisioningInvitation(_ aNode: UnprovisionedMeshNode, withCapabilities capabilities: InviteCapabilities) {
         print("Received intitation capabilities")
         navigationItem.hidesBackButton = false
@@ -846,6 +857,22 @@ extension MeshProvisioningDataTableViewController: ProvisionedMeshNodeLoggingDel
 }
 
 extension MeshProvisioningDataTableViewController: UnprovisionedMeshNodeLoggingDelegate {
+    func logStaticInputRequired() {
+        
+    }
+    
+    func logStaticInputCompleted(withMessage aMessage: String) {
+        
+    }
+    
+    func logDeviceInputRequired() {
+        
+    }
+    
+    func logDeviceInputCompleted(withMessage aMessage: String) {
+        
+    }
+    
     func logDisconnect() {
         stepCompleted(withIndicatorState: false)
         logEventWithMessage("disconnected")

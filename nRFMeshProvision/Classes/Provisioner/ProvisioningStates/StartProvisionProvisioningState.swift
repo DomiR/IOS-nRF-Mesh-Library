@@ -13,7 +13,7 @@ class StartProvisionProvisioningState: NSObject, ProvisioningStateProtocol {
     private var provisioningService: CBService!
     private var dataInCharacteristic: CBCharacteristic!
     private var dataOutCharacteristic: CBCharacteristic!
-
+    
     // MARK: - State properties
     private var inviteCapabilities : InviteCapabilities?
     
@@ -50,16 +50,34 @@ class StartProvisionProvisioningState: NSObject, ProvisioningStateProtocol {
             let fipsEllipticAlgorithm   : UInt8 = 0x00 //FIPS P-256
             let oobpubkeyAvailability   : UInt8 = 0x00 //No OOB public key has been used
             var startPDU = Data([0x03, provisionStartCommand, fipsEllipticAlgorithm, oobpubkeyAvailability])
-            if inviteCapabilities.supportedOutputOOBActions.count == 0 || inviteCapabilities.supportedOutputOOBActions.contains(.noOutput) {
-                //Prefer no OOB
-                startPDU.append(contentsOf: [0x00, 0x00, 0x00 ]) //No OOB = 0, Action = 0 & size = 0
-            } else {
-                //If there is no noOutput OOB action, use the first possible action
-                startPDU.append(contentsOf: [0x02,
-                                             inviteCapabilities.supportedOutputOOBActions.first!.toByteValue()!,
-                                             inviteCapabilities.outputOOBSize])
+            
+            // TODO: verify selected provisioning method is available
+            
+            let provisioningData = target.provisioningUserData()
+            var oobSize = UInt8(0);
+            if (provisioningData.oobType == .inputOOB) {
+                oobSize = inviteCapabilities.inputOOBSize
+            } else if (provisioningData.oobType == .outputOOB) {
+                oobSize = inviteCapabilities.outputOOBSize
             }
-            // TODO: select correct capability here
+
+            let oobType: UInt8 = provisioningData.oobType.rawValue;
+            let oobAction: UInt8 = provisioningData.oobAction.toByteValue() ?? UInt8(0);
+            startPDU.append(contentsOf: [oobType,
+                                         oobAction,
+                                         oobSize])
+            
+//
+//            if inviteCapabilities.supportedOutputOOBActions.count == 0 || inviteCapabilities.supportedOutputOOBActions.contains(.noOutput) {
+//                //Prefer no OOB
+//                startPDU.append(contentsOf: [0x00, 0x00, 0x00 ]) //No OOB = 0, Action = 0 & size = 0
+//            } else {
+//                //If there is no noOutput OOB action, use the first possible action
+//                startPDU.append(contentsOf: [0x02,
+//                                             inviteCapabilities.supportedOutputOOBActions.first!.toByteValue()!,
+//                                             inviteCapabilities.outputOOBSize])
+//            }
+//            // TODO: select correct capability here
 
             print("Provision Start PDU Sent: \(startPDU.hexString())")
             

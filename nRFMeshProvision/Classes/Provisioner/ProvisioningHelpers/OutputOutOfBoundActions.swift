@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum OutputOutOfBoundActions: UInt16 {
+public enum OutputOutOfBoundActions: UInt16, OutOfBoundActionsProtocol {
     case noOutput           = 0x0000
     case blink              = 0x0001
     case beep               = 0x0002

@@ -15,6 +15,13 @@ public protocol UnprovisionedMeshNodeDelegate {
                                length: UInt8,
                                completionHandler aHandler: @escaping (String) -> (Void)
     )
+    func nodeRequiresDeviceInput(_ aNode: UnprovisionedMeshNode,
+                               inputAction: InputOutOfBoundActions,                            
+                               input: String
+    )
+    func nodeRequiresStaticInput(_ aNode: UnprovisionedMeshNode,
+                               completionHandler aHandler: @escaping (String) -> (Void)
+    )
     func nodeShouldDisconnect(_ aNode: UnprovisionedMeshNode)
     func nodeProvisioningCompleted(_ aNode: UnprovisionedMeshNode)
     func nodeProvisioningFailed(_ aNode: UnprovisionedMeshNode, withErrorCode anErrorCode: ProvisioningErrorCodes)

@@ -62,13 +62,15 @@ protocol UnprovisionedMeshNodeProtocol {
     func receivedDeviceRandom(_ aRandomValue: Data)
     func generatedProvisionerConfirmationValue(_ aConfirmationValue: Data)
     func receivedDeviceConfirmationValue(_ aConfirmationValue: Data)
-    func receivedProvisionerUserInput(_ aUserInput: Data)
+    func receivedProvisionerAuthValue(_ anAuthValue: Data)
     func provisioningSucceeded(withServicesChanged: Bool)
     func provisioningFailed(withErrorCode anErrorCode: ProvisioningErrorCodes)
     func calculatedDeviceKey(_ aDeviceKey: Data)
 
     // MARK: - Data input
     func requireUserInput(outputActionType: OutputOutOfBoundActions, outputLength: UInt8, anInput: (@escaping (_ value: String) -> (Void)))
+    func requireDeviceInput(inputActionType: InputOutOfBoundActions, anInput: String)
+    func requireStaticInput(anInput: (@escaping (_ value: String) -> (Void)))
 
     // MARK: - State related
     func switchToState(_ nextState : ProvisioningStateProtocol)
