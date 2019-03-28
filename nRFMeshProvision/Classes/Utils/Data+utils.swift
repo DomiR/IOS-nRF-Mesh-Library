@@ -10,7 +10,7 @@ import Foundation
 public extension Data {
     //Hex string to Data representation
     //Inspired by https://stackoverflow.com/questions/26501276/converting-hex-string-to-nsdata-in-swift
-    public init?(hexString: String) {
+    init?(hexString: String) {
         let len = hexString.count / 2
         var data = Data(capacity: len)
         for i in 0..<len {
@@ -25,32 +25,34 @@ public extension Data {
         }
         self = data
     }
-    
-    public init(fromInt anInteger: Int) {
+
+   init(fromInt anInteger: Int) {
         self = Data([UInt8((anInteger & 0xFF00) >> 8), UInt8(anInteger & 0x00FF)])
-    }
-    
-    public init(fromInt16 anInteger: UInt16) {
-        self = Data([UInt8((anInteger & 0xFF00) >> 8), UInt8(anInteger & 0x00FF)])
-    }
-    
-    public init(fromInt32 anInteger: UInt32) {
-        self = Data([UInt8((anInteger & 0xFF000000) >> 24), UInt8((anInteger & 0x00FF0000) >> 16), UInt8((anInteger & 0x0000FF00) >> 8), UInt8(anInteger & 0x000000FF)])
-    }
-    
-    public init(fromInt64 anInteger: UInt64) {
-        self = Data([
-            UInt8((anInteger & 0xFF00000000000000) >> 56),
-            UInt8((anInteger & 0x00FF000000000000) >> 48),
-            UInt8((anInteger & 0x0000FF0000000000) >> 40),
-            UInt8((anInteger & 0x000000FF00000000) >> 32),
-            UInt8((anInteger & 0x00000000FF000000) >> 24),
-            UInt8((anInteger & 0x0000000000FF0000) >> 16),
-            UInt8((anInteger & 0x000000000000FF00) >> 8),
-            UInt8((anInteger & 0x00000000000000FF))])
     }
 
-    public func hexString() -> String {
+    init(fromInt16 anInteger: UInt16) {
+        self = Data([UInt8((anInteger & 0xFF00) >> 8), UInt8(anInteger & 0x00FF)])
+    }
+
+    init(fromInt32 anInteger: UInt32) {
+        self = Data([UInt8((anInteger & 0xFF000000) >> 24), UInt8((anInteger & 0x00FF0000) >> 16), UInt8((anInteger & 0x0000FF00) >> 8), UInt8(anInteger & 0x000000FF)])
+    }
+
+    init(fromInt64 anInteger: UInt64) {
+        let array: Array<UInt8> = [
+            UInt8((anInteger >> 56) & 0xFF),
+            UInt8((anInteger >> 48) & 0xFF),
+            UInt8((anInteger >> 40) & 0xFF),
+            UInt8((anInteger >> 32) & 0xFF),
+            UInt8((anInteger >> 24) & 0xFF),
+            UInt8((anInteger >> 16) & 0xFF),
+            UInt8((anInteger >> 8) & 0xFF),
+            UInt8(anInteger & 0xFF)
+        ];
+        self = Data(bytes: array);
+    }
+
+    func hexString() -> String {
         return self.reduce("") { string, byte in
             string + String(format: "%02X", byte)
         }
@@ -61,46 +63,40 @@ public extension Data {
             return self
         }
    
-        let paddedData = NSMutableData(capacity: length)!
-        paddedData.resetBytes(in: NSRange(location:0, length: length))
-        let dataOffset = length - self.count
-        let bytes = self.withUnsafeBytes { (aByte) -> UnsafeRawPointer in
-            return UnsafeRawPointer(aByte)
-        }
-        paddedData.replaceBytes(in: NSRange(location: dataOffset, length: self.count), withBytes: bytes)
-        return paddedData as Data
+        let padData = Data(repeating: 0, count: length - self.count);
+        return padData + self
     }
-    
+
     var uint16: UInt16 {
         return withUnsafeBytes { $0.pointee }
     }
-    
+
     var uint32: UInt32 {
         return withUnsafeBytes { $0.pointee }
     }
-    
+
     var uint64BigEndian: UInt64 {
         return UInt64(bigEndian: withUnsafeBytes { $0.pointee })
     }
-    
+
     var uint16BigEndian: UInt16 {
         return UInt16(bigEndian: withUnsafeBytes { $0.pointee })
     }
-    
+
     var int16: Int16 {
         return withUnsafeBytes { $0.pointee }
     }
-    
+
     var int16BigEndian: Int16 {
         return Int16(bigEndian: withUnsafeBytes { $0.pointee })
     }
-    
+
     var int32: Int32 {
         return withUnsafeBytes { $0.pointee }
     }
-    
+
     var int32BigEndian: Int32 {
         return Int32(bigEndian: withUnsafeBytes { $0.pointee })
     }
-    
+
 }

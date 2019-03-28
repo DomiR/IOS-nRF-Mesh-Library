@@ -9,7 +9,7 @@ import Foundation
 
 public extension Date {
     
-    public init?(hexString: String) {
+    init?(hexString: String) {
         let dateData = Data(hexString: hexString.uppercased());
         let seconds = Double(dateData?.uint64BigEndian ?? 0);
         var datecomponents = DateComponents();
@@ -26,7 +26,7 @@ public extension Date {
         }
     }
     
-    public func hexString() -> String {
+    func hexString() -> String {
         var datecomponents = DateComponents();
         datecomponents.year = 2000;
         datecomponents.month = 1;

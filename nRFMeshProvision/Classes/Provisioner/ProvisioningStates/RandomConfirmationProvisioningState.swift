@@ -90,21 +90,31 @@ class RandomConfirmationProvisioningState: NSObject, ProvisioningStateProtocol {
    
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         if let randomPDU = characteristic.value {
-            guard randomPDU[0] == 0x03 && randomPDU[1] == 0x06 else {
-                print("Wrong PDU, expected 0306")
-                print("Received \(randomPDU[0])\(randomPDU[1]) instead.")
+            guard randomPDU[0] == 0x03 else {
+                print("Received unexpected PDU 0x\(randomPDU[0]), 0x03 expected")
                 return
             }
-            //First two bytes are PDU related, and not used for verifications
-            let deviceRandom = randomPDU.dropFirst().dropFirst()
-            target.receivedDeviceRandom(deviceRandom)
-            if confirmDeviceRandom(deviceRandom) {
-                let nextState = DataDistributionProvisioningState(withTargetNode: target)
-                target.switchToState(nextState)
-            } else {
-                print("Confirmation values did not match!, disconnect.")
-                target.shouldDisconnect()
+            
+            if randomPDU[1] == 0x06 {
+                //First two bytes are PDU related, and not used for verifications
+                let deviceRandom = randomPDU.dropFirst().dropFirst()
+                target.receivedDeviceRandom(deviceRandom)
+                if confirmDeviceRandom(deviceRandom) {
+                    let nextState = DataDistributionProvisioningState(withTargetNode: target)
+                    target.switchToState(nextState)
+                } else {
+                    print("Confirmation values did not match!, disconnect.")
+                    target.shouldDisconnect()
+                }
+            } else if randomPDU[1] == 0x09 {
+                if let errorCode = ProvisioningErrorCodes(rawValue: randomPDU[2]) {
+                    target.provisioningFailed(withErrorCode: errorCode)
+                } else {
+                    target.provisioningFailed(withErrorCode: .unexpectedError)
+                }
             }
+                
+            
    } else {
             print("ERROR: Received no data for Random PDU..")
             print("Expected value: 0x0306<deviceRandom>, received Nil instead")

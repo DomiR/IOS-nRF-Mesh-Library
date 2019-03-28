@@ -120,7 +120,6 @@ public class MeshState: NSObject, Codable {
         try container.encode(meshUUID.uuidString.uppercased(), forKey: .meshUUID)
         try container.encode(version, forKey: .version)
         try container.encode(timestamp.hexString(), forKey: .timestamp)
-        // try container.encode(nextUnicast, forKey: .nextUnicast)
         try container.encode(nodes, forKey: .nodes)
         try container.encode(netKeys, forKey: .netKeys)
         try container.encode(appKeys, forKey: .appKeys)
@@ -128,5 +127,6 @@ public class MeshState: NSObject, Codable {
         try container.encode(unicastAddress.hexString(), forKey: .unicastAddress)
         try container.encode(schema, forKey: .schema)
         try container.encode(id, forKey: .id)
+        // nextunicast will be calculated on decode
     }
 }

@@ -22,7 +22,6 @@ public struct CompositionElement: Codable {
     var modelSubscriptionAddresses: [Data: [Data]]
 
     // MARK: - Initialization
-
     init(withData data: Data) {
         modelKeyBindings = [Data: Data]()
         modelPublishAddress = [Data: Data]()
@@ -127,6 +126,8 @@ public struct CompositionElement: Codable {
         let locationString = try values.decode(String.self, forKey: .location)
         location = Data(hexString: locationString) ?? Data([0x00, 0x00]);
         let models = try values.decode([MeshModel].self, forKey: .allModels);
+        
+        // transform model structs to internal data structure
         sigModels = [Data]()
         vendorModels = [Data]();
         modelKeyBindings = [Data: Data]()
@@ -142,11 +143,30 @@ public struct CompositionElement: Codable {
                 } else {
                     sigModels.append(modelId)
                 }
+                
                 // LATER: move to list of key bindings (not using only the first one)
                 if let bind = model.bind {
                     if let firstBind = bind.first {
                         if let firstBindData = Data(hexString: firstBind) {
                             modelKeyBindings[modelId] = firstBindData
+                        }
+                    }
+                }
+                
+                if let publish = model.publish {
+                    if let publishAddressData = Data(hexString: publish.address) {
+                        modelPublishAddress[modelId] = publishAddressData;
+                    }
+                }
+                
+                if let subscribe = model.subscribe {
+                    subscribe.forEach {
+                        if let subscribeAddressData = Data(hexString: $0) {
+                            if var subscriptionList = modelSubscriptionAddresses[modelId] {
+                                subscriptionList.append(subscribeAddressData)
+                            } else {
+                                modelSubscriptionAddresses[modelId] = [subscribeAddressData];
+                            }
                         }
                     }
                 }
@@ -162,14 +182,16 @@ public struct CompositionElement: Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(index, forKey: .index)
         try container.encode(location.hexString(), forKey: .location)
-        //try container.encode(allModels, forKey: .allModels)
         var models = [MeshModel]()
+        
+        // transform internal structure to json
         allModels.forEach { (modelId) in
             let bind = modelKeyBindings[modelId] != nil ? [modelKeyBindings[modelId]!.hexString()] : nil;
             let subscribe = modelSubscriptionAddresses[modelId] != nil ? modelSubscriptionAddresses[modelId]!.map { $0.hexString() } : nil;
-            let publish = modelPublishAddress[modelId] != nil ? [modelPublishAddress[modelId]!.hexString()] : nil;
+            let publish = modelPublishAddress[modelId] != nil ? PublishSettings(address: modelPublishAddress[modelId]!.hexString(), index: "0000", ttl: 0, period: 0, retransmit: PusblishRetransmitSettings(count: 0, interval: 0), credentials: 0) : nil
             models.append(MeshModel(modelId: modelId.hexString(), bind: bind, subscribe: subscribe, publish: publish))
         }
+        
         try container.encode(models, forKey: .allModels)
     }
 }
@@ -178,7 +200,7 @@ public struct MeshModel: Codable {
     var modelId: String
     var bind: [String]?
     var subscribe: [String]?
-    var publish: [String]?
+    var publish: PublishSettings?
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -187,4 +209,18 @@ public struct MeshModel: Codable {
         try container.encodeIfPresent(subscribe, forKey: .subscribe)
         try container.encodeIfPresent(publish, forKey: .publish)
     }
+}
+
+public struct PublishSettings: Codable {
+    var address: String
+    var index: String
+    var ttl: Int
+    var period: Int
+    var retransmit: PusblishRetransmitSettings
+    var credentials: Int
+}
+
+public struct PusblishRetransmitSettings: Codable {
+    var count: Int
+    var interval: Int
 }
