@@ -108,7 +108,7 @@ public class MeshState: NSObject, Codable {
         // we calculate next available address from max node address + element count of same node
         // nextUnicast = try values.decode(Data.self, forKey: .nextUnicast)
         let nextUnicastAddress = nodes.reduce(0) { (maxAddress, node) -> UInt16 in
-            return max(maxAddress, ((node.nodeUnicast?.uint16 ?? 0) + UInt16(node.elements?.count ?? 0)))
+            return max(maxAddress, ((node.nodeUnicast?.uint16BigEndian ?? 0) + UInt16(node.elements?.count ?? 0)))
         } + 1
         nextUnicast = Data.init(fromInt16: nextUnicastAddress)
     }

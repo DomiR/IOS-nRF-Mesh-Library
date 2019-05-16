@@ -26,6 +26,10 @@ public struct SequenceNumber {
         UserDefaults.standard.synchronize()
     }
     
+    public init(withTestValue testValue: UInt32) {
+        count = testValue
+    }
+    
     public mutating func incrementSequneceNumber() {
         incrementAndStore()
     }

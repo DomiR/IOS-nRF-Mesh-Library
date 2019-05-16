@@ -52,7 +52,7 @@ public class MeshNodeEntry: NSObject, Codable {
             if let elements = self.elements {
                 return elements.index(where: { (element) -> Bool in
                     if let elementIndex = element.index {
-                        return (nodeUnicastAddress.uint16 + UInt16(elementIndex)) == elementAddress.uint16;
+                        return (nodeUnicastAddress.uint16BigEndian + UInt16(elementIndex)) == elementAddress.uint16BigEndian;
                     }
                     return false
                 })
@@ -93,21 +93,36 @@ public class MeshNodeEntry: NSObject, Codable {
         let nodeUnicastString = try values.decode(String.self, forKey: .nodeUnicast)
         nodeUnicast = Data(hexString: nodeUnicastString) ?? Data([0x00, 0x00])
         nodeName = try values.decode(String.self, forKey: .nodeName)
-        let companyIdentifierString = try values.decode(String.self, forKey: .companyIdentifier)
-        companyIdentifier = Data(hexString: companyIdentifierString)
-        let productIdentifierString = try values.decode(String.self, forKey: .productIdentifier)
-        productIdentifier = Data(hexString: productIdentifierString)
-        let productVersionString = try values.decode(String.self, forKey: .productVersion)
-        productVersion = Data(hexString: productVersionString)
+        let companyIdentifierString = try values.decodeIfPresent(String.self, forKey: .companyIdentifier)
+        if let companyIdentifier = companyIdentifierString {
+            self.companyIdentifier = Data(hexString: companyIdentifier)
+        }
+        let productIdentifierString = try values.decodeIfPresent(String.self, forKey: .productIdentifier)
+        if let productIdentifier = productIdentifierString {
+            self.productIdentifier = Data(hexString: productIdentifier)
+        }
+        
+        let productVersionString = try values.decodeIfPresent(String.self, forKey: .productVersion)
+        if let productVersion = productVersionString {
+            self.productVersion = Data(hexString: productVersion)
+        }
         provisionedTimeStamp = try values.decodeIfPresent(Date.self, forKey: .provisionedTimeStamp) // TODO: use android ait
         let nodeId = try? values.decode(Data.self, forKey: .nodeId)
         self.nodeId = nodeId ?? (Data(hexString: (UUID)) ?? Data())
         let appKeysList = try values.decode([AppKeyIndex].self, forKey: .appKeys)
         appKeys = appKeysList.compactMap { Data(hexString: $0.index) }
-        let replayProtectionCountString = try values.decode(String.self, forKey: .replayProtectionCount)
-        replayProtectionCount = Data(hexString: replayProtectionCountString)
-        let features = try values.decode(Features.self, forKey: .featureFlags)
-        featureFlags = features.asData();
+
+        let replayProtectionCountString = try values.decodeIfPresent(String.self, forKey: .replayProtectionCount)
+        if let replayProtectionCount = replayProtectionCountString {
+                self.replayProtectionCount = Data(hexString: replayProtectionCount)
+        }
+        
+        
+        let features = try values.decodeIfPresent(Features.self, forKey: .featureFlags)
+        if let featureList = features {
+            featureFlags = featureList.asData();
+        }
+        
         elements = try values.decode([CompositionElement].self, forKey: .elements)
         let netKeysList = try values.decode([NetKeyIndex].self, forKey: .netKeys)
         netKeys = netKeysList.map { Data(fromInt16: $0.index) }
@@ -133,9 +148,11 @@ public class MeshNodeEntry: NSObject, Codable {
         try container.encode(replayProtectionCount?.hexString(), forKey: .replayProtectionCount)
         try container.encode(Features(withFeatureData: featureFlags), forKey: .featureFlags)
         try container.encode(elements, forKey: .elements)
-        try container.encode(netKeys?.map { NetKeyIndex(index: $0.uint16)}, forKey: .netKeys)
+        try container.encode(netKeys?.map {
+            NetKeyIndex(index: $0.uint16BigEndian)
+        }, forKey: .netKeys)
         try container.encode(configComplete, forKey: .configComplete)
-        try container.encode(ttl.uint16, forKey: .ttl)
+        try container.encode(ttl.uint16BigEndian, forKey: .ttl)
         try container.encode(blacklisted, forKey: .blacklisted)
         try container.encode(security, forKey: .security)
     }
@@ -166,7 +183,7 @@ public struct Features: Codable {
     }
     
     public init(withFeatureData someFeatureData: Data?) {
-        if let feature = someFeatureData?.uint16 {
+        if let feature = someFeatureData?.uint16BigEndian {
             relay = isBitSet(b: feature, pos: 0) ? .enabled : .unsupported;
             proxy = isBitSet(b: feature, pos: 1) ? .enabled : .unsupported;
             friend = isBitSet(b: feature, pos: 2) ? .enabled : .unsupported;

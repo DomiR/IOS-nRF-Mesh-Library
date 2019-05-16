@@ -75,6 +75,7 @@ public struct AccessMessagePDU {
         } else {
             let sslHelper = OpenSSLHelper()
             let aid = sslHelper.calculateK4(withN: key!)
+            
             upperTransportParams = UpperTransportPDUParams(withPayload: Data(opcode + payload), opcode: opcode, IVIndex: ivIndex, key: key!, ttl: ttl, seq: seq, src: src, dst: dst, nonce: nonce, ctl: false, afk: isAppKey, aid: aid!)
         }
 
