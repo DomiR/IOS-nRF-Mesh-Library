@@ -10,6 +10,27 @@ import XCTest
 import nRFMeshProvision
 
 class LowerLayerTests: XCTestCase {
+    
+    
+    func testDataConterter() {
+        let shortMin = -32768;
+        let shortMax = 32767;
+        
+        let result = Data(fromIntAsLE: shortMin);
+        XCTAssert(result == Data([0x00, 0x80]))
+        
+        let resultMax = Data(fromIntAsLE : shortMax);
+        XCTAssert(resultMax == Data([0xFF, 0x7F]))
+//        const buffer = Buffer.from([0, 0]);
+//        buffer.writeInt16LE(shortMin, 0);
+//        const resultMin = buffer.toString('hex');
+//        expect(resultMin).toEqual('0080');
+        
+//        buffer.writeInt16LE(shortMax, 0);
+//        const resultMax = buffer.toString('hex');
+//        expect(resultMax).toEqual('ff7f');
+    }
+    
     func testLowerTransportUnsegmentedAccessMessage() {
         let testAccessPayload = Data([0x89, 0x51, 0x1B, 0xF1, 0xD1, 0xA8, 0x1C, 0x11, 0xDC, 0xEF])
         let ivIndex = Data([0x12, 0x34, 0x56, 0x78])

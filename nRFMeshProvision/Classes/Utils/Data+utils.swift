@@ -25,13 +25,21 @@ public extension Data {
         }
         self = data
     }
-
+    
    init(fromInt anInteger: Int) {
         self = Data([UInt8((anInteger & 0xFF00) >> 8), UInt8(anInteger & 0x00FF)])
+    }
+    
+    init(fromIntAsLE anInteger: Int) {
+        self = Data([UInt8(anInteger & 0x00FF), UInt8((anInteger & 0xFF00) >> 8)])
     }
 
     init(fromInt16 anInteger: UInt16) {
         self = Data([UInt8((anInteger & 0xFF00) >> 8), UInt8(anInteger & 0x00FF)])
+    }
+    
+    init(fromBigInt16 anInteger: UInt16) {
+        self = Data([UInt8(anInteger & 0x00FF), UInt8((anInteger & 0xFF00) >> 8)])
     }
 
     init(fromInt32 anInteger: UInt32) {

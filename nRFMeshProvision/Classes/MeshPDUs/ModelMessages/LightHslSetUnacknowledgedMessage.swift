@@ -1,5 +1,5 @@
 //
-//  LightLightnessSetUnacknowledgedMessage.swift
+//  LightHslSetUnacknowledgedMessage.swift
 //  nRFMeshProvision
 //
 //  Created by Dominique Rau on 18/11/2018.

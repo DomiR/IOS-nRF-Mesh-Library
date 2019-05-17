@@ -237,11 +237,11 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
     }
     
     public func nodeLightHslSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
-        let state = LightHslSetUnacknowledgedControllerState(withTargetProxyNode: self,
-                                                                              destinationAddress: anAddress,
-                                                                              andStateManager: stateManager)
-        state.setTargetState(aTargetState: aState);
-        genericControllerState = state
+        let setLightHslUnacknowledgedState = LightHslSetUnacknowledgedControllerState(withTargetProxyNode: self,
+                                                                                      destinationAddress: anAddress,
+                                                                                      andStateManager: stateManager)
+        setLightHslUnacknowledgedState.setTargetState(aTargetState: aState);
+        genericControllerState = setLightHslUnacknowledgedState
         genericControllerState.execute()
     }
     

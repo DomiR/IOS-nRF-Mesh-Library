@@ -105,6 +105,7 @@ class ModelAppBindConfiguratorState: NSObject, ConfiguratorStateProtocol {
             if let result = networkLayer.incomingPDU(strippedOpcode) {
                 if result is ModelAppStatusMessage {
                     let modelKeyStatus = result as! ModelAppStatusMessage
+                    print("modelKeyStatus: \(modelKeyStatus.debugDescription)")
                     //Store newly added bound AppKey to global list
                     let state = self.stateManager.state()
                     if let anIndex = state.nodes.index(where: { $0.nodeUnicast == destinationAddress}) {

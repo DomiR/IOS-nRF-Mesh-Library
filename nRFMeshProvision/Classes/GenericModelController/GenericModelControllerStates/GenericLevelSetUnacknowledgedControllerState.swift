@@ -57,14 +57,14 @@ class GenericLevelSetUnacknowledgedControllerState: NSObject, GenericModelContro
     }
     
     func execute() {
-        var message: GenericLevelSetMessage
+        var message: GenericLevelSetUnacknowledgedMessage
         if let targetState = targetState {
             if let targetTransitionParams = targetStateTransitionParameters {
-                message = GenericLevelSetMessage(withTargetState: targetState,
+                message = GenericLevelSetUnacknowledgedMessage(withTargetState: targetState,
                                                  transitionTime: targetTransitionParams.transitionTime,
                                                  andTransitionDelay: targetTransitionParams.transitionDelay)
             } else {
-                message = GenericLevelSetMessage(withTargetState: targetState)
+                message = GenericLevelSetUnacknowledgedMessage(withTargetState: targetState)
             }
         } else {
             print("No target state set, nothing to execute")

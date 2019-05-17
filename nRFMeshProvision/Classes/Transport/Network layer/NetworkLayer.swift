@@ -93,6 +93,8 @@ public struct NetworkLayer {
         //Encrypt all PDUs
         for aPDU in lowerPDU {
             print("lower \(aPDU.hexString())")
+            print("sequence number: \(sequence.sequenceData().hexString())")
+
             let nonce = TransportNonce(networkNonceWithIVIndex: lowerTransport.params.ivIndex, ctl: lowerTransport.params.ctl, ttl: lowerTransport.params.ttl, seq: sequence.sequenceData(), src: lowerTransport.params.sourceAddress)
             var dataToEncrypt = Data(lowerTransport.params.destinationAddress)
             dataToEncrypt.append(aPDU)

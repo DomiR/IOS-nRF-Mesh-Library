@@ -7,7 +7,6 @@
 
 import Foundation
 
-//0x82, 0x4D
 public struct LightCtlSetUnacknowledgedMessage {
     var opcode  : Data = Data([0x82, 0x5F]);
     var payload : Data

@@ -32,4 +32,8 @@ public struct ModelAppStatusMessage {
             modelIdentifier = Data([aPayload[6], aPayload[5]])
         }
     }
+    
+    var debugDescription : String {
+        return "sourceAddress: \(sourceAddress.hexString())\nstatusCode:\(statusCode)\nelementAddress:\(elementAddress.hexString())\nappkeyIndex:\(appkeyIndex.hexString())\nmodelIdentifier:\(modelIdentifier.hexString())"
+    }
 }
