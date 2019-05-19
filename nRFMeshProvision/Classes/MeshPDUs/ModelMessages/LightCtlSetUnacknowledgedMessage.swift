@@ -13,19 +13,12 @@ public struct LightCtlSetUnacknowledgedMessage {
     
     public init(withTargetState aTargetState: Data, transitionTime aTransitionTime: Data, andTransitionDelay aTransitionDelay: Data) {
         payload = aTargetState
-        
-        //Sequence number used as TID
-//        let tid = Data([SequenceNumber().sequenceData().last!])
-//        payload.append(tid)
         payload.append(aTransitionTime)
         payload.append(aTransitionDelay)
     }
     
     public init(withTargetState aTargetState: Data) {
         payload = aTargetState
-        //Sequence number used as TID
-//        let tid = Data([SequenceNumber().sequenceData().last!])
-//        payload.append(tid)
     }
     
     public func assemblePayload(withMeshState aState: MeshState, toAddress aDestinationAddress: Data) -> [Data]? {

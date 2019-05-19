@@ -9,7 +9,7 @@ import Foundation
 
 //0x82, 0x77
 public struct LightHslSetUnacknowledgedMessage {
-    var opcode  : Data = Data([0x82, 0x77])
+    var opcode  : Data = Data([0x82, 0x77]);
     var payload : Data
     
     public init(withTargetState aTargetState: Data, transitionTime aTransitionTime: Data, andTransitionDelay aTransitionDelay: Data) {
