@@ -11,7 +11,7 @@ public class AppKeyEntry: Codable, Equatable {
     public let name: String
     public let index: Int
     public let boundNetKey: Int?
-    public let key: Data
+    public var key: Data
 
     public init(withName aName: String, andKey aKey: Data, atIndex anIndex: Int, onNetKeyIndex aNetKeyIndex: Int? = nil) {
         name = aName
