@@ -105,28 +105,10 @@ class GenericOnOffSetUnacknowledgedControllerState: NSObject, GenericModelContro
                 }
             }
         }
-        
+
         target.delegate?.sentGenericOnOffSetUnacknowledged(destinationAddress);
         let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
         target.switchToState(nextState)
-    }
-
-    func receivedData(incomingData : Data) {
-        if incomingData[0] == 0x01 {
-            print("Secure beacon: \(incomingData.hexString())")
-        } else {
-            let strippedOpcode = Data(incomingData.dropFirst())
-            if let result = networkLayer.incomingPDU(strippedOpcode) {
-                if result is GenericOnOffStatusMessage {
-                    let genericOnOffUnacknowledgedStatus = result as! GenericOnOffStatusMessage
-                    target.delegate?.receivedGenericOnOffStatusMessage(genericOnOffUnacknowledgedStatus)
-                    let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
-                    target.switchToState(nextState)
-                }
-            } else {
-                print("ignoring non GenericOnOffUnacknowledgedStatus message")
-            }
-        }
     }
 
     private func calculateDataRanges(_ someData: Data, withSize aChunkSize: Int) -> [Range<Int>] {
@@ -191,32 +173,6 @@ class GenericOnOffSetUnacknowledgedControllerState: NSObject, GenericModelContro
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         print("Characteristic value updated: \(characteristic.value!.hexString())")
-        //SAR handling
-        if characteristic.value![0] & 0xC0 == 0x40 {
-            if lastMessageType == 0x40 {
-                //Drop repeated 0x40's
-                print("CMP:Reduntand SAR start, dropping")
-                segmentedData = Data()
-            }
-            lastMessageType = 0x40
-            //Add message type header
-            segmentedData.append(Data([characteristic.value![0] & 0x3F]))
-            segmentedData.append(Data(characteristic.value!.dropFirst()))
-        } else if characteristic.value![0] & 0xC0 == 0x80 {
-            lastMessageType = 0x80
-            print("Segmented data cont")
-            segmentedData.append(characteristic.value!.dropFirst())
-        } else if characteristic.value![0] & 0xC0 == 0xC0 {
-            lastMessageType = 0xC0
-            print("Segmented data end")
-            segmentedData.append(Data(characteristic.value!.dropFirst()))
-            print("Reassembled data!: \(segmentedData.hexString())")
-            //Copy data and send it to NetworkLayer
-            receivedData(incomingData: Data(segmentedData))
-            segmentedData = Data()
-        } else {
-            receivedData(incomingData: Data(characteristic.value!))
-        }
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
