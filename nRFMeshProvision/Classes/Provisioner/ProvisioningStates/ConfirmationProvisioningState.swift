@@ -89,8 +89,7 @@ class ConfirmationProvisioningState: NSObject, ProvisioningStateProtocol {
             let inputSize = Int(capabilities[10]);
             let authValue = getInputOOOBAuthenticationValue(oobAction: targetAction, size: inputSize);
             target.receivedProvisionerAuthValue(authValue)
-            let authValueString = String(data: authValue, encoding: String.Encoding.utf8) ?? ""
-            target.requireDeviceInput(inputActionType: targetAction, anInput: authValueString)
+            target.requireDeviceInput(inputActionType: targetAction, anInput: authValue.hexString())
             print("choosen authvalue \(authValue.hexString())")
         case .staticOOB:
             print("Static OOB used")
