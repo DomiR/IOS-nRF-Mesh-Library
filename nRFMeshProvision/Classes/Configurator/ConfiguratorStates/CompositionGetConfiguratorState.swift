@@ -53,7 +53,7 @@ class CompositionGetConfiguratorState: NSObject, ConfiguratorStateProtocol {
             var data = Data([0x00])
             data.append(Data(aPayload))
             if data.count <= target.basePeripheral().maximumWriteValueLength(for: .withoutResponse) {
-                print("Composition get message to set:\(data.hexString())")
+                print("Composition get message to set: \(data.hexString())")
                 print("delegate is ", target.basePeripheral().delegate.debugDescription, " and should be ", self.debugDescription);
                 target.basePeripheral().writeValue(data,
                                                    for: dataInCharacteristic,

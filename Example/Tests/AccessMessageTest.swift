@@ -30,14 +30,14 @@ class AccessMessageTests: XCTestCase {
 //        let pdu = testTransportLayer.createPDU()
         
         
-        let payload = Data([0x00, 0x00]) // value, tid
-        let opcode = Data([0x82, 0x03]) //
+        let payload = Data(hexString: "0000")! // value, tid
+        let opcode = Data(hexString: "8203")! //
         let appKey = Data(hexString: "A9FDB9A9753573AC4E91C29F1185320E")!
         let netKey = Data(hexString: "59A81DA4FB4C8BC07AA321F5BED892BD")!
         let sequenceNumber = SequenceNumber(withTestValue: 0);
-        let phase = Data([0x00, 0x00, 0x00, 0x00]);
-        let unicastAddress = Data([0x7F, 0xF8])
-        let aDestinationAddress = Data([0x00, 0x01])
+        let phase = Data(hexString: "00000000")!;
+        let unicastAddress = Data(hexString: "7FF8")!
+        let aDestinationAddress = Data(hexString: "0001")!
         let accessMessage = AccessMessagePDU(withPayload: payload, opcode: opcode, appKey: appKey, netKey: netKey, seq: sequenceNumber, ivIndex: phase, source: unicastAddress, andDst: aDestinationAddress)
         let networkPDU = accessMessage.assembleNetworkPDU()
         
