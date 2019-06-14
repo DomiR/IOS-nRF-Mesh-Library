@@ -92,6 +92,13 @@ class NodeResetConfiguratorState: NSObject, ConfiguratorStateProtocol {
             if let result = networkLayer.incomingPDU(strippedOpcode) {
                 if result is NodeResetStatusMessage {
                     let resetStatus = result as! NodeResetStatusMessage
+                    // as with the android version we delete the node here, as reset was
+                    //Save new state.
+                    let state = stateManager.state()
+                    if let anIndex = state.nodes.index(where: { $0.nodeUnicast == self.destinationAddress}) {
+                        state.nodes.remove(at: anIndex)
+                        stateManager.saveState()
+                    }
                     target.delegate?.receivedNodeResetStatus(resetStatus)
                     let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
                     target.switchToState(nextState)
