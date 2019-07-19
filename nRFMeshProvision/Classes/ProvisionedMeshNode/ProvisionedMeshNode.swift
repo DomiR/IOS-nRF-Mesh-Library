@@ -21,7 +21,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
     private var configurationState  : ConfiguratorStateProtocol!
     private var genericControllerState: GenericModelControllerStateProtocol!
     private var stateManager        : MeshStateManager
-    
+
     // MARK: - MeshNode implementation
     public init(withStateManager aStateManager: MeshStateManager, withUnprovisionedNode aNode: UnprovisionedMeshNode, andDelegate aDelegate: ProvisionedMeshNodeDelegate?) {
         stateManager        = aStateManager
@@ -31,7 +31,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
 
         super.init()
     }
-    
+
     convenience public init(withUnprovisionedNode aNode: UnprovisionedMeshNode, andDelegate aDelegate: ProvisionedMeshNodeDelegate?) {
         self.init(withStateManager: MeshStateManager.restoreState()!, withUnprovisionedNode: aNode, andDelegate: aDelegate)
     }
@@ -77,7 +77,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         nodeSubscriptionAddState.setSubscription(elementAddress: anElementAddress,
                                               subscriptionAddress: aSubcriptionAddress,
                                               andModelIdentifier: anIdentifier)
-        
+
         configurationState = nodeSubscriptionAddState
         configurationState.execute()
     }
@@ -92,11 +92,47 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         nodeSubscriptionDeleteState.setSubscription(elementAddress: anElementAddress,
                                               subscriptionAddress: aSubcriptionAddress,
                                               andModelIdentifier: anIdentifier)
-        
+
         configurationState = nodeSubscriptionDeleteState
         configurationState.execute()
     }
-    
+
+    public func nodeGenericUserPropertyGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withKey aKey: Data) {
+        let getState = GenericUserPropertyGetControllerState(withTargetProxyNode: self,
+                                                      destinationAddress: anAddress,
+                                                      andStateManager: stateManager)
+        getState.setUserPropertyKey(aTargetKey: aKey);
+        genericControllerState = getState
+        genericControllerState.execute()
+    }
+
+//    public func nodeGenericOnOffSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
+//        let setState = GenericOnOffSetControllerState(withTargetProxyNode: self,
+//                                                      destinationAddress: anAddress,
+//                                                      andStateManager: stateManager)
+//        setState.setTargetState(aTargetState: aState)
+//        genericControllerState = setState
+//        genericControllerState.execute()
+//    }
+//
+//    public func nodeGenericOnOffSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data, transitionTime aTransitionTime: Data, andTransitionDelay aTransitionDelay: Data) {
+//        let setState = GenericOnOffSetControllerState(withTargetProxyNode: self,
+//                                                      destinationAddress: anAddress,
+//                                                      andStateManager: stateManager)
+//        setState.setParametrizedTargetState(aTargetState: aState, withTransitionTime: aTransitionTime, andTransitionDelay: aTransitionDelay)
+//        genericControllerState = setState
+//        genericControllerState.execute()
+//    }
+//
+//    public func nodeGenericOnOffSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
+//        let setState = GenericOnOffSetUnacknowledgedControllerState(withTargetProxyNode: self,
+//                                                                    destinationAddress: anAddress,
+//                                                                    andStateManager: stateManager)
+//        setState.setTargetState(aTargetState: aState)
+//        genericControllerState = setState
+//        genericControllerState.execute()
+//    }
+
     public func nodeGenericLevelGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
         let getState = GenericLevelGetControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -104,7 +140,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = getState
         genericControllerState.execute()
     }
-    
+
     public func nodeGenericLevelSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetLevelState aState: Data) {
         let setState = GenericLevelSetControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -113,7 +149,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = setState
         genericControllerState.execute()
     }
-    
+
     public func nodeGenericLevelSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetLevelState aState: Data) {
         let setState = GenericLevelSetUnacknowledgedControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -131,7 +167,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = setState
         genericControllerState.execute()
     }
-    
+
     public func nodeGenericOnOffSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data, transitionTime aTransitionTime: Data, andTransitionDelay aTransitionDelay: Data) {
         let setState = GenericOnOffSetControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -149,7 +185,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = setState
         genericControllerState.execute()
     }
-    
+
     public func nodeGenericOnOffSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
         let setState = GenericOnOffSetUnacknowledgedControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -166,7 +202,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = getState
         genericControllerState.execute()
     }
-    
+
     public func nodeLightLightnessGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
         let getLightLightnessState = LightLightnessGetControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -174,7 +210,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = getLightLightnessState
         genericControllerState.execute()
     }
-    
+
     public func nodeLightLightnessSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
         let setLightLightnessState = LightLightnessSetControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -183,7 +219,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = setLightLightnessState
         genericControllerState.execute()
     }
-    
+
     public func nodeLightLightnessSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
         let setLightLightnessState = LightLightnessSetUnacknowledgedControllerState(withTargetProxyNode: self,
                                                                       destinationAddress: anAddress,
@@ -192,7 +228,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = setLightLightnessState
         genericControllerState.execute()
     }
-    
+
     public func nodeLightCtlGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
         let getState = LightCtlGetControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -200,7 +236,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = getState
         genericControllerState.execute()
     }
-    
+
     public func nodeLightCtlSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
         let setLightLightnessState = LightCtlSetControllerState(withTargetProxyNode: self,
                                                                       destinationAddress: anAddress,
@@ -209,7 +245,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = setLightLightnessState
         genericControllerState.execute()
     }
-    
+
     public func nodeLightCtlSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
         let setLightCtlUnacknowledgedState = LightCtlSetUnacknowledgedControllerState(withTargetProxyNode: self,
                                                                 destinationAddress: anAddress,
@@ -218,7 +254,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = setLightCtlUnacknowledgedState
         genericControllerState.execute()
     }
-    
+
     public func nodeLightHslGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
         let state = LightHslGetControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -226,7 +262,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = state
         genericControllerState.execute()
     }
-    
+
     public func nodeLightHslSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
         let state = LightHslSetControllerState(withTargetProxyNode: self,
                                                                               destinationAddress: anAddress,
@@ -235,7 +271,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = state
         genericControllerState.execute()
     }
-    
+
     public func nodeLightHslSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
         let setLightHslUnacknowledgedState = LightHslSetUnacknowledgedControllerState(withTargetProxyNode: self,
                                                                                       destinationAddress: anAddress,
@@ -244,7 +280,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = setLightHslUnacknowledgedState
         genericControllerState.execute()
     }
-    
+
     public func nodeSceneGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
         let state = SceneGetControllerState(withTargetProxyNode: self,
                                                destinationAddress: anAddress,
@@ -252,7 +288,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = state
         genericControllerState.execute()
     }
-    
+
     public func nodeSceneStore(_ anOpcode: Data,
                                    withSceneNumber sceneNumber: Data,
                                    onDestinationAddress anAddress: Data) {
@@ -263,7 +299,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = state
         genericControllerState.execute()
     }
-    
+
     public func nodeSceneStoreUnacknowledged(_ anOpcode: Data,
                                withSceneNumber sceneNumber: Data,
                                onDestinationAddress anAddress: Data) {
@@ -274,7 +310,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = state
         genericControllerState.execute()
     }
-    
+
     public func nodeSceneDelete(_ anOpcode: Data,
                                withSceneNumber sceneNumber: Data,
                                onDestinationAddress anAddress: Data) {
@@ -285,7 +321,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = state
         genericControllerState.execute()
     }
-    
+
     public func nodeSceneDeleteUnacknowledged(_ anOpcode: Data,
                                 withSceneNumber sceneNumber: Data,
                                 onDestinationAddress anAddress: Data) {
@@ -296,7 +332,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = state
         genericControllerState.execute()
     }
-    
+
     public func nodeSceneRegisterGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
         let state = SceneRegisterGetControllerState(withTargetProxyNode: self,
                                                destinationAddress: anAddress,
@@ -304,7 +340,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = state
         genericControllerState.execute()
     }
-    
+
     public func nodeSceneRecall(_ anElementAddress: Data, withSceneNumber sceneNumber: Data, onDestinationAddress anAddress: Data) {
         let state = SceneRecallControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -313,7 +349,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = state
         genericControllerState.execute()
     }
-    
+
     public func nodeSceneRecallUnacknowledged(_ anElementAddress: Data, withSceneNumber sceneNumber: Data, onDestinationAddress anAddress: Data) {
         let state = SceneRecallUnacknowledgedControllerState(withTargetProxyNode: self,
                                                destinationAddress: anAddress,
@@ -322,7 +358,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = state
         genericControllerState.execute()
     }
-    
+
     public func vendorModelMessage(_ anOpcode: Data,
                                    withPayload aParams: Data,
                                    onDestinationAddress anAddress: Data) {
@@ -396,7 +432,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         configurationState = bindState
         configurationState.execute()
     }
-    
+
     public func unbindAppKey(withIndex anAppKeyIndex: Data,
                              modelId aModelId: Data,
                              elementAddress anElementAddress: Data,
@@ -418,7 +454,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         //First step of configuration is to get composition
         configurationState = CompositionGetConfiguratorState(withTargetProxyNode: self, destinationAddress: destinationAddress, andStateManager: stateManager)
         configurationState.execute()
-        
+
     }
 
     func switchToState(_ nextState: ConfiguratorStateProtocol) {
@@ -439,7 +475,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
     public func blePeripheral() -> CBPeripheral {
         return peripheral
     }
-   
+
     public func nodeBLEName() -> String {
         return peripheral.name ?? "N/A"
     }
@@ -452,7 +488,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         let nodeIdData = Data([meshNodeIdentifier[0], meshNodeIdentifier[1]])
         return nodeIdData.hexString()
     }
-   
+
     // MARK: - NSObject Protocols
     override public func isEqual(_ object: Any?) -> Bool {
         if let aNode = object as? ProvisionedMeshNode {

@@ -17,7 +17,7 @@ public struct CompositionStatusMessage {
     public var features: Data
     public var elements: [CompositionElement]
 
-    public init(withPayload aPayload: Data, andSoruceAddress srcAddress: Data) {
+    public init(withPayload aPayload: Data, andSourceAddress srcAddress: Data) {
         sourceAddress = srcAddress
         page = Data([aPayload[0]])
         companyIdentifier = Data([aPayload[2], aPayload[1]])

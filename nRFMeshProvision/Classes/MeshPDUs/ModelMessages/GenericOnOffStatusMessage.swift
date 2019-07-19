@@ -11,7 +11,7 @@ public struct GenericOnOffStatusMessage {
     public var sourceAddress: Data
     public var onOffStatus: Data
     
-    public init(withPayload aPayload: Data, andSoruceAddress srcAddress: Data) {
+    public init(withPayload aPayload: Data, andSourceAddress srcAddress: Data) {
         sourceAddress = srcAddress
         onOffStatus = Data([aPayload[0]])
     }

@@ -55,7 +55,8 @@ public struct UpperTransportLayer {
                 } else {
                     //No payload, failed to decrypt
                     print("decryption failure, or no payload")
-                    params = UpperTransportPDUParams(withPayload: Data(), opcode: Data(), IVIndex: anIVIndex, key: key, ttl: Data([0x04]), seq: SequenceNumber(), src: aSRC, dst: aDST, nonce: nonce, ctl: isControl, afk: isApplicationKey, aid: applicationId)
+                    let fixKey: Data! = (key == nil) ? Data() : key;
+                    params = UpperTransportPDUParams(withPayload: Data(), opcode: Data(), IVIndex: anIVIndex, key: fixKey, ttl: Data([0x04]), seq: SequenceNumber(), src: aSRC, dst: aDST, nonce: nonce, ctl: isControl, afk: isApplicationKey, aid: applicationId)
                 }
             } else {
                 //no payload, failed to decrypt

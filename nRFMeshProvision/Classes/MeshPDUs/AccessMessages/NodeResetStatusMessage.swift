@@ -10,7 +10,7 @@ import Foundation
 public struct NodeResetStatusMessage {
     public var sourceAddress: Data
     
-    public init(withPayload aPayload: Data, andSoruceAddress srcAddress: Data) {
+    public init(withPayload aPayload: Data, andSourceAddress srcAddress: Data) {
         sourceAddress = srcAddress
     }
 }

@@ -20,7 +20,7 @@ public struct ModelPublicationStatusMessage {
     public var publishRetransmitCount   : Data
     public var publishRetransmitInterval: Data
 
-    public init(withPayload aPayload: Data, andSoruceAddress srcAddress: Data) {
+    public init(withPayload aPayload: Data, andSourceAddress srcAddress: Data) {
         sourceAddress = srcAddress
         if let aStatusCode = MessageStatusCodes(rawValue: aPayload[0]) {
             statusCode = aStatusCode

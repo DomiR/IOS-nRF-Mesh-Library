@@ -88,6 +88,9 @@
 		55E394EE6F8C20C54A7F28395A72C51F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB4607EFCA7C5F75397649E792E2AFCB /* Foundation.framework */; };
 		59470CA3A671A5BEDCFA3A487FF78E65 /* UnprovisionedMeshNodeDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9CF58DCB5C67C811DDF2E11849AFCA7 /* UnprovisionedMeshNodeDelegate.swift */; };
 		59606DF02480D4BB7055B46EF81873D0 /* LightCtlStatusMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B771B29E28773BCCD76C28767FDD03D /* LightCtlStatusMessage.swift */; };
+		5A1C961122DCC9E5005B2E29 /* GenericUserPropertySetUnacknowledgedControllerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1C960E22DCC9E4005B2E29 /* GenericUserPropertySetUnacknowledgedControllerState.swift */; };
+		5A1C961222DCC9E5005B2E29 /* GenericUserPropertyGetControllerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1C960F22DCC9E5005B2E29 /* GenericUserPropertyGetControllerState.swift */; };
+		5A1C961322DCC9E5005B2E29 /* GenericUserPropertySetControllerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1C961022DCC9E5005B2E29 /* GenericUserPropertySetControllerState.swift */; };
 		5A44544B222FFDB200952FDD /* OutOfBound.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A44544A222FFDB200952FDD /* OutOfBound.swift */; };
 		5AF68A2C83DF1F19A232B2EB86DBEF2E /* LightCtlGetMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFFC5B6BF7DB21E1AD25E9BCCBECE380 /* LightCtlGetMessage.swift */; };
 		5C88A4B758401428EE766780BCFD3EF9 /* LightLightnessSetUnacknowledgedMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F91ECC20D1CCF030EFEFA6AB2A93AC0 /* LightLightnessSetUnacknowledgedMessage.swift */; };
@@ -319,6 +322,9 @@
 		576E1B8C04D942BA52D48679399EF35B /* PublishPeriodResolution.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PublishPeriodResolution.swift; sourceTree = "<group>"; };
 		58787BCCB3AAC73D487D3C50E3D03A03 /* rc2.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = rc2.h; path = "include-ios/openssl/rc2.h"; sourceTree = "<group>"; };
 		5885A6B2DC5440E5CB5BB90EF03F040D /* GenericLevelGetControllerState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GenericLevelGetControllerState.swift; sourceTree = "<group>"; };
+		5A1C960E22DCC9E4005B2E29 /* GenericUserPropertySetUnacknowledgedControllerState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GenericUserPropertySetUnacknowledgedControllerState.swift; sourceTree = "<group>"; };
+		5A1C960F22DCC9E5005B2E29 /* GenericUserPropertyGetControllerState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GenericUserPropertyGetControllerState.swift; sourceTree = "<group>"; };
+		5A1C961022DCC9E5005B2E29 /* GenericUserPropertySetControllerState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GenericUserPropertySetControllerState.swift; sourceTree = "<group>"; };
 		5A44544A222FFDB200952FDD /* OutOfBound.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutOfBound.swift; sourceTree = "<group>"; };
 		5ABBB075FDAD780143656C3EB74D6866 /* UpperTransportParams.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UpperTransportParams.swift; sourceTree = "<group>"; };
 		5ACDBD6D56831C28677C0A96E84316B5 /* LightLightnessSetMessage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LightLightnessSetMessage.swift; sourceTree = "<group>"; };
@@ -889,6 +895,9 @@
 		BB8992CA0F4715E5BF4D2DC64C4F05B2 /* GenericModelControllerStates */ = {
 			isa = PBXGroup;
 			children = (
+				5A1C960F22DCC9E5005B2E29 /* GenericUserPropertyGetControllerState.swift */,
+				5A1C961022DCC9E5005B2E29 /* GenericUserPropertySetControllerState.swift */,
+				5A1C960E22DCC9E4005B2E29 /* GenericUserPropertySetUnacknowledgedControllerState.swift */,
 				5885A6B2DC5440E5CB5BB90EF03F040D /* GenericLevelGetControllerState.swift */,
 				A6312A563AE0537EEB61349DF5347F99 /* GenericLevelSetControllerState.swift */,
 				ED1129702CA49119D845B388033C1980 /* GenericLevelSetUnacknowledgedControllerState.swift */,
@@ -1248,6 +1257,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = CF1408CF629C7361332E53B88F7BD30C;
@@ -1318,6 +1328,7 @@
 				EF8E9AC4B44C405C6DEE77E32F4BFA6A /* AppKeyEntry.swift in Sources */,
 				E75F57DCF0C4335D2340608E37FCA4EC /* AppKeyStatusMessage.swift in Sources */,
 				0D958CB192E2E0192DD0FF0885FF665E /* CompanyIdentifiers.swift in Sources */,
+				5A1C961222DCC9E5005B2E29 /* GenericUserPropertyGetControllerState.swift in Sources */,
 				F648D28B23B65ED543A16E09698C69F6 /* CompositionElement.swift in Sources */,
 				C697AAA2EB82E92BA2CDA6D214EC22B1 /* CompositionGetConfiguratorState.swift in Sources */,
 				8312F132FB7F4FFD08B6709414749A9E /* CompositionGetMessage.swift in Sources */,
@@ -1334,6 +1345,7 @@
 				B1B804883AC11F01E55DAA9F8C9BBAA0 /* DiscoveryConfiguratorState.swift in Sources */,
 				C28FE27A3411C807485D5525070E0916 /* DiscoveryProvisioningState.swift in Sources */,
 				4F8113F291786F8D245A55B4255722DE /* GenericLevelGetControllerState.swift in Sources */,
+				5A1C961122DCC9E5005B2E29 /* GenericUserPropertySetUnacknowledgedControllerState.swift in Sources */,
 				FEEB4812DCC17D4E12573FD6F6184B67 /* GenericLevelGetMessage.swift in Sources */,
 				E5F63ECDB0CD39CBC48F761E7760852F /* GenericLevelSetControllerState.swift in Sources */,
 				B7B48CF46D0A8F3BC0D3F0B4435A87E2 /* GenericLevelSetMessage.swift in Sources */,
@@ -1403,6 +1415,7 @@
 				5202DBE895AFEA1316D4E8167840237A /* ModelSubscriptionStatusMessage.swift in Sources */,
 				F53089A165D45D82FD4C076D529EEE78 /* NetworkKeyEntry.swift in Sources */,
 				39C642AF743451BE768AEF00E57F0194 /* NetworkLayer.swift in Sources */,
+				5A1C961322DCC9E5005B2E29 /* GenericUserPropertySetControllerState.swift in Sources */,
 				0FF88CE79AFF3D28DBE360B5527A9FE5 /* NodeResetConfiguratorState.swift in Sources */,
 				135AD61613621407E2B825696E926CB5 /* NodeResetMesage.swift in Sources */,
 				819A84FB27DDCF0FE8912D29A4CD4ECA /* NodeResetStatusMessage.swift in Sources */,

@@ -11,7 +11,7 @@ public struct DefaultTTLStatusMessage {
     public var sourceAddress: Data
     public var defaultTTL: Data
 
-    public init(withPayload aPayload: Data, andSoruceAddress srcAddress: Data) {
+    public init(withPayload aPayload: Data, andSourceAddress srcAddress: Data) {
         sourceAddress = srcAddress
         defaultTTL = Data([aPayload[0]])
     }

@@ -11,7 +11,7 @@ public struct GenericLevelStatusMessage {
     public var sourceAddress: Data
     public var levelStatus: Data
     
-    public init(withPayload aPayload: Data, andSoruceAddress srcAddress: Data) {
+    public init(withPayload aPayload: Data, andSourceAddress srcAddress: Data) {
         sourceAddress = srcAddress
         levelStatus = Data([aPayload[0], aPayload[1]])
     }

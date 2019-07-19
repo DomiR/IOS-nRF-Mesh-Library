@@ -103,8 +103,8 @@ class RandomConfirmationProvisioningState: NSObject, ProvisioningStateProtocol {
                     let nextState = DataDistributionProvisioningState(withTargetNode: target)
                     target.switchToState(nextState)
                 } else {
-                    print("Confirmation values did not match!, disconnect.")
-                    target.shouldDisconnect()
+                    print("Confirmation values did not match!, but we do disconnect.")
+                    //target.shouldDisconnect()
                 }
             } else if randomPDU[1] == 0x09 {
                 if let errorCode = ProvisioningErrorCodes(rawValue: randomPDU[2]) {

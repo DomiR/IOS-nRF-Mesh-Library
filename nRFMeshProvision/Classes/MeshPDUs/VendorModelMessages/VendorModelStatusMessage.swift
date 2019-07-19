@@ -11,7 +11,7 @@ public struct VendorModelStatusMessage {
     public var sourceAddress: Data
     public var payload: Data
     
-    public init(withPayload aPayload: Data, andSoruceAddress srcAddress: Data) {
+    public init(withPayload aPayload: Data, andSourceAddress srcAddress: Data) {
         sourceAddress = srcAddress
         payload = aPayload
     }

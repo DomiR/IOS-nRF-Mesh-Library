@@ -15,9 +15,11 @@ public struct AccessMessageParser {
         case 1:
             switch anOpcode {
             case Data([0x02]):
-                return CompositionStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return CompositionStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x5E]):
-                return SceneStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return SceneStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x4E]):
+                return GenericUserPropertyStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             default:
                 return nil
             }
@@ -26,43 +28,43 @@ public struct AccessMessageParser {
             switch anOpcode {
             //Configuration Messages
             case Data([0x02]):
-                return CompositionStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return CompositionStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             
             // Scene messages
             case Data([0x5E]):
-                return SceneStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return SceneStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x80, 0x03]):
-                return AppKeyStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return AppKeyStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x80, 0x3E]):
-                return ModelAppStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return ModelAppStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x80, 0x19]):
-                return ModelPublicationStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return ModelPublicationStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x80, 0x1F]):
-                return ModelSubscriptionStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return ModelSubscriptionStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x80, 0x0E]):
-                return DefaultTTLStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return DefaultTTLStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x80, 0x4A]):
-                return NodeResetStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return NodeResetStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
                 
             //Generic Model Messages
             case Data([0x82, 0x04]):
-                return GenericOnOffStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return GenericOnOffStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x82, 0x08]):
-                return GenericLevelStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return GenericLevelStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x82, 0x4E]):
-                return LightLightnessStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return LightLightnessStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x82, 0x60]):
-                return LightCtlStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return LightCtlStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x82, 0x78]):
-                return LightHslStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return LightHslStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x82, 0x45]):
-                return SceneRegisterStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress)
+                return SceneRegisterStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             default:
                 return nil;
             }
             
         case 3:
-            return VendorModelStatusMessage(withPayload: someData, andSoruceAddress: aSourceAddress);
+            return VendorModelStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress);
             
         default:
             return nil;

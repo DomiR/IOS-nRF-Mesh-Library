@@ -17,7 +17,7 @@ public struct LightCtlStatusMessage {
     public var transitionResolution: UInt8?;
     
     
-    public init(withPayload aPayload: Data, andSoruceAddress srcAddress: Data) {
+    public init(withPayload aPayload: Data, andSourceAddress srcAddress: Data) {
         sourceAddress = srcAddress
         presentLightness = Data([aPayload[0], aPayload[1]])
         presentTemperature = Data([aPayload[2], aPayload[3]])

@@ -17,12 +17,12 @@ public struct SceneRegisterStatusMessage {
     //    Current Scene, 2, Scene Number of a current scene.
     //    Scenes, variable, A list of scenes stored within an element
     
-    public init(withPayload aPayload: Data, andSoruceAddress srcAddress: Data) {
+    public init(withPayload aPayload: Data, andSourceAddress srcAddress: Data) {
         sourceAddress = srcAddress
         statusCode = Data([aPayload[0]])
         presentScene = Data([aPayload[1], aPayload[2]])
         if (aPayload.count > 3) {
-            scenes = aPayload[3..<aPayload.count];
+            scenes = Data(aPayload[3..<aPayload.count]);
         }
     }
 }
