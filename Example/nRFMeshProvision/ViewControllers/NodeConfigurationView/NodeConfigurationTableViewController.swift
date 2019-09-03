@@ -10,6 +10,14 @@ import UIKit
 import nRFMeshProvision
 
 class NodeConfigurationTableViewController: UITableViewController, ProvisionedMeshNodeDelegate {
+    func receivedGenericUserPropertyStatusMessage(_ status: GenericUserPropertyStatusMessage) {
+        
+    }
+    
+    func sentGenericUserPropertySetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
     func receivedLightLightnessStatusMessage(_ status: LightLightnessStatusMessage) {
         
     }

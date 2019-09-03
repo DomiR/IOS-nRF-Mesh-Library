@@ -265,6 +265,14 @@ extension MainNetworkViewController: CBCentralManagerDelegate {
 
 // MARK: - ProvisionedMeshNodeDelegate Extension
 extension MainNetworkViewController: ProvisionedMeshNodeDelegate {
+    func receivedGenericUserPropertyStatusMessage(_ status: GenericUserPropertyStatusMessage) {
+        
+    }
+    
+    func sentGenericUserPropertySetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
     func receivedLightLightnessStatusMessage(_ status: LightLightnessStatusMessage) {
         
     }

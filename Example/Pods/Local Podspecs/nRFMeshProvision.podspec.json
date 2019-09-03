@@ -20,12 +20,13 @@
     "ios": "10.0"
   },
   "static_framework": true,
-  "swift_version": "4",
+  "swift_versions": "4",
   "source_files": "nRFMeshProvision/Classes/**/*",
   "dependencies": {
     "OpenSSL-Universal": [
-
+      "1.0.2.13"
     ]
   },
-  "frameworks": "CoreBluetooth"
+  "frameworks": "CoreBluetooth",
+  "swift_version": "4"
 }

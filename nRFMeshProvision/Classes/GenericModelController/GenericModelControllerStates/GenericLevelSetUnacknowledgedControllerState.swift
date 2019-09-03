@@ -106,7 +106,7 @@ class GenericLevelSetUnacknowledgedControllerState: NSObject, GenericModelContro
             }
         }
         
-        target.delegate?.sentGenericLevelSetUnacknowledged(destinationAddress);
+    target.delegate?.sentGenericLevelSetUnacknowledged(destinationAddress);
         let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
         target.switchToState(nextState)
     }

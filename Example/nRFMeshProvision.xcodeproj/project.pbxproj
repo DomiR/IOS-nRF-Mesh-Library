@@ -49,6 +49,7 @@
 		30FF5EEA20972672002D7C77 /* ScannerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30FF5EE920972672002D7C77 /* ScannerCell.swift */; };
 		30FF5EED20973E69002D7C77 /* ReconnectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30FF5EEC20973E69002D7C77 /* ReconnectionViewController.swift */; };
 		30FF5EEF20973F50002D7C77 /* ProxyScannerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30FF5EEE20973F50002D7C77 /* ProxyScannerCell.swift */; };
+		5A38B7AF2302BC8200032E55 /* MessageTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A38B7AE2302BC8200032E55 /* MessageTest.swift */; };
 		5AC073882282435600F9C6EA /* AccessMessageTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AC073872282435600F9C6EA /* AccessMessageTest.swift */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
@@ -112,6 +113,7 @@
 		30FF5EEE20973F50002D7C77 /* ProxyScannerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyScannerCell.swift; sourceTree = "<group>"; };
 		328E66A87C5B0A499473BBE3 /* Pods_nRFMeshProvision_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_nRFMeshProvision_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4973E9CDA09CE2398E5C269A /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
+		5A38B7AE2302BC8200032E55 /* MessageTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageTest.swift; sourceTree = "<group>"; };
 		5A51F9AF82598D8D5D40BD77 /* Pods_nRFMeshProvision_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_nRFMeshProvision_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5AC073872282435600F9C6EA /* AccessMessageTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessMessageTest.swift; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* nRFMeshProvision_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = nRFMeshProvision_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -356,6 +358,7 @@
 				301D5C042045933800639A04 /* LowerLayerTests.swift */,
 				301D5BBE2044096A00639A04 /* UpperLayerTests.swift */,
 				5AC073872282435600F9C6EA /* AccessMessageTest.swift */,
+				5A38B7AE2302BC8200032E55 /* MessageTest.swift */,
 				607FACEB1AFB9204008FA782 /* EncryptionTests.swift */,
 				308711D5204D5A47001ED9C3 /* NetworkLayerTests.swift */,
 				307BA358204ED39E00944B89 /* StateRestoration.swift */,
@@ -603,6 +606,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				308711D6204D5A47001ED9C3 /* NetworkLayerTests.swift in Sources */,
+				5A38B7AF2302BC8200032E55 /* MessageTest.swift in Sources */,
 				307BA359204ED39E00944B89 /* StateRestoration.swift in Sources */,
 				5AC073882282435600F9C6EA /* AccessMessageTest.swift in Sources */,
 				30648B0220459B7000177CB4 /* LowerLayerTests.swift in Sources */,

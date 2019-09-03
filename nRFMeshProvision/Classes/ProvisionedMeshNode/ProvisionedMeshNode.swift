@@ -185,6 +185,15 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = setState
         genericControllerState.execute()
     }
+    
+    public func nodeGenericOnOffSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data, transitionTime aTransitionTime: Data, andTransitionDelay aTransitionDelay: Data) {
+        let setState = GenericOnOffSetUnacknowledgedControllerState(withTargetProxyNode: self,
+                                                      destinationAddress: anAddress,
+                                                      andStateManager: stateManager)
+        setState.setParametrizedTargetState(aTargetState: aState, withTransitionTime: aTransitionTime, andTransitionDelay: aTransitionDelay)
+        genericControllerState = setState
+        genericControllerState.execute()
+    }
 
     public func nodeGenericOnOffSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
         let setState = GenericOnOffSetUnacknowledgedControllerState(withTargetProxyNode: self,
@@ -371,6 +380,20 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = vendorState
         genericControllerState.execute()
     }
+    
+    public func vendorModelUnacknowledgedMessage(_ anOpcode: Data,
+                                   withPayload aParams: Data,
+                                   onDestinationAddress anAddress: Data) {
+        let vendorState = VendorModelUnacknowledgedMessageControllerState(withTargetProxyNode: self,
+                                                            destinationAddress: anAddress,
+                                                            andStateManager: stateManager)
+        //vendorState.setBinding(elementAddress: anElementAddress, appKeyIndex: anAppKeyIndex, andModelIdentifier: aModelId)
+        vendorState.setOpcode(aOpcode: anOpcode)
+        vendorState.setParams(aParams: aParams)
+        genericControllerState = vendorState
+        genericControllerState.execute()
+    }
+
 
     public func nodePublicationAddressSet(_ aPublicationAddress: Data,
                                   onElementAddress anElementAddress: Data,

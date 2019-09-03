@@ -154,6 +154,7 @@ public class LowerTransportLayer {
         }
         lowerData.append(Data(headerByte))
         lowerData.append(Data(params.upperTransportData))
+        print("lower \(lowerData.hexString())")
         return lowerData
     }
 
@@ -188,6 +189,7 @@ public class LowerTransportLayer {
             currentChunk.append(Data(params.upperTransportData.subdata(in: aChunkRange)))
             chunkedData.append(Data(currentChunk))
         }
+        chunkedData.forEach {print("lower chunk: \($0.hexString())")}
         return chunkedData
     }
 

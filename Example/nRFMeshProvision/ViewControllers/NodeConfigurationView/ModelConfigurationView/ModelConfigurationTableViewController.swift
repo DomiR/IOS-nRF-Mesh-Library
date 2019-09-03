@@ -21,6 +21,14 @@ private enum ModelAppActions {
 }
 
 class ModelConfigurationTableViewController: UITableViewController, ProvisionedMeshNodeDelegate, UITextFieldDelegate {
+    func receivedGenericUserPropertyStatusMessage(_ status: GenericUserPropertyStatusMessage) {
+        
+    }
+    
+    func sentGenericUserPropertySetUnacknowledged(_ destinationAddress: Data) {
+        
+    }
+    
     func receivedLightLightnessStatusMessage(_ status: LightLightnessStatusMessage) {
         
     }

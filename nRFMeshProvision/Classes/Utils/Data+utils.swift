@@ -87,6 +87,10 @@ public extension Data {
         return UInt64(bigEndian: withUnsafeBytes { $0.pointee })
     }
 
+    var uint32BigEndian: UInt32 {
+        return UInt32(bigEndian: withUnsafeBytes { $0.pointee })
+    }
+    
     var uint16BigEndian: UInt16 {
         return UInt16(bigEndian: withUnsafeBytes { $0.pointee })
     }

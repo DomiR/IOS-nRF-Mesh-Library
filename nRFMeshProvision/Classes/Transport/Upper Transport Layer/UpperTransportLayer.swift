@@ -41,6 +41,12 @@ public struct UpperTransportLayer {
             let dataSize = aPDU.count - micLen
             let pduData = aPDU[0..<dataSize]
             let mic = aPDU[aPDU.count - micLen..<aPDU.count]
+            print("micLen: \(micLen)")
+            print("dataSize: \(dataSize)")
+            print("pduData: \(pduData.hexString())")
+            print("mic: \(mic.hexString())")
+            print("key: \(key.hexString())")
+            print("nonce: \(nonce.data.hexString())")
             if let decryptedData = sslHelper.calculateDecryptedCCM(pduData, withKey: key, nonce: nonce.data, dataSize: 0, andMIC: mic) {
                 decryptedPayload = Data(decryptedData)
             } else {
@@ -119,14 +125,17 @@ public struct UpperTransportLayer {
    
     private func encryptForUnicastOrGroupAddress() -> Data {
         //EncAccessPayload, TransMIC = AES-CCM (AppKey, Application Nonce, AccessPayload)
+        print("upper payload \(params.payload.hexString())")
+        print("upper key \(params.key.hexString())")
+        print("upper nonce \(params.nonce.data.hexString())")
         return sslHelper.calculateCCM(params.payload, withKey: params.key, nonce: params.nonce.data, dataSize: UInt8(params.payload.count), andMICSize: 4)
     }
    
     private func encryptForDevice() -> Data {
         //EncAccessPayload, TransMIC = AES-CCM (DevKey, Device Nonce, AccessPayload)
-        print("payload \(params.payload.hexString())")
-        print("key \(params.key.hexString())")
-        print("nonce \(params.nonce.data.hexString())")
+        print("upper payload \(params.payload.hexString())")
+        print("upper key \(params.key.hexString())")
+        print("upper nonce \(params.nonce.data.hexString())")
         return sslHelper.calculateCCM(params.payload, withKey: params.key, nonce: params.nonce.data, dataSize: UInt8(params.payload.count), andMICSize: 4)
     }
 }
