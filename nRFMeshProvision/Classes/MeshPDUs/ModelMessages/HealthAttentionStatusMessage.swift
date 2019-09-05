@@ -7,12 +7,12 @@
 
 import Foundation
 
-public struct HealthAttentionStatusMessag {
+public struct HealthAttentionStatusMessage {
     public var sourceAddress: Data
     public var attention: Data
     
     public init(withPayload aPayload: Data, andSourceAddress srcAddress: Data) {
         sourceAddress = srcAddress
-        attention = Data([aPayload[0], aPayload[1]])
+        attention = Data([aPayload[0]])
     }
 }

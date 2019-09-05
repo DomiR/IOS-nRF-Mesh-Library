@@ -27,6 +27,7 @@ public protocol ProvisionedMeshNodeDelegate {
     func receivedLightCtlStatusMessage(_ status: LightCtlStatusMessage)
     func receivedLightHslStatusMessage(_ status: LightHslStatusMessage)
     func receivedGenericUserPropertyStatusMessage(_ status: GenericUserPropertyStatusMessage)
+    func receivedHealthAttentionStatusMessage(_ status: HealthAttentionStatusMessage)
     
     // Scene model
     func receivedSceneStatusMessage(_ status: SceneStatusMessage);
@@ -49,4 +50,5 @@ public protocol ProvisionedMeshNodeDelegate {
     func sentSceneRecallUnacknowledged(_ destinationAddress: Data)
 
     func sentVendorModelUnacknowledged(_ destinationAddress: Data)
+    func sentHealthAttentionSetUnacknowledged(_ destinationAddress: Data)
 }

@@ -211,6 +211,33 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = getState
         genericControllerState.execute()
     }
+    
+    public func nodeHealthAttentionGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
+        let getState = HealthAttentionGetControllerState(withTargetProxyNode: self,
+                                                      destinationAddress: anAddress,
+                                                      andStateManager: stateManager)
+        genericControllerState = getState
+        genericControllerState.execute()
+    }
+    
+    public func nodeHealthAttentionSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
+        let setHealthAttentionState = HealthAttentionSetControllerState(withTargetProxyNode: self,
+                                                                      destinationAddress: anAddress,
+                                                                      andStateManager: stateManager)
+        setHealthAttentionState.setTargetState(aTargetState: aState);
+        genericControllerState = setHealthAttentionState
+        genericControllerState.execute()
+    }
+    
+    public func nodeHealthAttentionSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
+        let setHealthAttentionState = HealthAttentionSetUnacknowledgedControllerState(withTargetProxyNode: self,
+                                                                                    destinationAddress: anAddress,
+                                                                                    andStateManager: stateManager)
+        setHealthAttentionState.setTargetState(aTargetState: aState);
+        genericControllerState = setHealthAttentionState
+        genericControllerState.execute()
+    }
+
 
     public func nodeLightLightnessGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
         let getLightLightnessState = LightLightnessGetControllerState(withTargetProxyNode: self,
