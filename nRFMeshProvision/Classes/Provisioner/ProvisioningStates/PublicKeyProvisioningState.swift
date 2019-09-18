@@ -177,19 +177,17 @@ class PublicKeyProvisioningState: NSObject, ProvisioningStateProtocol {
             return
         }
 
-        let exchangeResultParams = [kSecAttrKeyType: kSecAttrKeyTypeECSECPrimeRandom] as CFDictionary
-
+        let exchangeResultParams = [SecKeyKeyExchangeParameter.requestedSize: 32] as CFDictionary
         var error: Unmanaged<CFError>?
-        guard let shared = SecKeyCopyKeyExchangeResult(privateKey!,
-                                                       SecKeyAlgorithm.ecdhKeyExchangeStandardX963SHA256,
-                                                       devicePublicKey!,
-                                                       exchangeResultParams,
-                                                       &error) else {
+        let shared = SecKeyCopyKeyExchangeResult(privateKey!,
+                                         SecKeyAlgorithm.ecdhKeyExchangeStandard,
+                                         devicePublicKey!, exchangeResultParams, &error)
+        guard error == nil else {
             print((error!.takeRetainedValue() as Error).localizedDescription)
-            return
+            return;
         }
-
-        let ecdh = shared as Data
+        
+        let ecdh = shared! as Data
         target.calculatedECDH(ecdh)
         let nextState = ConfirmationProvisioningState(withTargetNode: target)
         target.switchToState(nextState)
