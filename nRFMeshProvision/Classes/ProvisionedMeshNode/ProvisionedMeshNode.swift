@@ -220,6 +220,25 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState.execute()
     }
     
+    public func nodeHealthFaultGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withCompanyId aCompanyId: Data) {
+        let getState = HealthFaultGetControllerState(withTargetProxyNode: self,
+                                                      destinationAddress: anAddress,
+                                                      andStateManager: stateManager)
+        getState.setTargetState(aTargetState: aCompanyId);
+        genericControllerState = getState
+        genericControllerState.execute()
+    }
+    
+    public func nodeHealthFaultTest(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withTestId testId: Data, withCompanyId aCompanyId: Data) {
+           let state = HealthFaultTestControllerState(withTargetProxyNode: self,
+                                                         destinationAddress: anAddress,
+                                                         andStateManager: stateManager)
+           state.setTestId(aTestId: testId)
+        state.setCompanyId(aCompanyId: aCompanyId);
+           genericControllerState = state
+           genericControllerState.execute()
+       }
+    
     public func nodeHealthAttentionSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
         let setHealthAttentionState = HealthAttentionSetControllerState(withTargetProxyNode: self,
                                                                       destinationAddress: anAddress,

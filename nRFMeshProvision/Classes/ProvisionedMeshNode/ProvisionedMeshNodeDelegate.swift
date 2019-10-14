@@ -28,6 +28,7 @@ public protocol ProvisionedMeshNodeDelegate {
     func receivedLightHslStatusMessage(_ status: LightHslStatusMessage)
     func receivedGenericUserPropertyStatusMessage(_ status: GenericUserPropertyStatusMessage)
     func receivedHealthAttentionStatusMessage(_ status: HealthAttentionStatusMessage)
+    func receivedHealthFaultStatusMessage(_ status: HealthFaultStatusMessage)
     
     // Scene model
     func receivedSceneStatusMessage(_ status: SceneStatusMessage);

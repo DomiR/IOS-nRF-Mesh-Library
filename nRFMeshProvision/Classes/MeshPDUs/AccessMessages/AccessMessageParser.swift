@@ -16,6 +16,8 @@ public struct AccessMessageParser {
             switch anOpcode {
             case Data([0x02]):
                 return CompositionStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x05]):
+                return HealthFaultStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x5E]):
                 return SceneStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x4E]):
