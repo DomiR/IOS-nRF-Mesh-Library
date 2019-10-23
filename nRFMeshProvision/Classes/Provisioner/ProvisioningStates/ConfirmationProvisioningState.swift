@@ -202,6 +202,8 @@ class ConfirmationProvisioningState: NSObject, ProvisioningStateProtocol {
         guard characteristic.value![0] == 0x03 && characteristic.value![1] == 0x05 else {
             print("Received wrong PDU, expected 0x03 0x05")
             print("Received \(characteristic.value![0]) \(characteristic.value![1]) instead.")
+            target.provisioningFailed(withErrorCode: .unexpectedError)
+            target.shouldDisconnect()
             return
         }
 
