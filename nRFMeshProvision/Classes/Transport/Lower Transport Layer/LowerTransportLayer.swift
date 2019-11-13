@@ -36,7 +36,7 @@ public class LowerTransportLayer {
         if segmented == Data([0x00]) {
             //Unsegmented Message
             let incomingFullSegment = Data(aPDU[3..<aPDU.count])
-            let upperLayer = UpperTransportLayer(withIncomingPDU: incomingFullSegment, ctl: ctl, akf: isAppKey, aid: aid, seq: aSEQ, src: aSRC, dst: aDST, szMIC: 0, ivIndex: anIVIndex, andMeshState: meshStateManager!)
+            let upperLayer = UpperTransportLayer(withIncomingPDU: incomingFullSegment, ctl: ctl, akf: isAppKey, aid: aid, seq: aSEQ, src: aSRC, dst: aDST, szMIC: 0, ivIndex: anIVIndex, andMeshState: meshStateManager)
             //Return a parsed message
             return upperLayer.assembleMessage()
         } else {

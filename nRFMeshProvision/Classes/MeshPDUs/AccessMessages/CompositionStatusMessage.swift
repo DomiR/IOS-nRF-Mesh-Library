@@ -28,15 +28,18 @@ public struct CompositionStatusMessage {
         elements = [CompositionElement]()
         var allElements = Data(aPayload[11..<aPayload.count])
         var elementIdx = 0;
-        while allElements.count != 0 {
+    
+        while allElements.count > 4 {
             let elementSigCount     = Int(allElements[2])
             let elementVendorCount  = Int(allElements[3])
             //4 octets for Loc, NumS & NumV + sig (2 octets) + vendor (4 octets) offset.
             let elementEndOffset    = 4 + ((elementSigCount * 2) + elementVendorCount * 4)
-            let anElementData = Data(allElements[0..<(elementEndOffset)])
-            var anElement = CompositionElement(withData: anElementData)
-            anElement.index = elementIdx;
-            elements.append(anElement)
+            if (allElements.count >= elementEndOffset) {
+                let anElementData = Data(allElements[0..<(elementEndOffset)])
+                var anElement = CompositionElement(withData: anElementData)
+                anElement.index = elementIdx;
+                elements.append(anElement)
+            }
             allElements = Data(allElements.dropFirst(elementEndOffset))
             elementIdx += 1;
         }

@@ -9,14 +9,14 @@ import Foundation
 
 public struct UpperTransportLayer {
     var stateManager                : MeshStateManager?
-    let params                      : UpperTransportPDUParams
+    let params                      : UpperTransportPDUParams?
     let sslHelper                   : OpenSSLHelper
     private var encryptedPayload    : Data?
     private var decryptedPayload    : Data?
 
     public init(withIncomingPDU aPDU: Data, ctl isControl: Bool, akf isApplicationKey: Bool,
                 aid applicationId: Data, seq aSEQ: Data, src aSRC: Data, dst aDST: Data,
-                szMIC: Int, ivIndex anIVIndex: Data, andMeshState aStateManager: MeshStateManager) {
+                szMIC: Int, ivIndex anIVIndex: Data, andMeshState aStateManager: MeshStateManager?) {
         stateManager = aStateManager
         sslHelper = OpenSSLHelper()
         var key: Data!
@@ -26,10 +26,16 @@ public struct UpperTransportLayer {
             key = stateManager!.state().appKeys.first?.key
             nonce = TransportNonce(appNonceWithIVIndex: anIVIndex, isSegmented: true, seq: aSEQ, src: aSRC, dst: aDST)
         } else {
+            // TODO: 11 sent us package, which it should not have?
             key = stateManager!.state().deviceKeyForUnicast(aSRC)
             nonce = TransportNonce(deviceNonceWithIVIndex: anIVIndex, isSegmented: true, szMIC: UInt8(szMIC), seq: aSEQ, src: aSRC, dst: aDST)
         }
-
+        
+        guard key != nil else {
+            params = nil;
+            return;
+        }
+        
         if isControl {
             // Control messages aren't encrypted here, forward as is
             print("Control message, TBD")
@@ -78,16 +84,20 @@ public struct UpperTransportLayer {
     }
 
     public func assembleMessage() -> Any? {
-        if params.ctl {
+        guard params != nil else {
+            return nil;
+        }
+        
+        if params!.ctl {
             //Assemble control message
-            print("Assemble control message 0x\(params.opcode.hexString()), 0x\(params.payload.hexString())")
+            print("Assemble control message 0x\(params!.opcode.hexString()), 0x\(params!.payload.hexString())")
             return nil
         } else {
             //Assemble access message
-            print("Assemble access message 0x\(params.opcode.hexString()) , 0x\(params.payload.hexString())")
+            print("Assemble access message 0x\(params!.opcode.hexString()) , 0x\(params!.payload.hexString())")
             //let messageParser = AccessMessageParser()
-            let payload = Data(decryptedPayload!.dropFirst(params.opcode.count))
-            return AccessMessageParser.parseData(payload, withOpcode: params.opcode, sourceAddress: params.sourceAddress)
+            let payload = Data(decryptedPayload!.dropFirst(params!.opcode.count))
+            return AccessMessageParser.parseData(payload, withOpcode: params!.opcode, sourceAddress: params!.sourceAddress)
         }
     }
 
@@ -95,14 +105,14 @@ public struct UpperTransportLayer {
         return decryptedPayload
     }
     public func rawData() -> Data? {
-        return params.payload
+        return params!.payload
     }
 
     public func encrypt() -> Data? {
-        if let addressType = MeshAddressTypes(rawValue: params.destinationAddress) {
+        if let addressType = MeshAddressTypes(rawValue: params!.destinationAddress) {
             switch addressType {
                 case .Unicast, .Group, .Broadcast:
-                    if params.nonce.type == .Device {
+                    if params!.nonce.type == .Device {
                         return encryptForDevice()
                     } else {
                         return encryptForUnicastOrGroupAddress()
@@ -125,17 +135,17 @@ public struct UpperTransportLayer {
    
     private func encryptForUnicastOrGroupAddress() -> Data {
         //EncAccessPayload, TransMIC = AES-CCM (AppKey, Application Nonce, AccessPayload)
-        print("upper payload \(params.payload.hexString())")
-        print("upper key \(params.key.hexString())")
-        print("upper nonce \(params.nonce.data.hexString())")
-        return sslHelper.calculateCCM(params.payload, withKey: params.key, nonce: params.nonce.data, dataSize: UInt8(params.payload.count), andMICSize: 4)
+        print("upper payload \(params!.payload.hexString())")
+        print("upper key \(params!.key.hexString())")
+        print("upper nonce \(params!.nonce.data.hexString())")
+        return sslHelper.calculateCCM(params!.payload, withKey: params!.key, nonce: params!.nonce.data, dataSize: UInt8(params!.payload.count), andMICSize: 4)
     }
    
     private func encryptForDevice() -> Data {
         //EncAccessPayload, TransMIC = AES-CCM (DevKey, Device Nonce, AccessPayload)
-        print("upper payload \(params.payload.hexString())")
-        print("upper key \(params.key.hexString())")
-        print("upper nonce \(params.nonce.data.hexString())")
-        return sslHelper.calculateCCM(params.payload, withKey: params.key, nonce: params.nonce.data, dataSize: UInt8(params.payload.count), andMICSize: 4)
+        print("upper payload \(params!.payload.hexString())")
+        print("upper key \(params!.key.hexString())")
+        print("upper nonce \(params!.nonce.data.hexString())")
+        return sslHelper.calculateCCM(params!.payload, withKey: params!.key, nonce: params!.nonce.data, dataSize: UInt8(params!.payload.count), andMICSize: 4)
     }
 }
