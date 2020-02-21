@@ -92,18 +92,21 @@ public struct NetworkLayer {
         
         //Encrypt all PDUs
         for aPDU in lowerPDU {
-            print("lower to encrypt \(aPDU.hexString())")
+            
             print("sequence number: \(sequence.sequenceData().hexString())")
 
             let nonce = TransportNonce(networkNonceWithIVIndex: lowerTransport.params.ivIndex, ctl: lowerTransport.params.ctl, ttl: lowerTransport.params.ttl, seq: sequence.sequenceData(), src: lowerTransport.params.sourceAddress)
             var dataToEncrypt = Data(lowerTransport.params.destinationAddress)
             dataToEncrypt.append(aPDU)
+            print("data to encrypt \(dataToEncrypt.hexString())")
+            print("network nonce \(nonce.data.hexString())")
             
             if lowerTransport.params.ctl == Data([0x01]) {
                 micSize = 8
             } else {
                 micSize = 4
             }
+            print("mic size \(micSize)")
 
             if let encryptedData = sslHelper.calculateCCM(dataToEncrypt, withKey: encryptionKey, nonce: nonce.data, dataSize: UInt8(dataToEncrypt.count), andMICSize: micSize) {
                 if let obfuscatedPDU = sslHelper.obfuscateENCPDU(encryptedData, cTLTTLValue: ctlTtl, sequenceNumber: sequence.sequenceData(), ivIndex: lowerTransport.params.ivIndex, privacyKey: privacyKey, andsrcAddr: lowerTransport.params.sourceAddress) {
