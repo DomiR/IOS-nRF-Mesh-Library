@@ -168,6 +168,32 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState.execute()
     }
 
+    public func nodeGenericOnPowerUpGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
+           let getState = GenericOnPowerUpGetControllerState(withTargetProxyNode: self,
+                                                         destinationAddress: anAddress,
+                                                         andStateManager: stateManager)
+           genericControllerState = getState
+           genericControllerState.execute()
+       }
+
+       public func nodeGenericOnPowerUpSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withTargetState aState: Data) {
+           let setState = GenericOnPowerUpSetControllerState(withTargetProxyNode: self,
+                                                         destinationAddress: anAddress,
+                                                         andStateManager: stateManager)
+           setState.setTargetState(aTargetState: aState)
+           genericControllerState = setState
+           genericControllerState.execute()
+       }
+
+       public func nodeGenericOnPowerUpSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withTargetState aState: Data) {
+           let setState = GenericOnPowerUpSetUnacknowledgedControllerState(withTargetProxyNode: self,
+                                                         destinationAddress: anAddress,
+                                                         andStateManager: stateManager)
+           setState.setTargetState(aTargetState: aState)
+           genericControllerState = setState
+           genericControllerState.execute()
+       }
+
     public func nodeGenericOnOffSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data, transitionTime aTransitionTime: Data, andTransitionDelay aTransitionDelay: Data) {
         let setState = GenericOnOffSetControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -185,7 +211,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = setState
         genericControllerState.execute()
     }
-    
+
     public func nodeGenericOnOffSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data, transitionTime aTransitionTime: Data, andTransitionDelay aTransitionDelay: Data) {
         let setState = GenericOnOffSetUnacknowledgedControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -211,7 +237,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = getState
         genericControllerState.execute()
     }
-    
+
     public func nodeHealthAttentionGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
         let getState = HealthAttentionGetControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -219,7 +245,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = getState
         genericControllerState.execute()
     }
-    
+
     public func nodeHealthFaultGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withCompanyId aCompanyId: Data) {
         let getState = HealthFaultGetControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -228,7 +254,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = getState
         genericControllerState.execute()
     }
-    
+
     public func nodeHealthFaultTest(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withTestId testId: Data, withCompanyId aCompanyId: Data) {
            let state = HealthFaultTestControllerState(withTargetProxyNode: self,
                                                          destinationAddress: anAddress,
@@ -238,7 +264,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
            genericControllerState = state
            genericControllerState.execute()
        }
-    
+
     public func nodeHealthAttentionSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
         let setHealthAttentionState = HealthAttentionSetControllerState(withTargetProxyNode: self,
                                                                       destinationAddress: anAddress,
@@ -247,7 +273,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = setHealthAttentionState
         genericControllerState.execute()
     }
-    
+
     public func nodeHealthAttentionSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
         let setHealthAttentionState = HealthAttentionSetUnacknowledgedControllerState(withTargetProxyNode: self,
                                                                                     destinationAddress: anAddress,
@@ -426,7 +452,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = vendorState
         genericControllerState.execute()
     }
-    
+
     public func vendorModelUnacknowledgedMessage(_ anOpcode: Data,
                                    withPayload aParams: Data,
                                    onDestinationAddress anAddress: Data) {

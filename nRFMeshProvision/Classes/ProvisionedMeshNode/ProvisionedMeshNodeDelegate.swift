@@ -18,18 +18,19 @@ public protocol ProvisionedMeshNodeDelegate {
     func receivedDefaultTTLStatus(_ defaultTTLStatusData: DefaultTTLStatusMessage)
     func receivedNodeResetStatus(_ resetStatusData: NodeResetStatusMessage)
     func configurationSucceeded()
-    
+
 
     // Generic model
     func receivedGenericOnOffStatusMessage(_ status: GenericOnOffStatusMessage)
     func receivedGenericLevelStatusMessage(_ status: GenericLevelStatusMessage)
+    func receivedGenericOnPowerUpStatusMessage(_ status: GenericOnPowerUpStatusMessage)
     func receivedLightLightnessStatusMessage(_ status: LightLightnessStatusMessage)
     func receivedLightCtlStatusMessage(_ status: LightCtlStatusMessage)
     func receivedLightHslStatusMessage(_ status: LightHslStatusMessage)
     func receivedGenericUserPropertyStatusMessage(_ status: GenericUserPropertyStatusMessage)
     func receivedHealthAttentionStatusMessage(_ status: HealthAttentionStatusMessage)
     func receivedHealthFaultStatusMessage(_ status: HealthFaultStatusMessage)
-    
+
     // Scene model
     func receivedSceneStatusMessage(_ status: SceneStatusMessage);
     func receivedSceneRegisterStatusMessage(_ status: SceneRegisterStatusMessage);
@@ -41,6 +42,7 @@ public protocol ProvisionedMeshNodeDelegate {
     func sentGenericUserPropertySetUnacknowledged(_ destinationAddress: Data)
     func sentGenericOnOffSetUnacknowledged(_ destinationAddress: Data)
     func sentGenericLevelSetUnacknowledged(_ destinationAddress: Data)
+    func sentGenericOnPowerUpSetUnacknowledged(_ destinationAddress: Data)
 
     func sentLightLightnessSetUnacknowledged(_ destinationAddress: Data)
     func sentLightCtlSetUnacknowledged(_ destinationAddress: Data)

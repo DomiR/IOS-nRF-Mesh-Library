@@ -1,23 +1,19 @@
 //
-//  GenericUserPropertySetControllerState.swift
+//  GenericOnPowerUpGetControllerState.swift
 //  nRFMeshProvision
-//
-//  Created by Mostafa Berg on 28/05/2018.
 //
 
 import Foundation
 import CoreBluetooth
 
-class GenericUserPropertySetControllerState: NSObject, GenericModelControllerStateProtocol {
+class GenericOnPowerUpGetControllerState: NSObject, GenericModelControllerStateProtocol {
 
     // MARK: - Properties
     private var proxyService            : CBService!
     private var dataInCharacteristic    : CBCharacteristic!
     private var dataOutCharacteristic   : CBCharacteristic!
     private var networkLayer            : NetworkLayer!
-    private var segmentedData           : Data
-    private var targetState             : Data?
-    private var targetStateTransitionParameters: (transitionTime: Data, transitionDelay: Data)?
+    private var segmentedData: Data
 
     // MARK: - ConfiguratorStateProtocol
     var destinationAddress  : Data
@@ -45,22 +41,11 @@ class GenericUserPropertySetControllerState: NSObject, GenericModelControllerSta
     }
 
     func humanReadableName() -> String {
-        return "Generic User Property Set"
-    }
-
-    public func setTargetState(aTargetState: Data) {
-        targetState = aTargetState
+        return "Generic OnPowerUp Get"
     }
 
     func execute() {
-        var message: GenericUserPropertySetMessage
-        if let targetState = targetState {
-            message = GenericUserPropertySetMessage(withTargetState: targetState)
-        } else {
-            print("No target state set, nothing to execute")
-            return
-        }
-
+        let message = GenericOnPowerUpGetMessage()
         //Send to destination
         let payloads = message.assemblePayload(withMeshState: stateManager.state(), toAddress: destinationAddress)
         for aPayload in payloads! {
@@ -103,14 +88,14 @@ class GenericUserPropertySetControllerState: NSObject, GenericModelControllerSta
         } else {
             let strippedOpcode = Data(incomingData.dropFirst())
             if let result = networkLayer.incomingPDU(strippedOpcode) {
-                if result is GenericUserPropertyStatusMessage {
-                    let genericUserPropertyStatus = result as! GenericUserPropertyStatusMessage
-                    target.delegate?.receivedGenericUserPropertyStatusMessage(genericUserPropertyStatus)
+                if result is GenericOnPowerUpStatusMessage {
+                    let genericOnPowerUpStatus = result as! GenericOnPowerUpStatusMessage
+                    target.delegate?.receivedGenericOnPowerUpStatusMessage(genericOnPowerUpStatus)
                     let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
                     target.switchToState(nextState)
                 }
             } else {
-                print("ignoring non GenericUserPropertyStatus message")
+                print("ignoring non GenericOnPowerUpStatus message")
             }
         }
     }

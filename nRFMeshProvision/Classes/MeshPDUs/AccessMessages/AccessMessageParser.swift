@@ -56,6 +56,8 @@ public struct AccessMessageParser {
                 return LightHslStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x82, 0x45]):
                 return SceneRegisterStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x82, 0x12]):
+                return GenericOnPowerUpStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             default:
                 return nil;
             }
