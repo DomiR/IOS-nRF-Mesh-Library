@@ -27,6 +27,9 @@ public protocol ProvisionedMeshNodeDelegate {
     func receivedLightLightnessStatusMessage(_ status: LightLightnessStatusMessage)
     func receivedLightCtlStatusMessage(_ status: LightCtlStatusMessage)
     func receivedLightHslStatusMessage(_ status: LightHslStatusMessage)
+    func receivedLightLightnessDefaultStatusMessage(_ status: LightLightnessDefaultStatusMessage)
+    func receivedLightCtlDefaultStatusMessage(_ status: LightCtlDefaultStatusMessage)
+    func receivedLightHslDefaultStatusMessage(_ status: LightHslDefaultStatusMessage)
     func receivedGenericUserPropertyStatusMessage(_ status: GenericUserPropertyStatusMessage)
     func receivedHealthAttentionStatusMessage(_ status: HealthAttentionStatusMessage)
     func receivedHealthFaultStatusMessage(_ status: HealthFaultStatusMessage)
@@ -47,6 +50,10 @@ public protocol ProvisionedMeshNodeDelegate {
     func sentLightLightnessSetUnacknowledged(_ destinationAddress: Data)
     func sentLightCtlSetUnacknowledged(_ destinationAddress: Data)
     func sentLightHslSetUnacknowledged(_ destinationAddress: Data)
+
+    func sentLightLightnessDefaultSetUnacknowledged(_ destinationAddress: Data)
+    func sentLightCtlDefaultSetUnacknowledged(_ destinationAddress: Data)
+    func sentLightHslDefaultSetUnacknowledged(_ destinationAddress: Data)
 
     func sentSceneStoreUnacknowledged(_ destinationAddress: Data)
     func sentSceneDeleteUnacknowledged(_ destinationAddress: Data)

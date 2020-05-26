@@ -310,6 +310,32 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState.execute()
     }
 
+     public func nodeLightLightnessDefaultGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
+        let getLightLightnessDefaultState = LightLightnessDefaultGetControllerState(withTargetProxyNode: self,
+                                                      destinationAddress: anAddress,
+                                                      andStateManager: stateManager)
+        genericControllerState = getLightLightnessDefaultState
+        genericControllerState.execute()
+    }
+
+    public func nodeLightLightnessDefaultSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
+        let setLightLightnessDefaultState = LightLightnessDefaultSetControllerState(withTargetProxyNode: self,
+                                                      destinationAddress: anAddress,
+                                                      andStateManager: stateManager)
+        setLightLightnessDefaultState.setTargetState(aTargetState: aState);
+        genericControllerState = setLightLightnessDefaultState
+        genericControllerState.execute()
+    }
+
+    public func nodeLightLightnessDefaultSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
+        let setLightLightnessDefaultState = LightLightnessDefaultSetUnacknowledgedControllerState(withTargetProxyNode: self,
+                                                                      destinationAddress: anAddress,
+                                                                      andStateManager: stateManager)
+        setLightLightnessDefaultState.setTargetState(aTargetState: aState);
+        genericControllerState = setLightLightnessDefaultState
+        genericControllerState.execute()
+    }
+
     public func nodeLightCtlGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
         let getState = LightCtlGetControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -336,6 +362,32 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState.execute()
     }
 
+     public func nodeLightCtlDefaultGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
+        let getState = LightCtlDefaultGetControllerState(withTargetProxyNode: self,
+                                                      destinationAddress: anAddress,
+                                                      andStateManager: stateManager)
+        genericControllerState = getState
+        genericControllerState.execute()
+    }
+
+    public func nodeLightCtlDefaultSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
+        let setLightLightnessState = LightCtlDefaultSetControllerState(withTargetProxyNode: self,
+                                                                      destinationAddress: anAddress,
+                                                                      andStateManager: stateManager)
+        setLightLightnessState.setTargetState(aTargetState: aState);
+        genericControllerState = setLightLightnessState
+        genericControllerState.execute()
+    }
+
+    public func nodeLightCtlDefaultSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
+        let setLightCtlDefaultUnacknowledgedState = LightCtlDefaultSetUnacknowledgedControllerState(withTargetProxyNode: self,
+                                                                destinationAddress: anAddress,
+                                                                andStateManager: stateManager)
+        setLightCtlDefaultUnacknowledgedState.setTargetState(aTargetState: aState);
+        genericControllerState = setLightCtlDefaultUnacknowledgedState
+        genericControllerState.execute()
+    }
+
     public func nodeLightHslGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
         let state = LightHslGetControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -359,6 +411,32 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
                                                                                       andStateManager: stateManager)
         setLightHslUnacknowledgedState.setTargetState(aTargetState: aState);
         genericControllerState = setLightHslUnacknowledgedState
+        genericControllerState.execute()
+    }
+
+      public func nodeLightHslDefaultGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
+        let state = LightHslDefaultGetControllerState(withTargetProxyNode: self,
+                                                      destinationAddress: anAddress,
+                                                      andStateManager: stateManager)
+        genericControllerState = state
+        genericControllerState.execute()
+    }
+
+    public func nodeLightHslDefaultSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
+        let state = LightHslDefaultSetControllerState(withTargetProxyNode: self,
+                                                                              destinationAddress: anAddress,
+                                                                              andStateManager: stateManager)
+        state.setTargetState(aTargetState: aState);
+        genericControllerState = state
+        genericControllerState.execute()
+    }
+
+    public func nodeLightHslDefaultSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withtargetState aState: Data) {
+        let setLightHslDefaultUnacknowledgedState = LightHslDefaultSetUnacknowledgedControllerState(withTargetProxyNode: self,
+                                                                                      destinationAddress: anAddress,
+                                                                                      andStateManager: stateManager)
+        setLightHslDefaultUnacknowledgedState.setTargetState(aTargetState: aState);
+        genericControllerState = setLightHslDefaultUnacknowledgedState
         genericControllerState.execute()
     }
 

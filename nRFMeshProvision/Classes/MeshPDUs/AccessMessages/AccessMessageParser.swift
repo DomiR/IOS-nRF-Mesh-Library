@@ -8,7 +8,7 @@
 import Foundation
 
 public struct AccessMessageParser {
-    
+
     public static func parseData(_ someData: Data, withOpcode anOpcode: Data, sourceAddress aSourceAddress: Data) -> Any? {
         // handle vendor messages, which are
         switch anOpcode.count {
@@ -25,7 +25,7 @@ public struct AccessMessageParser {
             default:
                 return nil
             }
-            
+
         case 2:
             switch anOpcode {
             case Data([0x80, 0x07]):
@@ -42,7 +42,7 @@ public struct AccessMessageParser {
                 return DefaultTTLStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x80, 0x4A]):
                 return NodeResetStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
-                
+
             //Generic Model Messages
             case Data([0x82, 0x04]):
                 return GenericOnOffStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
@@ -54,6 +54,12 @@ public struct AccessMessageParser {
                 return LightCtlStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x82, 0x78]):
                 return LightHslStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x82, 0x56]):
+                return LightLightnessDefaultStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x82, 0x68]):
+                return LightCtlDefaultStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x82, 0x7C]):
+                return LightHslDefaultStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x82, 0x45]):
                 return SceneRegisterStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x82, 0x12]):
@@ -61,13 +67,13 @@ public struct AccessMessageParser {
             default:
                 return nil;
             }
-            
+
         case 3:
             return VendorModelStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress);
-            
+
         default:
             return nil;
         }
-            
+
     }
 }
