@@ -113,6 +113,10 @@ public struct CompositionElement: Codable {
     public func elementLocation() -> Data {
         return location
     }
+    
+    public func elementIndex() -> Int? {
+        return index
+    }
 
     enum CodingKeys: String, CodingKey {
         case index
