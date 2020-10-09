@@ -32,6 +32,10 @@ public struct AccessMessageParser {
                 return HealthAttentionStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x80, 0x03]):
                 return AppKeyStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x80, 0x25]):
+                return ConfigNetworkTransmitStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x80, 0x28]):
+                return ConfigRelayStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x80, 0x3E]):
                 return ModelAppStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x80, 0x19]):

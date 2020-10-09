@@ -12,6 +12,8 @@ public protocol ProvisionedMeshNodeDelegate {
     func nodeShouldDisconnect(_ aNode: ProvisionedMeshNode)
     func receivedCompositionData(_ compositionData: CompositionStatusMessage)
     func receivedAppKeyStatusData(_ appKeyStatusData: AppKeyStatusMessage)
+    func receivedRelayConfig(_ modelAppStatusData: ConfigRelayStatusMessage)
+    func receivedNetworkTransmitStatus(_ modelAppStatusData: ConfigNetworkTransmitStatusMessage)
     func receivedModelAppStatus(_ modelAppStatusData: ModelAppStatusMessage)
     func receivedModelPublicationStatus(_ modelPublicationStatusData: ModelPublicationStatusMessage)
     func receivedModelSubsrciptionStatus(_ modelSubscriptionStatusData: ModelSubscriptionStatusMessage)

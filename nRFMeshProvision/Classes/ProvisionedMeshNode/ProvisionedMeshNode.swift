@@ -605,6 +605,45 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         configurationState = bindState
         configurationState.execute()
     }
+    
+    public func getConfigRelay(destinationAddress: Data) {
+        let state = ConfigRelayGetConfiguratorState(withTargetProxyNode: self,
+                                                      destinationAddress: destinationAddress,
+                                                      andStateManager: stateManager)
+        configurationState = state
+        configurationState.execute()
+    }
+    
+    public func setConfigRelay(destinationAddress: Data,
+                               withRelay relay: Int,
+                               withRelayRetransmitCount relayRetransmitCount: Int,
+                               withRelayRetransmitIntervalSteps relayRetransmitIntervalSteps: Int) {
+        let state = ConfigRelaySetConfiguratorState(withTargetProxyNode: self,
+                                                      destinationAddress: destinationAddress,
+                                                      andStateManager: stateManager)
+        state.setRelay(withRelay: relay, withRelayRetransmitCount: relayRetransmitCount, withRelayRetransmitIntervalSteps: relayRetransmitIntervalSteps)
+        configurationState = state
+        configurationState.execute()
+    }
+    
+    public func getConfigNetworkTransmit(destinationAddress: Data) {
+        let state = ConfigNetworkTransmitGetConfiguratorState(withTargetProxyNode: self,
+                                                      destinationAddress: destinationAddress,
+                                                      andStateManager: stateManager)
+        configurationState = state
+        configurationState.execute()
+    }
+    
+    public func setConfigNetworkTransmit(destinationAddress: Data,
+                              withNetworkTransmitCount networkTransmitCount: Int,
+                              withNetworkTransmitIntervalSteps networkTransmitIntervalSteps: Int) {
+        let state = ConfigNetworkTransmitSetConfiguratorState(withTargetProxyNode: self,
+                                                      destinationAddress: destinationAddress,
+                                                      andStateManager: stateManager)
+        state.setNetworkTransmit(withNetworkTransmitCount: networkTransmitCount, withNetworkTransmitIntervalSteps: networkTransmitIntervalSteps)
+        configurationState = state
+        configurationState.execute()
+    }
 
     public func unbindAppKey(withIndex anAppKeyIndex: Data,
                              modelId aModelId: Data,
