@@ -25,7 +25,7 @@ class InviteProvisioningState: NSObject, ProvisioningStateProtocol {
 
     required init(withTargetNode aNode: UnprovisionedMeshNodeProtocol) {
         target                              = aNode
-        duration                            = 0x05 //Default attention timer is 5 seconds
+        duration                            = 0x00 //Default attention timer is 5 seconds
         super.init()
         target.basePeripheral().delegate    = self
         //If services and characteristics are already discovered, set them now
