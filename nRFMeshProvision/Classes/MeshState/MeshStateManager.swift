@@ -76,7 +76,7 @@ public class MeshStateManager: NSObject {
             AppKeyEntry(withName: "AppKey 3", andKey: generateRandomKey()!, atIndex: 2, onNetKeyIndex: 0)
         ]
 
-        let provisioner = MeshProvisionerEntry(withName: "nRF Mesh Provisioner", uuid: UUID(), andUnicastRange: [AllocatedUnicastRange(withLowAddress: "0000", andHighAddress: "7F7E")])
+        let provisioner = MeshProvisionerEntry(withName: "nRF Mesh Provisioner", uuid: UUID(), andUnicastRange: [AllocatedUnicastRange(withLowAddress: "0001", andHighAddress: "7F7E")])
         let newState = MeshState(withName: networkName, version: "1.0", identifier: UUID(), timestamp: Date(), provisionerList: [provisioner], nodeList: [], netKeys: [netKey], globalTTL: globalTTL, unicastAddress: unicastAddress, andAppKeys: appKeys)
         self.meshState = newState
 
