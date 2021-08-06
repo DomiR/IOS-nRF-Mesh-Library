@@ -23,7 +23,8 @@ class VendorModelMessageControllerState: NSObject, GenericModelControllerStatePr
     var destinationAddress  : Data
     var target              : ProvisionedMeshNodeProtocol
     var stateManager        : MeshStateManager
-    
+    var payloads            : [Data]?
+    var message             : VendorModelMessage?
     required init(withTargetProxyNode aNode: ProvisionedMeshNodeProtocol,
                   destinationAddress aDestinationAddress: Data,
                   andStateManager aStateManager: MeshStateManager) {
@@ -56,8 +57,40 @@ class VendorModelMessageControllerState: NSObject, GenericModelControllerStatePr
         params = aParams
     }
     
+    func sendPayload(_ aPayload: Data) {
+        var data = Data([0x00]) //Type => Network
+        data.append(aPayload)
+        print("Full PDU: \(data.hexString())")
+        if data.count <= target.basePeripheral().maximumWriteValueLength(for: .withoutResponse) {
+            print("Sending  data: \(data.hexString())")
+            target.basePeripheral().writeValue(data, for: dataInCharacteristic, type: .withoutResponse)
+        } else {
+            print("maximum write length is shorter than PDU, will Segment")
+            var segmentedProvisioningData = [Data]()
+            data = Data(data.dropFirst()) //Drop old network header, SAR will now set that instead.
+            let chunkRanges = self.calculateDataRanges(data, withSize: 19)
+            for aRange in chunkRanges {
+                var header = Data()
+                let chunkIndex = chunkRanges.index(of: aRange)!
+                if chunkIndex == 0 {
+                    header.append(Data([0x40])) //SAR start
+                } else if chunkIndex == chunkRanges.count - 1 {
+                    header.append(Data([0xC0])) //SAR end
+                } else {
+                    header.append(Data([0x80])) //SAR cont.
+                }
+                var chunkData = Data(header)
+                chunkData.append(Data(data[aRange]))
+                segmentedProvisioningData.append(Data(chunkData))
+            }
+            for aSegment in segmentedProvisioningData {
+                print("Sending segment: \(aSegment.hexString())")
+                target.basePeripheral().writeValue(aSegment, for: dataInCharacteristic, type: .withoutResponse)
+            }
+        }
+    }
+    
     func execute() {
-        var message: VendorModelMessage
         if let opcode = opcode {
             if let params = params {
                 message = VendorModelMessage(withOpcode: opcode, payload: params)
@@ -72,38 +105,10 @@ class VendorModelMessageControllerState: NSObject, GenericModelControllerStatePr
         }
         
         //Send to destination
-        let payloads = message.assemblePayload(withMeshState: stateManager.state(), toAddress: destinationAddress)
-        for aPayload in payloads! {
-            var data = Data([0x00]) //Type => Network
-            data.append(aPayload)
-            print("Full PDU: \(data.hexString())")
-            if data.count <= target.basePeripheral().maximumWriteValueLength(for: .withoutResponse) {
-                print("Sending  data: \(data.hexString())")
-                target.basePeripheral().writeValue(data, for: dataInCharacteristic, type: .withoutResponse)
-            } else {
-                print("maximum write length is shorter than PDU, will Segment")
-                var segmentedProvisioningData = [Data]()
-                data = Data(data.dropFirst()) //Drop old network header, SAR will now set that instead.
-                let chunkRanges = self.calculateDataRanges(data, withSize: 19)
-                for aRange in chunkRanges {
-                    var header = Data()
-                    let chunkIndex = chunkRanges.index(of: aRange)!
-                    if chunkIndex == 0 {
-                        header.append(Data([0x40])) //SAR start
-                    } else if chunkIndex == chunkRanges.count - 1 {
-                        header.append(Data([0xC0])) //SAR end
-                    } else {
-                        header.append(Data([0x80])) //SAR cont.
-                    }
-                    var chunkData = Data(header)
-                    chunkData.append(Data(data[aRange]))
-                    segmentedProvisioningData.append(Data(chunkData))
-                }
-                for aSegment in segmentedProvisioningData {
-                    print("Sending segment: \(aSegment.hexString())")
-                    target.basePeripheral().writeValue(aSegment, for: dataInCharacteristic, type: .withoutResponse)
-                }
-            }
+        self.payloads = message?.assemblePayload(withMeshState: stateManager.state(), toAddress: destinationAddress) ?? []
+        
+        for aPayload in self.payloads! {
+            sendPayload(aPayload)
         }
     }
     
@@ -118,6 +123,28 @@ class VendorModelMessageControllerState: NSObject, GenericModelControllerStatePr
                     target.delegate?.receivedVendorModelStatusMessage(vendorModelStatus)
                     let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
                     target.switchToState(nextState)
+                } else if result is SegmentAcknowledgmentMessage {
+                    let segmentAckMsg = result as! SegmentAcknowledgmentMessage
+                    if let allPayloads = self.payloads, allPayloads.count > 0 && !segmentAckMsg.areAllSegmentsReceived(lastSegmentNumber: UInt8(allPayloads.count - 1)) {
+                        print("needs to handle segment ack")
+                        if let msg = message, let accessMsg = msg.accessMsg {
+                            if let payloads = accessMsg.networkLayer?.handleSegmentAcknowledgmentMessage(segmentAckMsg) {
+                                print("sending payloads: \(payloads.count)")
+                                for aPayload in payloads {
+                                    sendPayload(aPayload)
+                                }
+                            }
+                        }
+//                        if let newPayloads = msg.assemblePayload(withMeshState: stateManager.state(), toAddress: destinationAddress) {
+//                            for (index, _) in allPayloads.enumerated() {
+//                                if (!segmentAckMsg.isSegmentReceived(index)) {
+//                                    print("should send \(index) again")
+//                                    //sendPayload(newPayloads[index]);
+//                                }
+//                            }
+//                        }
+                    }
+                    
                 }
             } else {
                 print("ignoring non VendorModelStatusMessage message")

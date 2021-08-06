@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct AccessMessagePDU {
+public class AccessMessagePDU {
     let opcode      : Data
     let payload     : Data
     let key         : Data?
@@ -18,7 +18,8 @@ public struct AccessMessagePDU {
     let src         : Data
     let dst         : Data
     let seq         : SequenceNumber
-
+    var networkLayer: NetworkLayer?
+    
     public init(withPayload aPayload: Data, opcode anOpcode: Data, appKey anAppKey: Data, netKey aNetKey: Data, seq aSeq: SequenceNumber, ivIndex anIVIndex: Data, source aSrc: Data, andDst aDST: Data) {
         isAppKey    = true
         opcode      = anOpcode
@@ -85,8 +86,9 @@ public struct AccessMessagePDU {
             let isAppKeyData = isAppKey ? Data([0x01]) : Data([0x00])
             let lowerTransportParams = LowerTransportPDUParams(withUpperTransportData: Data(encryptedPDU), ttl: ttl, ctl: Data([0x00]), ivIndex: ivIndex, sequenceNumber: seq, sourceAddress: src, destinationAddress: dst, micSize: Data([0x00]), afk: isAppKeyData, aid: upperTransport.params!.aid, andOpcode: opcode)
             let lowerTransport = LowerTransportLayer(withParams: lowerTransportParams)
-            let networkLayer = NetworkLayer(withLowerTransportLayer: lowerTransport, andNetworkKey: netKey)
-            return networkLayer.createPDU()
+            networkLayer = NetworkLayer(withLowerTransportLayer: lowerTransport, andNetworkKey: netKey)
+            let lowerPDU = lowerTransport.createPDU()
+            return networkLayer!.createPDU(withLowerPdus: lowerPDU)
         } else {
             return nil
         }

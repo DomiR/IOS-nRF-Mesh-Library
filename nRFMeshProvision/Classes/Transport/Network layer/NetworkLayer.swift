@@ -29,7 +29,7 @@ public struct NetworkLayer {
         let nid = k2Output[0] & 0x7F
         let calculactedIVINid = (ivIndex[2] & 0x01) | nid
         guard calculactedIVINid == aPDU.first else {
-            print("Expected IV Index||NID did not match packet data, message is malfromed. NOOP")
+            print("network Expected IV Index||NID did not match packet data, message is malfromed. NOOP")
             return nil
         }
         let encryptionKey = k2Output[1..<17]
@@ -52,12 +52,9 @@ public struct NetworkLayer {
                                                                   nonce: nonceData,
                                                                   dataSize: UInt8(encryptedNetworkPDU.count), andMIC: netMic)
         let dst = decryptedNetworkPDU![0...1]
-        print("PDU: \(aPDU.hexString())")
-        print("encPDU: \(encryptedNetworkPDU.hexString())")
-        print("netMic: \(netMic.hexString())")
-        print("Sequence: \(seq.hexString()), SRC: \(src.hexString()), ttl: \(ttl.hexString()), MICSize: \(micSize), encpduSz: \(encryptedNetworkPDU.count)")
-        print("decrypted network PDU = \(decryptedNetworkPDU!.hexString())")
-        return self.lowerTransport.append(withIncomingPDU: Data(decryptedNetworkPDU!), ctl: ctlData, ttl: ttl, src: src, dst: dst, IVIndex: ivIndex, andSEQ: seq)
+        print("network PDU: \(aPDU.hexString()) encPDU: \(encryptedNetworkPDU.hexString()) netMic: \(netMic.hexString())")
+        print("network sequence: \(seq.hexString()), SRC: \(src.hexString()), ttl: \(ttl.hexString()), MICSize: \(micSize), encpduSz: \(encryptedNetworkPDU.count) decrypted network PDU = \(decryptedNetworkPDU!.hexString())")
+        return self.lowerTransport.append(withNetworkLayer: self, withIncomingPDU: Data(decryptedNetworkPDU!), ctl: ctlData, ttl: ttl, src: src, dst: dst, IVIndex: ivIndex, andSEQ: seq)
     }
 
     public init(withLowerTransportLayer aLowerTransport: LowerTransportLayer, andNetworkKey aNetKey: Data) {
@@ -73,56 +70,63 @@ public struct NetworkLayer {
     
     //Maxlen = 148 when for control messages.
     //MaxLen = 120 when for access messages.
-    public func createPDU() -> [Data] {
+    public func createPDU(withLowerPdus lowerPDU: [Data]) -> [Data] {
         let ivi = lowerTransport.params.ivIndex.last! & 0x01 //LSB of IVIndex
         let k2 = sslHelper.calculateK2(withN: netKey, andP: Data(bytes: [0x00]))
         let nid = k2![0]
         let iviNid = Data([ivi | nid])
-        print("k2", k2?.hexString())
+        
         let encryptionKey = k2![1..<17]
-        print("encryptionKey \(encryptionKey.hexString())")
         let privacyKey = k2![17..<33]
-        print("privacyKey \(privacyKey.hexString())")
         var micSize: UInt8
         let ctlTtl = Data([(lowerTransport.params.ctl[0] << 7) | (lowerTransport.params.ttl[0] & 0x7F)])
-        let lowerPDU = lowerTransport.createPDU()
-        var sequence = lowerTransport.params.sequenceNumber
+        print("network k2 \(k2?.hexString()) encryptionKey \(encryptionKey.hexString()) privacyKey \(privacyKey.hexString())")
 
         var networkPDUs = [Data]()
         
         //Encrypt all PDUs
         for aPDU in lowerPDU {
             
-            print("sequence number: \(sequence.sequenceData().hexString())")
+            print("network sequence number: \(lowerTransport.params.sequenceNumber.sequenceData().hexString())")
 
-            let nonce = TransportNonce(networkNonceWithIVIndex: lowerTransport.params.ivIndex, ctl: lowerTransport.params.ctl, ttl: lowerTransport.params.ttl, seq: sequence.sequenceData(), src: lowerTransport.params.sourceAddress)
+            let nonce = TransportNonce(networkNonceWithIVIndex: lowerTransport.params.ivIndex, ctl: lowerTransport.params.ctl, ttl: lowerTransport.params.ttl, seq: lowerTransport.params.sequenceNumber.sequenceData(), src: lowerTransport.params.sourceAddress)
             var dataToEncrypt = Data(lowerTransport.params.destinationAddress)
             dataToEncrypt.append(aPDU)
-            print("data to encrypt \(dataToEncrypt.hexString())")
-            print("network nonce \(nonce.data.hexString())")
+            print("network data to encrypt \(dataToEncrypt.hexString())")
+            
             
             if lowerTransport.params.ctl == Data([0x01]) {
                 micSize = 8
             } else {
                 micSize = 4
             }
-            print("mic size \(micSize)")
-
+            print("network nonce \(nonce.data.hexString()) micSize: \(micSize)")
+            
             if let encryptedData = sslHelper.calculateCCM(dataToEncrypt, withKey: encryptionKey, nonce: nonce.data, dataSize: UInt8(dataToEncrypt.count), andMICSize: micSize) {
-                if let obfuscatedPDU = sslHelper.obfuscateENCPDU(encryptedData, cTLTTLValue: ctlTtl, sequenceNumber: sequence.sequenceData(), ivIndex: lowerTransport.params.ivIndex, privacyKey: privacyKey, andsrcAddr: lowerTransport.params.sourceAddress) {
+                if let obfuscatedPDU = sslHelper.obfuscateENCPDU(encryptedData, cTLTTLValue: ctlTtl, sequenceNumber: lowerTransport.params.sequenceNumber.sequenceData(), ivIndex: lowerTransport.params.ivIndex, privacyKey: privacyKey, andsrcAddr: lowerTransport.params.sourceAddress) {
                     var aNetworkPDU = Data()
                     aNetworkPDU.append(iviNid)
                     aNetworkPDU.append(obfuscatedPDU)
                     aNetworkPDU.append(encryptedData)
                     networkPDUs.append(aNetworkPDU)
                     //Increment sequence number
-                    sequence.incrementSequneceNumber()
-                    print("lower encrypted \(aNetworkPDU.hexString())")
+                    lowerTransport.params.sequenceNumber.incrementSequneceNumber()
+                    print("network lower encrypted \(aNetworkPDU.hexString())")
                 }
             }
             
         }
 
         return networkPDUs
+    }
+    
+    public func handleSegmentAcknowledgmentMessage(_ ackMsg: SegmentAcknowledgmentMessage) -> [Data]? {
+        print("network layer should handle segment ack")
+        let resendSegements = lowerTransport.handleSegmentAcknowledgmentMessage(ackMsg);
+        if (resendSegements.count > 0) {
+            print("network resending segements: \(resendSegements.count)")
+            return createPDU(withLowerPdus: resendSegements)
+        }
+        return nil
     }
 }

@@ -192,11 +192,11 @@ static inline char itoh(int i) {
     const char byteArray[] = { 0x73, 0x6D, 0x6B, 0x32 }; //smk2 string.
     NSData* smk2String = [[NSData alloc] initWithBytes:byteArray length:4];
     NSData* s1 = [self calculateSalt:smk2String];
-    NSLog(@"anNValue %@", [self NSDataToHex: anNValue]);
-    NSLog(@"aPValue %@", [self NSDataToHex: aPValue]);
-    NSLog(@"s1 %@", [self NSDataToHex: s1]);
+//    NSLog(@"anNValue %@", [self NSDataToHex: anNValue]);
+//    NSLog(@"aPValue %@", [self NSDataToHex: aPValue]);
+//    NSLog(@"s1 %@", [self NSDataToHex: s1]);
     NSData* t = [self calculateCMAC:anNValue andKey:s1];
-    NSLog(@"t %@", [self NSDataToHex: t]);
+//    NSLog(@"t %@", [self NSDataToHex: t]);
     
     const unsigned char* pBytes = [aPValue bytes];
     //Create T1 => (T0 || P || 0x01)
@@ -205,9 +205,9 @@ static inline char itoh(int i) {
     [t1Inputs appendBytes:pBytes length:1];
     uint8_t one = 1;
     [t1Inputs appendBytes:&one length:1];
-    NSLog(@"t1in %@", [self NSDataToHex: t1Inputs]);
+//    NSLog(@"t1in %@", [self NSDataToHex: t1Inputs]);
     NSData* t1 = [self calculateCMAC:t1Inputs andKey:t];
-    NSLog(@"t1 %@", [self NSDataToHex: t1]);
+//    NSLog(@"t1 %@", [self NSDataToHex: t1]);
     //Create T2 => (T1 || P || 0x02)
     NSMutableData *t2Inputs = [[NSMutableData alloc] init];
     [t2Inputs appendData:t1];
@@ -215,9 +215,9 @@ static inline char itoh(int i) {
     uint8_t two = 0x02;
     [t2Inputs appendBytes:&two length:1];
     
-    NSLog(@"t2in %@", [self NSDataToHex: t2Inputs]);
+//    NSLog(@"t2in %@", [self NSDataToHex: t2Inputs]);
     NSData* t2 = [self calculateCMAC:t2Inputs andKey:t];
-    NSLog(@"t2 %@", [self NSDataToHex: t2]);
+//    NSLog(@"t2 %@", [self NSDataToHex: t2]);
     
     //Create T3 => (T2 || P || 0x03)
     NSMutableData *t3Inputs = [[NSMutableData alloc] init];
@@ -226,15 +226,15 @@ static inline char itoh(int i) {
     uint8_t three = 0x03;
     [t3Inputs appendBytes:&three length:1];
     
-    NSLog(@"t3in %@", [self NSDataToHex: t3Inputs]);
+//    NSLog(@"t3in %@", [self NSDataToHex: t3Inputs]);
     NSData* t3 = [self calculateCMAC:t3Inputs andKey:t];
-    NSLog(@"t3 %@", [self NSDataToHex: t3]);
+//    NSLog(@"t3 %@", [self NSDataToHex: t3]);
     
     NSMutableData* finalData = [[NSMutableData alloc] init];
     [finalData appendData:t1];
     [finalData appendData:t2];
     [finalData appendData:t3];
-    NSLog(@"finalData %@", [self NSDataToHex: finalData]);
+//    NSLog(@"finalData %@", [self NSDataToHex: finalData]);
     
     //data mod 2^264 (keeps last 14 bytes + 7 bits), as per K2 spec.
     const unsigned char* dataPtr = [finalData bytes];
@@ -242,13 +242,13 @@ static inline char itoh(int i) {
     unsigned char firstOffset = dataPtr[15] & 0x7F;
     //Then get the rest of the data up to the 16th octet
     finalData = (NSMutableData*)[finalData subdataWithRange: NSMakeRange(16, [finalData length] - 16)];
-    NSLog(@"rest %@", [self NSDataToHex: finalData]);
+//    NSLog(@"rest %@", [self NSDataToHex: finalData]);
     
     //and concat the first octet with the chunked data, this is equivalent to removing first 15 octets - 7 bits)
     NSMutableData* output = [[NSMutableData alloc] init];
     [output appendBytes:&firstOffset length:1];
     [output appendData:finalData];
-    NSLog(@"output %@", [self NSDataToHex: output]);
+//    NSLog(@"output %@", [self NSDataToHex: output]);
     
     return output;
 }

@@ -14,6 +14,7 @@ public class LowerTransportLayer {
     var meshStateManager: MeshStateManager?
     var segmentedMessageAcknowledge: SegmentedMessageAcknowledgeBlock?
     var segAcknowledgeTimeout: DispatchTime?
+    var segments: [Data]?
     
     public init(withStateManager aStateManager: MeshStateManager, andSegmentedAcknowlegdeMent anAcknowledgementBlock: SegmentedMessageAcknowledgeBlock?) {
         segmentedMessageAcknowledge = anAcknowledgementBlock
@@ -21,10 +22,10 @@ public class LowerTransportLayer {
         partialIncomingPDU = [Data : Data]()
     }
 
-    public func append(withIncomingPDU aPDU: Data, ctl aCTL: Data, ttl aTTL: Data, src aSRC: Data, dst aDST: Data, IVIndex anIVIndex: Data, andSEQ aSEQ: Data) -> Any? {
+    public func append(withNetworkLayer networkLayer: NetworkLayer, withIncomingPDU aPDU: Data, ctl aCTL: Data, ttl aTTL: Data, src aSRC: Data, dst aDST: Data, IVIndex anIVIndex: Data, andSEQ aSEQ: Data) -> Any? {
         let dst = Data(aPDU[0...1])
         guard dst == meshStateManager?.state().unicastAddress else {
-            print("Ignoring message not directed towards us!")
+            print("lower Ignoring message not directed towards us!")
             return nil
         }
         let segmented = Data([aPDU[2] >> 7])
@@ -36,7 +37,7 @@ public class LowerTransportLayer {
         if segmented == Data([0x00]) {
             //Unsegmented Message
             let incomingFullSegment = Data(aPDU[3..<aPDU.count])
-            let upperLayer = UpperTransportLayer(withIncomingPDU: incomingFullSegment, ctl: ctl, akf: isAppKey, aid: aid, seq: aSEQ, src: aSRC, dst: aDST, szMIC: 0, ivIndex: anIVIndex, andMeshState: meshStateManager)
+            let upperLayer = UpperTransportLayer(withNetworkPdu: aPDU, withIncomingPDU: incomingFullSegment, ctl: ctl, akf: isAppKey, aid: aid, seq: aSEQ, src: aSRC, dst: aDST, szMIC: 0, ivIndex: anIVIndex, andMeshState: meshStateManager)
             //Return a parsed message
             return upperLayer.assembleMessage()
         } else {
@@ -47,13 +48,13 @@ public class LowerTransportLayer {
             let segment = Data(aPDU[6..<aPDU.count])
             let sequenceNumber = Data([aSEQ.first!, aSEQ[2] | seqZero[0], seqZero[1]])
 
-            print("PDU:\(aPDU.hexString())")
-            print("sequence num:\(sequenceNumber.hexString())")
-            print("szMIC = \(szMIC.hexString()), seqZero = \(seqZero.hexString()), segO = \(segO.hexString()), segN = \(segN.hexString()), segment = \(segment.hexString()), sequence: \(aSEQ.hexString())")
+            print("lower PDU:\(aPDU.hexString())")
+            print("lower sequence num:\(sequenceNumber.hexString())")
+            print("lower szMIC = \(szMIC.hexString()), seqZero = \(seqZero.hexString()), segO = \(segO.hexString()), segN = \(segN.hexString()), segment = \(segment.hexString()), sequence: \(aSEQ.hexString())")
             if partialIncomingPDU![segO] == nil {
                 partialIncomingPDU![segO] = segment
             } else {
-                print("segment \(segO.hexString()) already received, dropping.")
+                print("lower segment \(segO.hexString()) already received, dropping.")
             }
             if segmentedMessageAcknowledge != nil {
                 if segAcknowledgeTimeout == nil {
@@ -76,7 +77,7 @@ public class LowerTransportLayer {
                     for aKey in sortedSegmentKeys {
                         fullData.append(partialIncomingPDU![aKey]!)
                     }
-                    let upperLayer = UpperTransportLayer(withIncomingPDU: fullData, ctl: ctl, akf: isAppKey, aid: aid, seq: sequenceNumber, src: aSRC, dst: aDST, szMIC: Int(szMIC[0]), ivIndex: anIVIndex, andMeshState: meshStateManager!)
+                    let upperLayer = UpperTransportLayer(withNetworkPdu: aPDU, withIncomingPDU: fullData, ctl: ctl, akf: isAppKey, aid: aid, seq: sequenceNumber, src: aSRC, dst: aDST, szMIC: Int(szMIC[0]), ivIndex: anIVIndex, andMeshState: meshStateManager!)
                     return upperLayer.assembleMessage()
                 }
             }
@@ -117,6 +118,24 @@ public class LowerTransportLayer {
         ackData.append(Data(networkPDU))
         return Data(ackData)
     }
+    
+    public func handleSegmentAcknowledgmentMessage(_ ackMsg: SegmentAcknowledgmentMessage) -> [Data] {
+        //lowerTransport
+        print("lower layer should handle segement ack")
+    
+        var resendSegs = [Data]()
+        if let segs = segments {
+            if !ackMsg.areAllSegmentsReceived(lastSegmentNumber: UInt8(segs.count)) {
+                for (index, segment) in segs.enumerated() {
+                    if !ackMsg.isSegmentReceived(index) {
+                        print("lower resending seg: \(index)")
+                        resendSegs.append(segment);
+                    }
+                }
+            }
+        }
+        return resendSegs;
+    }
 
     public init(withParams someParams: LowerTransportPDUParams) {
         params = someParams
@@ -125,13 +144,15 @@ public class LowerTransportLayer {
     public func createPDU() -> [Data] {
         if params.ctl == Data([0x01]) {
             if isSegmented() {
-                return createSegmentedControlMessage()
+                segments = createSegmentedControlMessage()
+                return segments!
             } else {
                 return [createUnsegmentedControlMessage()]
             }
         } else {
             if isSegmented() {
-                return createSegmentedAccessMessage()
+                segments = createSegmentedAccessMessage()
+                return segments!
             } else {
                 return [createUnsegmentedAccessMessasge()]
             }
@@ -154,7 +175,7 @@ public class LowerTransportLayer {
         }
         lowerData.append(Data(headerByte))
         lowerData.append(Data(params.upperTransportData))
-        print("lower \(lowerData.hexString())")
+        print("lower unsegmented access chunk: \(lowerData.hexString())")
         return lowerData
     }
 
@@ -183,13 +204,15 @@ public class LowerTransportLayer {
             headerByte.append(Data([bytes]))
             bytes = (segO << 5) | (segN & 0x1F)
             headerByte.append(Data([bytes]))
+            let sequenceZero = (UInt16(headerByte[1] & 0x7F) << 6) | UInt16(headerByte[2] >> 2)
             //Append header
             currentChunk.append(Data(headerByte))
             //Then append current chunk
             currentChunk.append(Data(params.upperTransportData.subdata(in: aChunkRange)))
-            chunkedData.append(Data(currentChunk))
+            let chunk = Data(currentChunk)
+            print("lower segmented access chunk: \(chunk.hexString()) segZero:\(Data.init(fromInt16: sequenceZero).hexString()) segO:\(segO) segN:\(segN) ")
+            chunkedData.append(chunk)
         }
-        chunkedData.forEach {print("lower chunk: \($0.hexString())")}
         return chunkedData
     }
 
@@ -197,6 +220,7 @@ public class LowerTransportLayer {
         var pdu = Data()
         pdu.append(Data([0x7F & params.opcode[0]]))
         pdu.append(Data(params.upperTransportData))
+        print("lower unsegmented control chunk: \(pdu.hexString())")
         return pdu
     }
 
@@ -224,6 +248,7 @@ public class LowerTransportLayer {
             currentChunk.append(params.upperTransportData.subdata(in: aChunkRange))
             chunkedData.append(currentChunk)
         }
+        chunkedData.forEach {print("lower segmented control chunk: \($0.hexString())")}
         return chunkedData
     }
    

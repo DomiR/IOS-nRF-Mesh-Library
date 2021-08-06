@@ -14,7 +14,7 @@ public struct UpperTransportLayer {
     private var encryptedPayload    : Data?
     private var decryptedPayload    : Data?
 
-    public init(withIncomingPDU aPDU: Data, ctl isControl: Bool, akf isApplicationKey: Bool,
+    public init(withNetworkPdu aNetPDU: Data, withIncomingPDU aPDU: Data, ctl isControl: Bool, akf isApplicationKey: Bool,
                 aid applicationId: Data, seq aSEQ: Data, src aSRC: Data, dst aDST: Data,
                 szMIC: Int, ivIndex anIVIndex: Data, andMeshState aStateManager: MeshStateManager?) {
         stateManager = aStateManager
@@ -38,25 +38,20 @@ public struct UpperTransportLayer {
         
         if isControl {
             // Control messages aren't encrypted here, forward as is
-            print("Control message, TBD")
-            let strippedDSTPDU = Data(aPDU[2..<aPDU.count])
-            let opcode = Data([aPDU[2]])
-            params = UpperTransportPDUParams(withPayload: strippedDSTPDU, opcode: opcode, IVIndex: anIVIndex, key: key, ttl: Data([0x04]), seq: SequenceNumber(), src: aSRC, dst: aDST, nonce: nonce, ctl: isControl, afk: isApplicationKey, aid: applicationId)
+            print("upper control message, TBD")
+            //let strippedDSTPDU = Data(aPDU[2..<aPDU.count])
+            let opcode = Data([aNetPDU[2] & 0x7F])
+            params = UpperTransportPDUParams(withPayload: Data(aNetPDU[2..<aNetPDU.count]), opcode: opcode, IVIndex: anIVIndex, key: key, ttl: Data([0x04]), seq: SequenceNumber(), src: aSRC, dst: aDST, nonce: nonce, ctl: isControl, afk: isApplicationKey, aid: applicationId)
         } else {
             let micLen = szMIC == 1 ? 8 : 4
             let dataSize = aPDU.count - micLen
             let pduData = aPDU[0..<dataSize]
             let mic = aPDU[aPDU.count - micLen..<aPDU.count]
-            print("micLen: \(micLen)")
-            print("dataSize: \(dataSize)")
-            print("pduData: \(pduData.hexString())")
-            print("mic: \(mic.hexString())")
-            print("key: \(key.hexString())")
-            print("nonce: \(nonce.data.hexString())")
+            print("upper msg: micLen: \(micLen) dataSize: \(dataSize) pduData: \(pduData.hexString()) mic: \(mic.hexString()) key: \(key.hexString()) nonce: \(nonce.data.hexString())")
             if let decryptedData = sslHelper.calculateDecryptedCCM(pduData, withKey: key, nonce: nonce.data, dataSize: 0, andMIC: mic) {
                 decryptedPayload = Data(decryptedData)
             } else {
-                print("Decryption failed")
+                print("upper Decryption failed")
             }
             var opcode = Data()
             if let payload = decryptedPayload {
@@ -66,13 +61,13 @@ public struct UpperTransportLayer {
                     params = UpperTransportPDUParams(withPayload: payload, opcode: opcode, IVIndex: anIVIndex, key: key, ttl: Data([0x04]), seq: SequenceNumber(), src: aSRC, dst: aDST, nonce: nonce, ctl: isControl, afk: isApplicationKey, aid: applicationId)
                 } else {
                     //No payload, failed to decrypt
-                    print("decryption failure, or no payload")
+                    print("upper decryption failure, or no payload")
                     let fixKey: Data! = (key == nil) ? Data() : key;
                     params = UpperTransportPDUParams(withPayload: Data(), opcode: Data(), IVIndex: anIVIndex, key: fixKey, ttl: Data([0x04]), seq: SequenceNumber(), src: aSRC, dst: aDST, nonce: nonce, ctl: isControl, afk: isApplicationKey, aid: applicationId)
                 }
             } else {
                 //no payload, failed to decrypt
-                print("decryption failure, or no payload")
+                print("upper decryption failure, or no payload")
                 params = UpperTransportPDUParams(withPayload: Data(), opcode: Data(), IVIndex: anIVIndex, key: key, ttl: Data([0x04]), seq: SequenceNumber(), src: aSRC, dst: aDST, nonce: nonce, ctl: isControl, afk: isApplicationKey, aid: applicationId)
             }
         }
@@ -90,11 +85,15 @@ public struct UpperTransportLayer {
         
         if params!.ctl {
             //Assemble control message
-            print("Assemble control message 0x\(params!.opcode.hexString()), 0x\(params!.payload.hexString())")
+            print("upper assemble control 0x\(params!.opcode.hexString()), 0x\(params!.payload.hexString())")
+            if (params!.opcode == Data([0x00])){
+                print("Segment ack message")
+                return SegmentAcknowledgmentMessage(withPayload: params!.payload, andSourceAddress: params!.sourceAddress)
+            }
             return nil
         } else {
             //Assemble access message
-            print("Assemble access message 0x\(params!.opcode.hexString()) , 0x\(params!.payload.hexString())")
+            print("upper assemble access 0x\(params!.opcode.hexString()) , 0x\(params!.payload.hexString())")
             //let messageParser = AccessMessageParser()
             let payload = Data(decryptedPayload!.dropFirst(params!.opcode.count))
             return AccessMessageParser.parseData(payload, withOpcode: params!.opcode, sourceAddress: params!.sourceAddress)

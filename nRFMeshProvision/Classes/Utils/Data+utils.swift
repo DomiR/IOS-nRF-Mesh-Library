@@ -65,6 +65,25 @@ public extension Data {
             string + String(format: "%02X", byte)
         }
    }
+    
+    func read<R: FixedWidthInteger>(fromOffset offset: Int = 0) -> R {
+        let length = MemoryLayout<R>.size
+        
+        #if swift(>=5.0)
+        return subdata(in: offset ..< offset + length).withUnsafeBytes { $0.load(as: R.self) }
+        #else
+        return subdata(in: offset ..< offset + length).withUnsafeBytes { $0.pointee }
+        #endif
+    }
+    
+    func readUInt24(fromOffset offset: Int = 0) -> UInt32 {
+        return UInt32(self[offset]) | UInt32(self[offset + 1]) << 8 | UInt32(self[offset + 2]) << 16
+    }
+    
+    func readBigEndian<R: FixedWidthInteger>(fromOffset offset: Int = 0) -> R {
+        let r: R = read(fromOffset: offset)
+        return r.bigEndian
+    }
 
     func leftPad(length: Int) -> Data {
         guard length > self.count else {

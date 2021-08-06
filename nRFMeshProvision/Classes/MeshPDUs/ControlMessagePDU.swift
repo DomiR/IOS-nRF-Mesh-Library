@@ -68,7 +68,8 @@ public struct ControlMessagePDU {
             let lowerTransportParams = LowerTransportPDUParams(withUpperTransportData: rawPDU, ttl: ttl, ctl: Data([0x01]), ivIndex: ivIndex, sequenceNumber: seq, sourceAddress: src, destinationAddress: dst, micSize: Data([0x00]), afk: isAppKeyData, aid: Data([0x00]), andOpcode: opcode)
             let lowerTransport = LowerTransportLayer(withParams: lowerTransportParams)
             let networkLayer = NetworkLayer(withLowerTransportLayer: lowerTransport, andNetworkKey: key)
-            return networkLayer.createPDU()
+            let lowerPDU = lowerTransport.createPDU()
+            return networkLayer.createPDU(withLowerPdus: lowerPDU)
         } else {
             return nil
         }
