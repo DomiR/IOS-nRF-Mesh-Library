@@ -183,7 +183,7 @@ public class LowerTransportLayer {
         var chunkedData = [Data]()
         let chunkSize   = 12 //12 bytes is the max
         let chunkRanges = calculateDataRanges(params.upperTransportData, withSize: chunkSize)
-
+        let sequenceData = params.sequenceNumber.sequenceData()
         for aChunkRange in chunkRanges {
             var headerByte  = Data()
             if params.appKeyFlag == Data([0x01]) {
@@ -198,9 +198,9 @@ public class LowerTransportLayer {
             var currentChunk = Data()
             let segO = UInt8(chunkRanges.index(of: aChunkRange)!)
             let segN = UInt8(chunkRanges.count - 1) //0 index
-            var bytes: UInt8 = (params.szMIC[0] << 7 ) | ((params.sequenceNumber.sequenceData()[1] << 2) & 0x7F) | (params.sequenceNumber.sequenceData()[2] >> 6)
+            var bytes: UInt8 = (params.szMIC[0] << 7 ) | ((sequenceData[1] << 2) & 0x7F) | (sequenceData[2] >> 6)
             headerByte.append(Data([bytes]))
-            bytes = (params.sequenceNumber.sequenceData()[2] << 2) | (segO >> 6)
+            bytes = (sequenceData[2] << 2) | (segO >> 3)
             headerByte.append(Data([bytes]))
             bytes = (segO << 5) | (segN & 0x1F)
             headerByte.append(Data([bytes]))
@@ -238,7 +238,7 @@ public class LowerTransportLayer {
             let sequenceData = params.sequenceNumber.sequenceData()
             var bytes: UInt8 = 0x00 | ((sequenceData[1] << 2) & 0x7F) | (sequenceData[2] >> 6)
             headerByte.append(bytes)
-            bytes = (sequenceData[2] << 2) | (segO >> 6)
+            bytes = (sequenceData[2] << 2) | (segO >> 3)
             headerByte.append(bytes)
             bytes = (segO << 5) | (segN & 0x1F)
             headerByte.append(bytes)
