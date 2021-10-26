@@ -47,6 +47,7 @@ public protocol ProvisionedMeshNodeDelegate {
     func sentGenericUserPropertySetUnacknowledged(_ destinationAddress: Data)
     func sentGenericOnOffSetUnacknowledged(_ destinationAddress: Data)
     func sentGenericLevelSetUnacknowledged(_ destinationAddress: Data)
+    func sentGenericMoveSetUnacknowledged(_ destinationAddress: Data)
     func sentGenericOnPowerUpSetUnacknowledged(_ destinationAddress: Data)
 
     func sentLightLightnessSetUnacknowledged(_ destinationAddress: Data)

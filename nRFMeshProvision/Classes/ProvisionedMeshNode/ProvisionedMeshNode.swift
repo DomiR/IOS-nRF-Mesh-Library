@@ -167,6 +167,15 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = setState
         genericControllerState.execute()
     }
+    
+    public func nodeGenericMoveSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withDeltaLevelState aState: Data, transitionTime aTransitionTime: Data, andTransitionDelay aTransitionDelay: Data) {
+        let setState = GenericMoveSetUnacknowledgedControllerState(withTargetProxyNode: self,
+                                                      destinationAddress: anAddress,
+                                                      andStateManager: stateManager)
+        setState.setParametrizedTargetState(aTargetState: aState, withTransitionTime: aTransitionTime, andTransitionDelay: aTransitionDelay)
+        genericControllerState = setState
+        genericControllerState.execute()
+    }
 
     public func nodeGenericOnPowerUpGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
            let getState = GenericOnPowerUpGetControllerState(withTargetProxyNode: self,
