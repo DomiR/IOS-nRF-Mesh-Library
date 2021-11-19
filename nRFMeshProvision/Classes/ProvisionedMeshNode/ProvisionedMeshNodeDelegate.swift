@@ -42,6 +42,8 @@ public protocol ProvisionedMeshNodeDelegate {
 
     // Vendor model
     func receivedVendorModelStatusMessage(_ status: VendorModelStatusMessage)
+    
+    func receivedSecureBeacon(_ status: Data)
 
     // Sent for unacknowledged messages
     func sentGenericUserPropertySetUnacknowledged(_ destinationAddress: Data)

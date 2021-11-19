@@ -64,6 +64,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         proxyService = aProxyService
         proxyDataOut = aDataOutCharacteristic
         proxyDataIn  = aDataInCharacteristic
+        self.switchToState(SleepConfiguratorState(withTargetProxyNode: self, destinationAddress: Data(), andStateManager: stateManager))
         delegate?.nodeDidCompleteDiscovery(self)
     }
 
