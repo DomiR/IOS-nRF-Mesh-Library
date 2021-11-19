@@ -12,6 +12,7 @@ import CoreBluetooth
 //
 public let MeshServiceProvisioningUUID             = CBUUID(string: "1827")
 public let MeshServiceProxyUUID                    = CBUUID(string: "1828")
+public let OtaUUID                                 = CBUUID(string: "FE59")
 
 // MARK: - Mesh characteristics identifiers
 public let MeshCharacteristicProvisionDataInUUID   = CBUUID(string: "2ADB")
