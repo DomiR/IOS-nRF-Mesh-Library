@@ -80,7 +80,7 @@ public struct NetworkLayer {
         let privacyKey = k2![17..<33]
         var micSize: UInt8
         let ctlTtl = Data([(lowerTransport.params.ctl[0] << 7) | (lowerTransport.params.ttl[0] & 0x7F)])
-        print("network k2 \(k2?.hexString()) encryptionKey \(encryptionKey.hexString()) privacyKey \(privacyKey.hexString())")
+        print("network k2 \((k2 ?? Data()).hexString() ?? "") encryptionKey \(encryptionKey.hexString()) privacyKey \(privacyKey.hexString())")
 
         var networkPDUs = [Data]()
         

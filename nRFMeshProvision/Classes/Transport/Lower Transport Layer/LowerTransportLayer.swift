@@ -101,12 +101,13 @@ public class LowerTransportLayer {
                 block = block + UInt32((1 << aSegmentIndex))
             }
         }
-        let blockData = Data([
-            UInt8((block & 0xFF000000) >> 24),
-            UInt8((block & 0x00FF0000) >> 16),
-            UInt8((block & 0x0000FF00) >> 8),
-            UInt8((block & 0x000000FF))
-            ])
+        let blockData = Data(fromInt32: block)
+//        Data([
+//            UInt8((block & 0xFF000000) >> 24),
+//            UInt8((block & 0x00FF0000) >> 16),
+//            UInt8((block & 0x0000FF00) >> 8),
+//            UInt8((block & 0x000000FF))
+//            ])
         //First bit of octet 1 is 0 OBO is not implenented yet.
         var payload = Data([UInt8((seqZero[0] & 0x1F) << 2) | UInt8((seqZero[1] & 0xC0) >> 6),
                             UInt8(seqZero[1] << 2)])

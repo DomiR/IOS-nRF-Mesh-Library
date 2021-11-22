@@ -50,6 +50,7 @@ public class AccessMessagePDU {
         var nonce : TransportNonce
         let segmented = payload.count > 12
         print("Created Access PDU " + opcode.hexString() + payload.hexString() + " for " + self.dst.hexString())
+        print("Using ivIndex: \(ivIndex.hexString())")
         if isAppKey {
             let addressType = MeshAddressTypes(rawValue: Data(dst))!
             if addressType != .Unassigned {

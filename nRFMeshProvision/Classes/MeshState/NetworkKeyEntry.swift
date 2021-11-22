@@ -71,7 +71,7 @@ public class NetworkKeyEntry: Codable {
         if let oldKeyString = try values.decodeIfPresent(String.self, forKey: .key) {
             oldKey = Data(hexString: oldKeyString)
         }
-        let phaseInt = try values.decode(UInt32.self, forKey: .index)
+        let phaseInt = try values.decode(UInt32.self, forKey: .phase)
         phase = Data(fromInt32: phaseInt);
         flags = try values.decodeIfPresent(Data.self, forKey: .flags) ?? Data([0x00]);
         minSecurity = try values.decode(NetworkKeySecurityLevel.self, forKey: .minSecurity)
@@ -88,7 +88,7 @@ public class NetworkKeyEntry: Codable {
         try container.encode(name, forKey: .name)
         try container.encode(index.int16, forKey: .index)
         try container.encode(key.hexString(), forKey: .key)
-        try container.encode(phase.uint32, forKey: .phase)
+        try container.encode(phase.uint32BigEndian, forKey: .phase)
         try container.encode(flags, forKey: .flags)
         try container.encode(minSecurity, forKey: .minSecurity)
         try container.encode(timestamp.hexString(), forKey: .timestamp)

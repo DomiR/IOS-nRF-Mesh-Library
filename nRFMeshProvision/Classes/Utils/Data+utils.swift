@@ -41,6 +41,10 @@ public extension Data {
     init(fromBigInt16 anInteger: UInt16) {
         self = Data([UInt8(anInteger & 0x00FF), UInt8((anInteger & 0xFF00) >> 8)])
     }
+    
+    init(fromBigInt32 anInteger: UInt32) {
+        self = Data([UInt8(anInteger & 0x000000FF), UInt8((anInteger & 0x0000FF00) >> 8), UInt8((anInteger & 0x00FF0000) >> 16), UInt8((anInteger & 0xFF000000) >> 24)])
+    }
 
     init(fromInt32 anInteger: UInt32) {
         self = Data([UInt8((anInteger & 0xFF000000) >> 24), UInt8((anInteger & 0x00FF0000) >> 16), UInt8((anInteger & 0x0000FF00) >> 8), UInt8(anInteger & 0x000000FF)])
