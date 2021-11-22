@@ -16,6 +16,8 @@ public class NetworkKeyEntry: Codable {
     public var flags: Data
     public var minSecurity: NetworkKeySecurityLevel
     public var timestamp: Date
+    
+    public var beaconKey: Data?;
 
     public init(withName aName: String, andKey aKey: Data, oldKey anOldKey: Data?, atIndex anIndex: Data, atTimeStamp aTimeStamp: Date, phase aPhase: Data, andMinSecurity aMinSecurity: NetworkKeySecurityLevel) {
         name = aName
@@ -26,6 +28,7 @@ public class NetworkKeyEntry: Codable {
         minSecurity = aMinSecurity
         timestamp = aTimeStamp
         flags = Data([0x00])
+        calculateDerivatives()
     }
 
     public init(withName aName: String, andKey aKey: Data, oldKey anOldKey: Data?, atIndex anIndex: Data, phase aPhase: Data, andMinSecurity aMinSecurity: NetworkKeySecurityLevel) {
@@ -37,6 +40,14 @@ public class NetworkKeyEntry: Codable {
         minSecurity = aMinSecurity
         flags = Data([0x00])
         timestamp = Date()
+        calculateDerivatives()
+    }
+    
+    private func calculateDerivatives() {
+        let P = Data([0x69, 0x64, 0x31, 0x32, 0x38, 0x01]) // "id128" || 0x01
+        let helper = OpenSSLHelper();
+        let saltBK = helper.calculateSalt("nkbk".data(using: .utf8)!)
+        beaconKey = OpenSSLHelper().calculateK1(withN: key, salt: saltBK, andP: P);
     }
 
     enum CodingKeys: String, CodingKey {
@@ -69,7 +80,7 @@ public class NetworkKeyEntry: Codable {
         } else {
             timestamp = Date();
         }
-        
+        calculateDerivatives()
     }
 
     public func encode(to encoder: Encoder) throws {
