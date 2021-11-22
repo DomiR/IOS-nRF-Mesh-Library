@@ -70,6 +70,12 @@ public extension Data {
         }
    }
     
+    func bitString() -> String {
+        return self.reduce("") { string, byte in
+            string + String(String(String(byte, radix: 2).reversed()).padding(toLength: 8, withPad: "0", startingAt: 0).reversed()) + " ";
+        }
+    }
+    
     func read<R: FixedWidthInteger>(fromOffset offset: Int = 0) -> R {
         let length = MemoryLayout<R>.size
         

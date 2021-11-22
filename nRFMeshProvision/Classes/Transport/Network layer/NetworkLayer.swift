@@ -74,13 +74,13 @@ public struct NetworkLayer {
         let ivi = lowerTransport.params.ivIndex.last! & 0x01 //LSB of IVIndex
         let k2 = sslHelper.calculateK2(withN: netKey, andP: Data(bytes: [0x00]))
         let nid = k2![0]
-        let iviNid = Data([ivi | nid])
+        let iviNid = Data([(ivi << 7) | (nid & 0x7F)])
         
         let encryptionKey = k2![1..<17]
         let privacyKey = k2![17..<33]
         var micSize: UInt8
         let ctlTtl = Data([(lowerTransport.params.ctl[0] << 7) | (lowerTransport.params.ttl[0] & 0x7F)])
-        print("network k2 \((k2 ?? Data()).hexString() ?? "") encryptionKey \(encryptionKey.hexString()) privacyKey \(privacyKey.hexString())")
+        print("network k2 \((k2 ?? Data()).hexString()) encryptionKey \(encryptionKey.hexString()) privacyKey \(privacyKey.hexString())")
 
         var networkPDUs = [Data]()
         
