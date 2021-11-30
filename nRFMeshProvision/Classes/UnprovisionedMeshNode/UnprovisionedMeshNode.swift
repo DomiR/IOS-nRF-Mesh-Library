@@ -141,7 +141,7 @@ public class UnprovisionedMeshNode: NSObject, UnprovisionedMeshNodeProtocol {
         provisionerPrivateSecKey = someKey
     }
 
-    func deviceKey() -> Data? {
+    public func deviceKey() -> Data? {
         return calculatedDeviceKey
     }
    
