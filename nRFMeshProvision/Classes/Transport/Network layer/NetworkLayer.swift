@@ -26,8 +26,9 @@ public struct NetworkLayer {
 
     public mutating func incomingPDU(_ aPDU : Data) -> Any? {
         let k2Output = sslHelper.calculateK2(withN: netKey, andP: Data([0x00]))!
-        let nid = k2Output[0] & 0x7F
-        let calculactedIVINid = (ivIndex[2] & 0x01) | nid
+        let networkNid = k2Output[0] & 0x7F
+        let ivi = ivIndex[3] & 0x01; // least significant bit of IV Index
+        let calculactedIVINid = (ivi << 7) | networkNid
         guard calculactedIVINid == aPDU.first else {
             print("network Expected IV Index||NID did not match packet data, message is malfromed. NOOP")
             return nil
