@@ -40,9 +40,18 @@ public protocol ProvisionedMeshNodeDelegate {
     func receivedSceneStatusMessage(_ status: SceneStatusMessage);
     func receivedSceneRegisterStatusMessage(_ status: SceneRegisterStatusMessage);
 
+    // Time model
+    func receivedTimeStatusMessage(_ status: TimeStatusMessage)
+    func receivedTimeRoleStatusMessage(_ status: TimeRoleStatusMessage)
+    func receivedTimezoneStatusMessage(_ status: TimezoneStatusMessage)
+    func receivedTaiUtcDeltaStatusMessage(_ status: TaiUtcDeltaStatusMessage)
+
+    // Scheduler model
+    func receivedSchedulerStatusMessage(_ status: SchedulerStatusMessage)
+    func receivedSchedulerActionStatusMessage(_ status: SchedulerActionStatusMessage)
+
     // Vendor model
     func receivedVendorModelStatusMessage(_ status: VendorModelStatusMessage)
-    
     func receivedSecureBeacon(_ status: Data)
 
     // Sent for unacknowledged messages
@@ -66,4 +75,6 @@ public protocol ProvisionedMeshNodeDelegate {
 
     func sentVendorModelUnacknowledged(_ destinationAddress: Data)
     func sentHealthAttentionSetUnacknowledged(_ destinationAddress: Data)
+  
+    func sentSchedulerActionSetUnacknowledged(_ destinationAddress: Data)
 }

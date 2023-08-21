@@ -93,7 +93,7 @@ public struct UpperTransportLayer {
             return nil
         } else {
             //Assemble access message
-            print("upper assemble access 0x\(params!.opcode.hexString()) , 0x\(params!.payload.hexString())")
+            print("Received Access PDU \(params!.payload.hexString())")
             //let messageParser = AccessMessageParser()
             let payload = Data(decryptedPayload!.dropFirst(params!.opcode.count))
             return AccessMessageParser.parseData(payload, withOpcode: params!.opcode, sourceAddress: params!.sourceAddress)

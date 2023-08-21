@@ -168,7 +168,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = setState
         genericControllerState.execute()
     }
-    
+
     public func nodeGenericMoveSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withDeltaLevelState aState: Data, transitionTime aTransitionTime: Data, andTransitionDelay aTransitionDelay: Data) {
         let setState = GenericMoveSetUnacknowledgedControllerState(withTargetProxyNode: self,
                                                       destinationAddress: anAddress,
@@ -450,6 +450,112 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState.execute()
     }
 
+    public func nodeTimeGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
+        let state = TimeGetControllerState(withTargetProxyNode: self,
+                                               destinationAddress: anAddress,
+                                               andStateManager: stateManager)
+        genericControllerState = state
+        genericControllerState.execute()
+    }
+  
+    public func nodeTimeSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withPayload aPayload: Data) {
+      let state = TimeSetControllerState(withTargetProxyNode: self,
+                                                    destinationAddress: anAddress,
+                                                    andStateManager: stateManager)
+      state.setTargetState(aPayload: aPayload);
+      genericControllerState = state
+      genericControllerState.execute()
+    }
+
+    public func nodeTimeRoleGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
+        let state = TimeRoleGetControllerState(withTargetProxyNode: self,
+                                               destinationAddress: anAddress,
+                                               andStateManager: stateManager)
+        genericControllerState = state
+        genericControllerState.execute()
+    }
+  
+    public func nodeTimeRoleSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withPayload aPayload: Data) {
+      let state = TimeRoleSetControllerState(withTargetProxyNode: self,
+                                         destinationAddress: anAddress,
+                                         andStateManager: stateManager)
+      state.setTargetState(aPayload: aPayload);
+      genericControllerState = state
+      genericControllerState.execute()
+    }
+    
+    public func nodeTimezoneGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
+        let state = TimezoneGetControllerState(withTargetProxyNode: self,
+                                               destinationAddress: anAddress,
+                                               andStateManager: stateManager)
+        genericControllerState = state
+        genericControllerState.execute()
+    }
+  
+    public func nodeTimezoneSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withPayload aPayload: Data) {
+      let state = TimezoneSetControllerState(withTargetProxyNode: self,
+                                             destinationAddress: anAddress,
+                                             andStateManager: stateManager)
+      state.setTargetState(aPayload: aPayload);
+      genericControllerState = state
+      genericControllerState.execute()
+    }
+    
+    public func nodeTaiUtcDeltaGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
+      let state = TaiUtcDeltaGetControllerState(withTargetProxyNode: self,
+                                             destinationAddress: anAddress,
+                                             andStateManager: stateManager)
+      genericControllerState = state
+      genericControllerState.execute()
+    }
+  
+    public func nodeTaiUtcDeltaSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withPayload aPayload: Data) {
+      let state = TaiUtcDeltaSetControllerState(withTargetProxyNode: self,
+                                             destinationAddress: anAddress,
+                                             andStateManager: stateManager)
+      state.setTargetState(aPayload: aPayload);
+      genericControllerState = state
+      genericControllerState.execute()
+    }
+  
+    public func nodeSchedulerGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
+      let state = SchedulerGetControllerState(withTargetProxyNode: self,
+                                                destinationAddress: anAddress,
+                                                andStateManager: stateManager)
+      genericControllerState = state
+      genericControllerState.execute()
+    }
+  
+    public func nodeSchedulerActionGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withIndex aIndex: Data) {
+      let state = SchedulerActionGetControllerState(withTargetProxyNode: self,
+                                              destinationAddress: anAddress,
+                                              andStateManager: stateManager)
+      
+      state.setIndex(aIndex: aIndex)
+      genericControllerState = state
+      genericControllerState.execute()
+    }
+  
+    public func nodeSchedulerActionSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withPayload aPayload: Data) {
+      let state = SchedulerActionSetControllerState(withTargetProxyNode: self,
+                                                destinationAddress: anAddress,
+                                                andStateManager: stateManager)
+      state.setTargetState(aPayload: aPayload);
+      genericControllerState = state
+      genericControllerState.execute()
+    }
+  
+    public func nodeSchedulerActionSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withPayload aPayload: Data) {
+      let state = SchedulerActionSetUnacknowledgedControllerState(withTargetProxyNode: self,
+                                                    destinationAddress: anAddress,
+                                                    andStateManager: stateManager)
+      state.setTargetState(aTargetState: aPayload);
+      genericControllerState = state
+      genericControllerState.execute()
+    }
+  
+    
+
     public func nodeSceneGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
         let state = SceneGetControllerState(withTargetProxyNode: self,
                                                destinationAddress: anAddress,
@@ -615,7 +721,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         configurationState = bindState
         configurationState.execute()
     }
-    
+
     public func getConfigRelay(destinationAddress: Data) {
         let state = ConfigRelayGetConfiguratorState(withTargetProxyNode: self,
                                                       destinationAddress: destinationAddress,
@@ -623,7 +729,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         configurationState = state
         configurationState.execute()
     }
-    
+
     public func setConfigRelay(destinationAddress: Data,
                                withRelay relay: Int,
                                withRelayRetransmitCount relayRetransmitCount: Int,
@@ -635,7 +741,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         configurationState = state
         configurationState.execute()
     }
-    
+
     public func getConfigNetworkTransmit(destinationAddress: Data) {
         let state = ConfigNetworkTransmitGetConfiguratorState(withTargetProxyNode: self,
                                                       destinationAddress: destinationAddress,
@@ -643,7 +749,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         configurationState = state
         configurationState.execute()
     }
-    
+
     public func setConfigNetworkTransmit(destinationAddress: Data,
                               withNetworkTransmitCount networkTransmitCount: Int,
                               withNetworkTransmitIntervalSteps networkTransmitIntervalSteps: Int) {

@@ -7,6 +7,16 @@
 
 import Foundation
 
+extension UInt8 {
+    public func mask(bits: Int) -> UInt8 {
+        if (bits == 8) {
+            return self
+        } else {
+            return self & ((1 << bits) - 1)
+        }
+    }
+}
+
 public extension Data {
     //Hex string to Data representation
     //Inspired by https://stackoverflow.com/questions/26501276/converting-hex-string-to-nsdata-in-swift
@@ -138,6 +148,106 @@ public extension Data {
 
     var int32BigEndian: Int32 {
         return Int32(bigEndian: withUnsafeBytes { $0.pointee })
+    }
+    
+    /// Read a specific number of bits from an offset in the Data object.
+    /// Note that this method does no sanity checks. The Data object must be large enough to read the bits.
+    /// - parameters:
+    ///   - numBits: The number of bits to read.
+    ///   - fromOffset: The offset in bits in the Data to read from.
+    func readBits(_ numBits: Int, fromOffset offset: Int) -> UInt64 {
+        var res: UInt64 = 0
+        
+        var bitsLeft = numBits
+        var currentOffset = offset % 8
+        var currentShift = 0
+        var bytePos = offset / 8
+        
+        while bitsLeft > 0 {
+            let bitsFromFirstOctet = Swift.min(bitsLeft, 8 - currentOffset)
+            
+            if (currentOffset == 0) {
+                res += UInt64(self[bytePos].mask(bits: bitsFromFirstOctet)) << currentShift
+                
+                currentShift += 8
+                currentOffset = bitsFromFirstOctet % 8
+                bytePos += 1
+                bitsLeft -= 8
+            } else {
+                let firstOctet = (self[bytePos] >> currentOffset).mask(bits: bitsFromFirstOctet)
+                
+                if (bitsLeft > bitsFromFirstOctet) {
+                    let bitsFromSecondOctet = Swift.min(8, bitsLeft) - bitsFromFirstOctet
+                    let secondOctet = self[bytePos + 1].mask(bits: bitsFromSecondOctet) << (8 - currentOffset)
+                    
+                    res += UInt64(firstOctet + secondOctet) << currentShift
+                    
+                    currentShift += 8
+                    currentOffset = bitsFromSecondOctet % 8
+                    bytePos += 1
+                    bitsLeft -= 8
+                } else {
+                    res += UInt64(firstOctet) << currentShift
+                    
+                    currentShift += 8
+                    currentOffset = (currentOffset + bitsFromFirstOctet) % 8
+                    bytePos += 1
+                    bitsLeft -= bitsFromFirstOctet
+                }
+            }
+        }
+        
+        return res
+    }
+    
+    mutating func writeBits(value: UInt8, numBits: Int, atOffset offset: Int) {
+        return writeBits(value: UInt64(value), numBits: numBits, atOffset: offset)
+    }
+    
+    mutating func writeBits(value: UInt16, numBits: Int, atOffset offset: Int) {
+        return writeBits(value: UInt64(value), numBits: numBits, atOffset: offset)
+    }
+  
+    mutating func writeBits(value: Int16, numBits: Int, atOffset offset: Int) {
+        return writeBits(value: UInt64(value), numBits: numBits, atOffset: offset)
+    }
+    
+    mutating func writeBits(value: UInt32, numBits: Int, atOffset offset: Int) {
+        return writeBits(value: UInt64(value), numBits: numBits, atOffset: offset)
+    }
+    
+    /// Write a specific number of bits from a value into the Data object.
+    /// Note that this method does no sanity checks, the Data must be large enough to fit the bits before calling.
+    /// - parameters:
+    ///   - value: The value to read bits from.
+    ///   - numBits: The number of bits to write.
+    ///   - atOffset: The offset in bits in the Data object to write to.
+    mutating func writeBits(value: UInt64, numBits: Int, atOffset offset: Int) {
+        let currentOffset = offset % 8
+        var writtenBits = 0
+        var bytePos = offset / 8
+        
+        while writtenBits < numBits {
+            let bitsLeft = numBits - writtenBits
+            let octet = UInt8((value >> writtenBits) & ((1 << Swift.min(bitsLeft, 8)) - 1))
+            
+            if (currentOffset == 0) {
+                self[bytePos] = octet
+                
+                bytePos += 1
+                writtenBits += 8
+            } else {
+                let bitsToFirstByte = 8 - currentOffset
+                self[bytePos] = self[bytePos] | ((octet & ((1 << bitsToFirstByte) - 1)) << currentOffset)
+                
+                if (bitsLeft > bitsToFirstByte) {
+                    self[bytePos + 1] = octet >> bitsToFirstByte
+                }
+                
+                bytePos += 1
+                writtenBits += 8
+            }
+        }
     }
 
 }

@@ -22,6 +22,10 @@ public struct AccessMessageParser {
                 return SceneStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x4E]):
                 return GenericUserPropertyStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x5D]):
+                return TimeStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x5F]):
+                return SchedulerActionStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             default:
                 return nil
             }
@@ -68,6 +72,14 @@ public struct AccessMessageParser {
                 return SceneRegisterStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x82, 0x12]):
                 return GenericOnPowerUpStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x82, 0x3A]):
+                return TimeRoleStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x82, 0x3D]):
+                return TimezoneStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x82, 0x40]):
+                return TaiUtcDeltaStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x82, 0x4A]):
+                return SchedulerStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             default:
                 return nil;
             }
