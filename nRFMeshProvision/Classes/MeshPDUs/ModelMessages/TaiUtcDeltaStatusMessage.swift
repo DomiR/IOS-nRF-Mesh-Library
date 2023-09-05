@@ -15,8 +15,11 @@ public struct TaiUtcDeltaStatusMessage {
     public let taiDeltaChange: UInt64
 
 
-    public init(withPayload aPayload: Data, andSourceAddress srcAddress: Data) {
+    public init?(withPayload aPayload: Data, andSourceAddress srcAddress: Data) {
         sourceAddress = srcAddress
+        guard aPayload.count == 9 else {
+          return nil
+        }
         taiUtcDeltaCurrent = UInt16(aPayload.readBits(15, fromOffset: 0))
         taiUtcDeltaNew = UInt16(aPayload.readBits(15, fromOffset: 16))
         taiDeltaChange = aPayload.readBits(40, fromOffset: 32)
