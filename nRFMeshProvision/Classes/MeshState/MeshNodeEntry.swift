@@ -94,7 +94,8 @@ public class MeshNodeEntry: NSObject, Codable {
         deviceKey = Data(hexString: deviceKeyString) ?? OpenSSLHelper().generateRandom()
         let nodeUnicastString = try values.decode(String.self, forKey: .nodeUnicast)
         nodeUnicast = Data(hexString: nodeUnicastString) ?? Data([0x00, 0x00])
-        nodeName = try values.decode(String.self, forKey: .nodeName)
+        let nodeName = try values.decodeIfPresent(String.self, forKey: .nodeName)
+        self.nodeName = nodeName != nil ? nodeName! : "";
         let companyIdentifierString = try values.decodeIfPresent(String.self, forKey: .companyIdentifier)
         if let companyIdentifier = companyIdentifierString {
             self.companyIdentifier = Data(hexString: companyIdentifier)
