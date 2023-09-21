@@ -75,11 +75,8 @@ public class NetworkKeyEntry: Codable {
         phase = Data(fromInt32: phaseInt);
         flags = try values.decodeIfPresent(Data.self, forKey: .flags) ?? Data([0x00]);
         minSecurity = try values.decode(NetworkKeySecurityLevel.self, forKey: .minSecurity)
-        if let timestampString = try? values.decode(String.self, forKey: .timestamp) {
-            timestamp = Date(hexString: timestampString) ?? Date();
-        } else {
-            timestamp = Date();
-        }
+        // ignore the timestamp
+        timestamp = Date();
         calculateDerivatives()
     }
 
@@ -97,6 +94,31 @@ public class NetworkKeyEntry: Codable {
 }
 
 public enum NetworkKeySecurityLevel: Int, Codable {
-    case low = 0
-    case high = 1
+  case low = 0
+  case high = 1
+  
+  public init(from decoder: Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    do {
+      let value = try container.decode(Int.self)
+      switch value {
+        case 0:
+          self = .low
+        case 1:
+          self = .high
+        default:
+          throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid value for NetworkKeySecurityLevel")
+      }
+    } catch DecodingError.typeMismatch {
+      let valueString = try container.decode(String.self)
+      switch valueString {
+        case "insecure":
+          self = .low
+        case "secure":
+          self = .high
+        default:
+          throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid value for NetworkKeySecurityLevel")
+      }
+    }
+  }
 }

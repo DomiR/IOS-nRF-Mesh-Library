@@ -46,7 +46,7 @@ public class MeshNodeEntry: NSObject, Codable {
         appKeys = [Data]()
         netKeys = [aNetKeyIdx]
     }
-    
+
     public func getElementIndex(withUnicast elementAddress: Data) -> Int? {
         if let nodeUnicastAddress = self.nodeUnicast {
             if let elements = self.elements {
@@ -81,7 +81,9 @@ public class MeshNodeEntry: NSObject, Codable {
         case netKeys
         case configComplete
         case ttl
+        case defaultTTL
         case blacklisted
+        case excluded
     }
 
     public required init(from decoder: Decoder) throws {
@@ -101,35 +103,43 @@ public class MeshNodeEntry: NSObject, Codable {
         if let productIdentifier = productIdentifierString {
             self.productIdentifier = Data(hexString: productIdentifier)
         }
-        
+
         let productVersionString = try values.decodeIfPresent(String.self, forKey: .productVersion)
         if let productVersion = productVersionString {
             self.productVersion = Data(hexString: productVersion)
         }
         provisionedTimeStamp = try values.decodeIfPresent(Date.self, forKey: .provisionedTimeStamp) // TODO: use android ait
-        let nodeId = try? values.decode(Data.self, forKey: .nodeId)
-        self.nodeId = nodeId ?? (Data(hexString: (UUID)) ?? Data())
-        let appKeysList = try values.decode([AppKeyIndex].self, forKey: .appKeys)
-        appKeys = appKeysList.compactMap { Data(hexString: $0.index) }
+        //let nodeId = try? values.decode(Data.self, forKey: .nodeId)
+        self.nodeId = (Data(hexString: (UUID)) ?? Data())
+        do {
+          let appKeysList = try values.decode([AppKeyIndex].self, forKey: .appKeys)
+          appKeys = appKeysList.compactMap { Data(hexString: $0.index) }
+        } catch {
+          let appKeyUInt16List = try values.decode([AppKeyIndexUInt16].self, forKey: .appKeys)
+          appKeys = appKeyUInt16List.compactMap { Data(fromInt16: $0.index) }
+        }
 
         let replayProtectionCountString = try values.decodeIfPresent(String.self, forKey: .replayProtectionCount)
         if let replayProtectionCount = replayProtectionCountString {
                 self.replayProtectionCount = Data(hexString: replayProtectionCount)
         }
-        
-        
+
+
         let features = try values.decodeIfPresent(Features.self, forKey: .featureFlags)
         if let featureList = features {
             featureFlags = featureList.asData();
         }
-        
+
         elements = try values.decode([CompositionElement].self, forKey: .elements)
         let netKeysList = try values.decode([NetKeyIndex].self, forKey: .netKeys)
         netKeys = netKeysList.map { Data(fromInt16: $0.index) }
         configComplete = try values.decode(Bool.self, forKey: .configComplete)
-        let ttlInt = try values.decode(UInt16.self, forKey: .ttl)
-        ttl = Data(fromInt16: ttlInt);
-        blacklisted = try values.decode(Bool.self, forKey: .blacklisted)
+        let ttlInt = try values.decodeIfPresent(UInt16.self, forKey: .ttl)
+        let defaultTTLInt = try values.decodeIfPresent(UInt16.self, forKey: .defaultTTL)
+        ttl = ttlInt != nil ? Data(fromInt16: ttlInt!) : defaultTTLInt != nil ? Data(fromInt16: defaultTTLInt!) : Data([0x00, 0x08]);
+        let blacklistedValue = try values.decodeIfPresent(Bool.self, forKey: .blacklisted)
+        let excluded = try values.decodeIfPresent(Bool.self, forKey: .excluded)
+        blacklisted = blacklistedValue ?? excluded ?? false;
         security = try values.decode(String.self, forKey: .security)
     }
 
@@ -162,6 +172,10 @@ public struct AppKeyIndex: Codable {
     var index: String;
 }
 
+public struct AppKeyIndexUInt16: Codable {
+  var index: UInt16;
+}
+
 public struct NetKeyIndex: Codable {
     var index: UInt16;
 }
@@ -177,11 +191,11 @@ public struct Features: Codable {
     var lowPower: FeatureState = .disabled;
     var proxy: FeatureState = .disabled;
     var relay: FeatureState = .disabled;
-    
+
     private func isBitSet(b: UInt16, pos: UInt8) -> Bool {
         return (b & (1 << pos)) != 0;
     }
-    
+
     public init(withFeatureData someFeatureData: Data?) {
         if let feature = someFeatureData?.uint16BigEndian {
             relay = isBitSet(b: feature, pos: 0) ? .enabled : .unsupported;
@@ -190,7 +204,7 @@ public struct Features: Codable {
             lowPower = isBitSet(b: feature, pos: 3) ? .enabled : .unsupported;
         }
     }
-    
+
     public func asData() -> Data {
         var feature = UInt8(0);
         feature |= UInt8(relay == .enabled ? (1 << 0) : 0)

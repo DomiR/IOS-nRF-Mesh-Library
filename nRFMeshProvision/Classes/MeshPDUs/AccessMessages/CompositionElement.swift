@@ -205,7 +205,33 @@ public struct MeshModel: Codable {
     var bind: [String]?
     var subscribe: [String]?
     var publish: PublishSettings?
-    
+
+    enum CodingKeys: String, CodingKey {
+        case modelId, bind, subscribe, publish
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        modelId = try container.decode(String.self, forKey: .modelId)
+        subscribe = try container.decodeIfPresent([String].self, forKey: .subscribe)
+        publish = try container.decodeIfPresent(PublishSettings.self, forKey: .publish)
+
+        // Try to decode bind as [String], if it fails, decode as [Int] and convert to [String]
+        do {
+            bind = try container.decodeIfPresent([String].self, forKey: .bind)
+        } catch {
+            let bindInts = try container.decodeIfPresent([UInt16].self, forKey: .bind)
+          bind = bindInts?.map { Data(fromInt16: $0).hexString() }
+        }
+    }
+  
+  public init(modelId: String, bind: [String]?, subscribe: [String]?, publish: PublishSettings?) {
+    self.modelId = modelId
+    self.bind = bind
+    self.subscribe = subscribe
+    self.publish = publish
+  }
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(modelId, forKey: .modelId)
@@ -222,9 +248,52 @@ public struct PublishSettings: Codable {
     var period: Int
     var retransmit: PusblishRetransmitSettings
     var credentials: Int
+
+    enum CodingKeys: String, CodingKey {
+        case address, index, ttl, period, retransmit, credentials
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        address = try container.decode(String.self, forKey: .address)
+        ttl = try container.decode(Int.self, forKey: .ttl)
+        retransmit = try container.decode(PusblishRetransmitSettings.self, forKey: .retransmit)
+        credentials = try container.decode(Int.self, forKey: .credentials)
+
+        // Try to decode index as String, if it fails, decode as Int and convert to String
+        do {
+            index = try container.decode(String.self, forKey: .index)
+        } catch {
+            let indexInt = try container.decode(Int.self, forKey: .index)
+            index = String(indexInt)
+        }
+      
+        // Try to decode period as number
+        do {
+          period = try container.decode(Int.self, forKey: .period)
+        } catch {
+          let periodSettings = try container.decode(PublishPeriodSettings.self, forKey: .period)
+          period = periodSettings.resolution << 6 | periodSettings.numberOfSteps
+        }
+    }
+
+    // New initializer
+    public init(address: String, index: String, ttl: Int, period: Int, retransmit: PusblishRetransmitSettings, credentials: Int) {
+        self.address = address
+        self.index = index
+        self.ttl = ttl
+        self.period = period
+        self.retransmit = retransmit
+        self.credentials = credentials
+    }
 }
 
 public struct PusblishRetransmitSettings: Codable {
     var count: Int
     var interval: Int
+}
+
+public struct PublishPeriodSettings: Codable {
+  var numberOfSteps: Int
+  var resolution: Int
 }

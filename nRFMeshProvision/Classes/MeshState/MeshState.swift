@@ -83,12 +83,8 @@ public class MeshState: NSObject, Codable {
         meshUUID = UUID(uuidString: meshUUIDString.lowercased()) ?? UUID()
         version = try values.decode(String.self, forKey: .version)
         
-        // android uses iat format
-        if let timestampString = try? values.decode(String.self, forKey: .timestamp) {
-            timestamp = Date(hexString: timestampString) ?? Date()
-        } else {
-            timestamp = Date();
-        }
+        // we ignore timestamp
+        timestamp = Date()
         
         nodes = try values.decode([MeshNodeEntry].self, forKey: .nodes)
         netKeys = try values.decode([NetworkKeyEntry].self, forKey: .netKeys)
