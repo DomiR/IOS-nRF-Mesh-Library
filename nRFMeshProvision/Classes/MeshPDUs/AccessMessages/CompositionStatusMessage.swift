@@ -19,6 +19,7 @@ public struct CompositionStatusMessage {
 
     public init(withPayload aPayload: Data, andSourceAddress srcAddress: Data) {
         sourceAddress = srcAddress
+        print("Create CompositionStatusMessage with \(aPayload.hexString())")
         page = Data([aPayload[0]])
         companyIdentifier = Data([aPayload[2], aPayload[1]])
         productIdentifier = Data([aPayload[4], aPayload[3]])

@@ -10,7 +10,7 @@ import Foundation
 public class MeshNodeEntry: NSObject, Codable {
     // MARK: - Properties
 
-    public var UUID: String?
+    public var UUID: String
     public let nodeName: String // TODO: investigate why correct name is not set
     public let provisionedTimeStamp: Date?
     public let nodeId: Data
@@ -37,11 +37,11 @@ public class MeshNodeEntry: NSObject, Codable {
 
     // MARK: - Initialization
 
-    public init(withName aName: String, provisionDate aProvisioningTimestamp: Date, nodeId anId: Data, andDeviceKey aDeviceKey: Data, andNetKeyIndex aNetKeyIdx: Data) {
+    public init(withName aName: String, provisionDate aProvisioningTimestamp: Date, uuid anUUID: String, andDeviceKey aDeviceKey: Data, andNetKeyIndex aNetKeyIdx: Data) {
         nodeName = aName
         provisionedTimeStamp = aProvisioningTimestamp
-        nodeId = anId
-        UUID = anId.hexString();
+        nodeId = Data()
+        UUID = anUUID;
         deviceKey = aDeviceKey
         appKeys = [Data]()
         netKeys = [aNetKeyIdx]

@@ -14,7 +14,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
     public  var logDelegate         : ProvisionedMeshNodeLoggingDelegate?
     public  var delegate            : ProvisionedMeshNodeDelegate?
     private var peripheral          : CBPeripheral
-    private var meshNodeIdentifier  : Data
+    public var meshNodeIdentifier  : String
     private var proxyDataIn         : CBCharacteristic!
     private var proxyDataOut        : CBCharacteristic!
     private var proxyService        : CBService!
@@ -27,7 +27,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         stateManager        = aStateManager
         peripheral          = aNode.basePeripheral()
         delegate            = aDelegate
-        meshNodeIdentifier = aNode.nodeIdentifier()
+        meshNodeIdentifier  = aNode.meshNodeIdentifier
 
         super.init()
     }
@@ -806,15 +806,6 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
 
     public func nodeBLEName() -> String {
         return peripheral.name ?? "N/A"
-    }
-
-    public func nodeIdentifier() -> Data {
-        return meshNodeIdentifier
-    }
-
-    public func humanReadableNodeIdentifier() -> String {
-        let nodeIdData = Data([meshNodeIdentifier[0], meshNodeIdentifier[1]])
-        return nodeIdData.hexString()
     }
 
     // MARK: - NSObject Protocols

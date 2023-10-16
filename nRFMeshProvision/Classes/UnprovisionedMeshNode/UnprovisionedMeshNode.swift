@@ -16,7 +16,7 @@ public class UnprovisionedMeshNode: NSObject, UnprovisionedMeshNodeProtocol {
     private let peripheral          : CBPeripheral
     private let advertisementData   : [AnyHashable : Any]
     private var rssi                : NSNumber
-    private var meshNodeIdentifier  : Data = Data()
+    public var meshNodeIdentifier  : String
     private var provisioningDataIn  : CBCharacteristic!
     private var provisioningDataOut : CBCharacteristic!
     private var provisioningService : CBService!
@@ -40,17 +40,17 @@ public class UnprovisionedMeshNode: NSObject, UnprovisionedMeshNodeProtocol {
     private var currentInviteCapabilities   : InviteCapabilities!
     
     // MARK: - MeshNode implementation
-    public init(withPeripheral aPeripheral: CBPeripheral, advertisementDictionary aDictionary: [AnyHashable : Any], RSSI anRSSI: NSNumber, andDelegate aDelegate: UnprovisionedMeshNodeDelegate?) {
+  public init(withPeripheral aPeripheral: CBPeripheral, advertisementDictionary aDictionary: [AnyHashable : Any], RSSI anRSSI: NSNumber, UUID anUUID: String, andDelegate aDelegate: UnprovisionedMeshNodeDelegate?) {
         peripheral          = aPeripheral
         advertisementData   = aDictionary
         delegate            = aDelegate
-        meshNodeIdentifier  = Data(hexString: aPeripheral.identifier.uuidString.replacingOccurrences(of: "-", with: ""))!
+        meshNodeIdentifier  = anUUID
         rssi = anRSSI
         super.init()
     }
    
-    convenience public init(withPeripheral aPeripheral: CBPeripheral, andAdvertisementDictionary aDictionary: [AnyHashable : Any], RSSI anRSSI: NSNumber) {
-        self.init(withPeripheral: aPeripheral, advertisementDictionary: aDictionary, RSSI: anRSSI, andDelegate: nil)
+    convenience public init(withPeripheral aPeripheral: CBPeripheral, andAdvertisementDictionary aDictionary: [AnyHashable : Any], RSSI anRSSI: NSNumber, UUID anUUID: String) {
+        self.init(withPeripheral: aPeripheral, advertisementDictionary: aDictionary, RSSI: anRSSI, UUID: anUUID, andDelegate: nil)
     }
 
     public func updateRSSI(_ anRSSI: NSNumber) {
@@ -263,20 +263,11 @@ public class UnprovisionedMeshNode: NSObject, UnprovisionedMeshNodeProtocol {
         return peripheral.name ?? "N/A"
     }
    
-    public func humanReadableNodeIdentifier() -> String {
-        let nodeIdData = Data([meshNodeIdentifier[0], meshNodeIdentifier[1]])
-        return nodeIdData.hexString()
-    }
-   
-    public func nodeIdentifier() -> Data {
-        return meshNodeIdentifier
-    }
-   
     public func getNodeEntryData() -> MeshNodeEntry? {
         var anEntry: MeshNodeEntry?
         let timestamp = Date()
         if let deviceKey = deviceKey() {
-            anEntry = MeshNodeEntry(withName: provisioningData.friendlyName, provisionDate: timestamp, nodeId: nodeIdentifier(), andDeviceKey: deviceKey, andNetKeyIndex: provisioningData.keyIndex)
+            anEntry = MeshNodeEntry(withName: provisioningData.friendlyName, provisionDate: timestamp, uuid: meshNodeIdentifier, andDeviceKey: deviceKey, andNetKeyIndex: provisioningData.keyIndex)
         }
         return anEntry
     }
