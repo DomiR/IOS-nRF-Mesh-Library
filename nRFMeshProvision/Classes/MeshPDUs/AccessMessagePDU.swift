@@ -19,7 +19,6 @@ public class AccessMessagePDU {
     let dst         : Data
     let seq         : SequenceNumber
     var networkLayer: NetworkLayer?
-    
     public init(withPayload aPayload: Data, opcode anOpcode: Data, appKey anAppKey: Data, netKey aNetKey: Data, seq aSeq: SequenceNumber, ivIndex anIVIndex: Data, source aSrc: Data, andDst aDST: Data) {
         isAppKey    = true
         opcode      = anOpcode
@@ -30,7 +29,20 @@ public class AccessMessagePDU {
         dst         = aDST
         ivIndex     = anIVIndex
         seq         = aSeq
-        ttl         = Data([0x04])
+        ttl         = Data([0x08])
+    }
+
+    public init(withPayload aPayload: Data, opcode anOpcode: Data, appKey anAppKey: Data, netKey aNetKey: Data, seq aSeq: SequenceNumber, ivIndex anIVIndex: Data, source aSrc: Data, andDst aDST: Data, ttl aTTL: Data) {
+        isAppKey    = true
+        opcode      = anOpcode
+        payload     = aPayload
+        key         = anAppKey
+        netKey      = aNetKey
+        src         = aSrc
+        dst         = aDST
+        ivIndex     = anIVIndex
+        seq         = aSeq
+        ttl         = aTTL
     }
 
     public init(withPayload aPayload: Data, opcode anOpcode: Data, deviceKey aDeviceKey: Data, netKey aNetKey: Data, seq aSeq: SequenceNumber, ivIndex anIVIndex: Data, source aSrc: Data, andDst aDST: Data) {
@@ -43,7 +55,7 @@ public class AccessMessagePDU {
         dst         = aDST
         ivIndex     = anIVIndex
         seq         = aSeq
-        ttl         = Data([0x04])
+        ttl         = Data([0x08])
     }
    
     public func assembleNetworkPDU() -> [Data]? {
