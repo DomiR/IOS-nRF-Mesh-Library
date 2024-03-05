@@ -13,6 +13,7 @@ public protocol ProvisionedMeshNodeDelegate {
     func receivedCompositionData(_ compositionData: CompositionStatusMessage)
     func receivedAppKeyStatusData(_ appKeyStatusData: AppKeyStatusMessage)
     func receivedRelayConfig(_ modelAppStatusData: ConfigRelayStatusMessage)
+    func receivedProxyConfig(_ modelAppStatusData: ConfigProxyStatusMessage)
     func receivedNetworkTransmitStatus(_ modelAppStatusData: ConfigNetworkTransmitStatusMessage)
     func receivedModelAppStatus(_ modelAppStatusData: ModelAppStatusMessage)
     func receivedModelPublicationStatus(_ modelPublicationStatusData: ModelPublicationStatusMessage)
@@ -75,6 +76,6 @@ public protocol ProvisionedMeshNodeDelegate {
 
     func sentVendorModelUnacknowledged(_ destinationAddress: Data)
     func sentHealthAttentionSetUnacknowledged(_ destinationAddress: Data)
-  
+
     func sentSchedulerActionSetUnacknowledged(_ destinationAddress: Data)
 }

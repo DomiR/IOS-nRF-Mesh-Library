@@ -457,7 +457,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = state
         genericControllerState.execute()
     }
-  
+
     public func nodeTimeSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withPayload aPayload: Data) {
       let state = TimeSetControllerState(withTargetProxyNode: self,
                                                     destinationAddress: anAddress,
@@ -474,7 +474,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = state
         genericControllerState.execute()
     }
-  
+
     public func nodeTimeRoleSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withPayload aPayload: Data) {
       let state = TimeRoleSetControllerState(withTargetProxyNode: self,
                                          destinationAddress: anAddress,
@@ -483,7 +483,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
       genericControllerState = state
       genericControllerState.execute()
     }
-    
+
     public func nodeTimezoneGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
         let state = TimezoneGetControllerState(withTargetProxyNode: self,
                                                destinationAddress: anAddress,
@@ -491,7 +491,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = state
         genericControllerState.execute()
     }
-  
+
     public func nodeTimezoneSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withPayload aPayload: Data) {
       let state = TimezoneSetControllerState(withTargetProxyNode: self,
                                              destinationAddress: anAddress,
@@ -500,7 +500,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
       genericControllerState = state
       genericControllerState.execute()
     }
-    
+
     public func nodeTaiUtcDeltaGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
       let state = TaiUtcDeltaGetControllerState(withTargetProxyNode: self,
                                              destinationAddress: anAddress,
@@ -508,7 +508,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
       genericControllerState = state
       genericControllerState.execute()
     }
-  
+
     public func nodeTaiUtcDeltaSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withPayload aPayload: Data) {
       let state = TaiUtcDeltaSetControllerState(withTargetProxyNode: self,
                                              destinationAddress: anAddress,
@@ -517,7 +517,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
       genericControllerState = state
       genericControllerState.execute()
     }
-  
+
     public func nodeSchedulerGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
       let state = SchedulerGetControllerState(withTargetProxyNode: self,
                                                 destinationAddress: anAddress,
@@ -525,17 +525,17 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
       genericControllerState = state
       genericControllerState.execute()
     }
-  
+
     public func nodeSchedulerActionGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withIndex aIndex: Data) {
       let state = SchedulerActionGetControllerState(withTargetProxyNode: self,
                                               destinationAddress: anAddress,
                                               andStateManager: stateManager)
-      
+
       state.setIndex(aIndex: aIndex)
       genericControllerState = state
       genericControllerState.execute()
     }
-  
+
     public func nodeSchedulerActionSet(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withPayload aPayload: Data) {
       let state = SchedulerActionSetControllerState(withTargetProxyNode: self,
                                                 destinationAddress: anAddress,
@@ -544,7 +544,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
       genericControllerState = state
       genericControllerState.execute()
     }
-  
+
     public func nodeSchedulerActionSetUnacknowledged(_ anElementAddress: Data, onDestinationAddress anAddress: Data, withPayload aPayload: Data) {
       let state = SchedulerActionSetUnacknowledgedControllerState(withTargetProxyNode: self,
                                                     destinationAddress: anAddress,
@@ -553,8 +553,8 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
       genericControllerState = state
       genericControllerState.execute()
     }
-  
-    
+
+
 
     public func nodeSceneGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
         let state = SceneGetControllerState(withTargetProxyNode: self,
@@ -726,6 +726,16 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         let state = ConfigRelayGetConfiguratorState(withTargetProxyNode: self,
                                                       destinationAddress: destinationAddress,
                                                       andStateManager: stateManager)
+        configurationState = state
+        configurationState.execute()
+    }
+
+    public func setConfigProxy(destinationAddress: Data,
+                               withProxy proxy: Int) {
+        let state = ConfigProxySetConfiguratorState(withTargetProxyNode: self,
+                                                      destinationAddress: destinationAddress,
+                                                      andStateManager: stateManager)
+        state.setProxy(withProxy: proxy)
         configurationState = state
         configurationState.execute()
     }
