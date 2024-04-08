@@ -47,6 +47,11 @@ public protocol ProvisionedMeshNodeDelegate {
     func receivedTimezoneStatusMessage(_ status: TimezoneStatusMessage)
     func receivedTaiUtcDeltaStatusMessage(_ status: TaiUtcDeltaStatusMessage)
 
+    // Blob model
+    func receivedBlobTransferStatusMessage(_ status: BlobTransferStatusMessage)
+    func receivedBlobBlockStatusMessage(_ status: BlobBlockStatusMessage)
+    func sentBlobChunkTransferUnacknowledged(_ destinationAddress: Data)
+
     // Scheduler model
     func receivedSchedulerStatusMessage(_ status: SchedulerStatusMessage)
     func receivedSchedulerActionStatusMessage(_ status: SchedulerActionStatusMessage)

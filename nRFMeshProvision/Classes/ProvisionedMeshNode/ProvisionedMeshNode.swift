@@ -634,6 +634,33 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState.execute()
     }
 
+    public func blobTransferStart(_ anElementAddress: Data, withSceneNumber sceneNumber: Data, onDestinationAddress anAddress: Data) {
+        let blobTransferState = BlobTransferStartConfiguratorState(withTargetProxyNode: self,
+                                                                   destinationAddress: anAddress,
+                                                                   andStateManager: stateManager)
+        blobTransferState.setBlobData(aData)
+        genericControllerState = blobTransferState
+        genericControllerState.execute()
+    }
+
+    public func blobBlockStart(_ anElementAddress: Data, withSceneNumber sceneNumber: Data, onDestinationAddress anAddress: Data) {
+        let blobTransferState = BlobBlockStartConfiguratorState(withTargetProxyNode: self,
+                                                                   destinationAddress: anAddress,
+                                                                   andStateManager: stateManager)
+        blobTransferState.setBlobData(aData)
+        genericControllerState = blobTransferState
+        genericControllerState.execute()
+    }
+
+    public func blobChunkTransfer(_ anElementAddress: Data, withSceneNumber sceneNumber: Data, onDestinationAddress anAddress: Data) {
+        let blobTransferState = BlobChunkTransferConfiguratorState(withTargetProxyNode: self,
+                                                                   destinationAddress: anAddress,
+                                                                   andStateManager: stateManager)
+        blobTransferState.setBlobData(aData)
+        genericControllerState = blobTransferState
+        genericControllerState.execute()
+    }
+
     public func vendorModelMessage(_ anOpcode: Data,
                                    withPayload aParams: Data,
                                    onDestinationAddress anAddress: Data) {
