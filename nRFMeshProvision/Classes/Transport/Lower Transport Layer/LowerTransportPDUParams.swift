@@ -22,7 +22,7 @@ public struct LowerTransportPDUParams {
     var opcode              : Data
     var seqZero             : Data
     var seqN                : Data
-    
+
     public init(withUpperTransportData someData: Data, ttl aTTL: Data, ctl aCTL: Data, ivIndex anIVIndex: Data, sequenceNumber aSequence: SequenceNumber, sourceAddress aSource: Data, destinationAddress aDestination: Data, micSize aMicSize: Data, afk anAFK: Data, aid anAID: Data, andOpcode anOpcode: Data) {
         upperTransportData  = someData
         ttl                 = aTTL
@@ -39,6 +39,6 @@ public struct LowerTransportPDUParams {
         let dataCount       = upperTransportData.count
         let segmentCount    = UInt8(ceil(Double(dataCount) / 12.0))
         seqN                = Data([segmentCount])
-        segmented           = upperTransportData.count > 12 ? Data([0x01]) : Data([0x00])
+        segmented           = upperTransportData.count > (aCTL == Data([0x01]) ? 12 : 15) ? Data([0x01]) : Data([0x00])
     }
 }
