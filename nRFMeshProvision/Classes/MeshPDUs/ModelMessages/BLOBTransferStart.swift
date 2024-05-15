@@ -8,16 +8,11 @@
 import Foundation
 
 public struct BLOBTransferStart {
-    var opcode  : Data
+    var opcode  : Data = Data([0x83, 0x01])
     var payload : Data
 
-    public init(withTransferMode aTransferMode: Data, withBlobId aBlobId: Data, withBlobSize aBlobSize: Data, withBlockSizeLog aBlockSizeLog: Data, andClientMTUSize aClientMTUSize: Data) {
-        opcode = Data([0x83, 0x01])
-        payload = aTransferMode
-        payload.append(aBlobId)
-        payload.append(aBlobSize)
-        payload.append(aBlockSizeLog)
-        payload.append(aClientMTUSize)
+  public init(withBlobData aData: Data) {
+        payload = aData;
     }
 
     public func assemblePayload(withMeshState aState: MeshState, toAddress aDestinationAddress: Data) -> [Data]? {

@@ -16,6 +16,7 @@ class BLOBBlockStartControllerState: NSObject, GenericModelControllerStateProtoc
     private var dataOutCharacteristic   : CBCharacteristic!
     private var networkLayer            : NetworkLayer!
     private var segmentedData: Data
+    private var blobData: Data?
 
     // MARK: - ConfiguratorStateProtocol
     var destinationAddress  : Data
@@ -41,13 +42,23 @@ class BLOBBlockStartControllerState: NSObject, GenericModelControllerStateProtoc
             self.acknowlegeSegment(withAckData: ackData)
         })
     }
+  
+    public func setBlobData(withBlobData aData: Data) {
+      blobData = aData;
+    }
 
     func humanReadableName() -> String {
         return "BLOB Block Start"
     }
 
     func execute() {
-        let message = BLOBBlockStart()
+      var message: BLOBBlockStart
+      if let blobData = blobData {
+        message = BLOBBlockStart(withBlockData: blobData)
+      } else {
+        print("No target state set, nothing to execute")
+        return;
+      }
         //Send to destination
         let payloads = message.assemblePayload(withMeshState: stateManager.state(), toAddress: destinationAddress)
         for aPayload in payloads! {
@@ -85,21 +96,21 @@ class BLOBBlockStartControllerState: NSObject, GenericModelControllerStateProtoc
     }
 
     func receivedData(incomingData : Data) {
-        if incomingData[0] == 0x01 {
-            print("Secure beacon: \(incomingData.hexString())")
+      if incomingData[0] == 0x01 {
+        print("Secure beacon: \(incomingData.hexString())")
+      } else {
+        let strippedOpcode = Data(incomingData.dropFirst())
+        if let result = networkLayer.incomingPDU(strippedOpcode) {
+          if result is BLOBBlockStatus {
+            let status = result as! BLOBBlockStatus
+            target.delegate?.receivedBlobBlockStatusMessage(status)
+            let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
+            target.switchToState(nextState)
+          }
         } else {
-            let strippedOpcode = Data(incomingData.dropFirst())
-            if let result = networkLayer.incomingPDU(strippedOpcode) {
-                if result is TaiUtcDeltaStatusMessage {
-                    let taiUtcDeltaStatus = result as! TaiUtcDeltaStatusMessage
-                    target.delegate?.receivedTaiUtcDeltaStatusMessage(taiUtcDeltaStatus)
-                    let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
-                    target.switchToState(nextState)
-                }
-            } else {
-                print("ignoring non TaiUtcDeltaStatus message")
-            }
+          print("ignoring non Blob Block status message")
         }
+      }
     }
 
     private func calculateDataRanges(_ someData: Data, withSize aChunkSize: Int) -> [Range<Int>] {

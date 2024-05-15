@@ -16,6 +16,7 @@ class BLOBChunkTransferControllerState: NSObject, GenericModelControllerStatePro
     private var dataOutCharacteristic   : CBCharacteristic!
     private var networkLayer            : NetworkLayer!
     private var segmentedData: Data
+    private var chunkData: Data?
 
     // MARK: - ConfiguratorStateProtocol
     var destinationAddress  : Data
@@ -41,13 +42,23 @@ class BLOBChunkTransferControllerState: NSObject, GenericModelControllerStatePro
             self.acknowlegeSegment(withAckData: ackData)
         })
     }
+  
+  public func setChunkData(withChunkData aData: Data) {
+    chunkData = aData;
+  }
 
     func humanReadableName() -> String {
         return "BLOB Chunk Transfer"
     }
 
     func execute() {
-        let message = BLOBChunkTransfer()
+        var message: BLOBChunkTransfer
+        if let chunkData = chunkData {
+          message = BLOBChunkTransfer(withChunkData: chunkData)
+        } else {
+          print("No target state set, nothing to execute")
+          return;
+        }
         //Send to destination
         let payloads = message.assemblePayload(withMeshState: stateManager.state(), toAddress: destinationAddress)
         for aPayload in payloads! {
@@ -82,6 +93,10 @@ class BLOBChunkTransferControllerState: NSObject, GenericModelControllerStatePro
                 }
             }
         }
+      
+      target.delegate?.sentBlobChunkTransferUnacknowledged(destinationAddress);
+      let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
+      target.switchToState(nextState)
     }
 
     func receivedData(incomingData : Data) {

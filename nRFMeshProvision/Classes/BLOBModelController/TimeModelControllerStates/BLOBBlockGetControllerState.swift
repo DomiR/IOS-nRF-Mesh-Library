@@ -1,5 +1,5 @@
 //
-//  BLOBTransferStartControllerState
+//  BLOBBlockGetControllerState
 //  nRFMeshProvision
 //
 //  Created by Mostafa Berg on 24/05/2018.
@@ -8,7 +8,7 @@
 import Foundation
 import CoreBluetooth
 
-class BLOBTransferStartControllerState: NSObject, GenericModelControllerStateProtocol {
+class BLOBBlockGetControllerState: NSObject, GenericModelControllerStateProtocol {
 
     // MARK: - Properties
     private var proxyService            : CBService!
@@ -48,17 +48,12 @@ class BLOBTransferStartControllerState: NSObject, GenericModelControllerStatePro
     }
 
     func humanReadableName() -> String {
-        return "BLOB Transfer Start"
+        return "BLOB Block Get"
     }
 
     func execute() {
-      var message: BLOBTransferStart
-      if let blobData = blobData {
-        message = BLOBTransferStart(withBlobData: blobData)
-      } else {
-        print("No target state set, nothing to execute")
-        return;
-      }
+      var message = BLOBBlockGet()
+      
         //Send to destination
         let payloads = message.assemblePayload(withMeshState: stateManager.state(), toAddress: destinationAddress)
         for aPayload in payloads! {
@@ -101,14 +96,14 @@ class BLOBTransferStartControllerState: NSObject, GenericModelControllerStatePro
         } else {
             let strippedOpcode = Data(incomingData.dropFirst())
             if let result = networkLayer.incomingPDU(strippedOpcode) {
-                if result is BLOBTransferStatus {
-                    let status = result as! BLOBTransferStatus
-                    target.delegate?.receivedBlobTransferStatusMessage(status)
+                if result is BLOBBlockStatus {
+                    let status = result as! BLOBBlockStatus
+                    target.delegate?.receivedBlobBlockStatusMessage(status)
                     let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
                     target.switchToState(nextState)
                 }
             } else {
-                print("ignoring non Blob Transfer Status message")
+                print("ignoring non Blob Block status message")
             }
         }
     }

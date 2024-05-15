@@ -8,13 +8,11 @@
 import Foundation
 
 public struct BLOBChunkTransfer {
-    var opcode  : Data
+    var opcode  : Data = Data([0x66])
     var payload : Data
-a
-    public init(withChunkNumber aChunkNumber: Data, andChunkData aChunkData: Data) {
-        opcode = Data([0x66])
-        payload = aChunkNumber
-        payload.append(aChunkData)
+
+    public init(withChunkData aData: Data) {
+        payload = aData
     }
 
     public func assemblePayload(withMeshState aState: MeshState, toAddress aDestinationAddress: Data) -> [Data]? {
