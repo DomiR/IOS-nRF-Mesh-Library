@@ -1,29 +1,28 @@
 //
-//  GenericLevelSetControllerState.swift
+//  BLOBBlockStartControllerState
 //  nRFMeshProvision
 //
-//  Created by Mostafa Berg on 08/10/2018.
+//  Created by Mostafa Berg on 24/05/2018.
 //
 
 import Foundation
 import CoreBluetooth
 
-class GenericLevelSetUnacknowledgedControllerState: NSObject, GenericModelControllerStateProtocol {
-    
+class BLOBBlockStartControllerState: NSObject, GenericModelControllerStateProtocol {
+
     // MARK: - Properties
     private var proxyService            : CBService!
     private var dataInCharacteristic    : CBCharacteristic!
     private var dataOutCharacteristic   : CBCharacteristic!
     private var networkLayer            : NetworkLayer!
-    private var segmentedData           : Data
-    private var targetState             : Data?
-    private var targetStateTransitionParameters: (transitionTime: Data, transitionDelay: Data)?
-    
+    private var segmentedData: Data
+    private var blobData: Data?
+
     // MARK: - ConfiguratorStateProtocol
     var destinationAddress  : Data
     var target              : ProvisionedMeshNodeProtocol
     var stateManager        : MeshStateManager
-    
+
     required init(withTargetProxyNode aNode: ProvisionedMeshNodeProtocol,
                   destinationAddress aDestinationAddress: Data,
                   andStateManager aStateManager: MeshStateManager) {
@@ -38,39 +37,28 @@ class GenericLevelSetUnacknowledgedControllerState: NSObject, GenericModelContro
         proxyService            = discovery.proxyService
         dataInCharacteristic    = discovery.dataInCharacteristic
         dataOutCharacteristic   = discovery.dataOutCharacteristic
-        
+
         networkLayer = NetworkLayer(withStateManager: stateManager, andSegmentAcknowlegdement: { (ackData) -> (Void) in
             self.acknowlegeSegment(withAckData: ackData)
         })
     }
-    
+  
+    public func setBlobData(withBlobData aData: Data) {
+      blobData = aData;
+    }
+
     func humanReadableName() -> String {
-        return "Generic Level Set"
+        return "BLOB Block Start"
     }
-    
-    public func setParametrizedTargetState(aTargetState: Data, withTransitionTime aTransitionTime: Data, andTransitionDelay aTransitionDelay: Data) {
-        targetState = aTargetState
-        targetStateTransitionParameters = (aTransitionTime, aTransitionDelay)
-    }
-    public func setTargetState(aTargetState: Data) {
-        targetState = aTargetState
-    }
-    
+
     func execute() {
-        var message: GenericLevelSetUnacknowledgedMessage
-        if let targetState = targetState {
-            if let targetTransitionParams = targetStateTransitionParameters {
-                message = GenericLevelSetUnacknowledgedMessage(withTargetState: targetState,
-                                                 transitionTime: targetTransitionParams.transitionTime,
-                                                 andTransitionDelay: targetTransitionParams.transitionDelay)
-            } else {
-                message = GenericLevelSetUnacknowledgedMessage(withTargetState: targetState)
-            }
-        } else {
-            print("No target state set, nothing to execute")
-            return
-        }
-        
+      var message: BLOBBlockStart
+      if let blobData = blobData {
+        message = BLOBBlockStart(withBlockData: blobData)
+      } else {
+        print("No target state set, nothing to execute")
+        return;
+      }
         //Send to destination
         let payloads = message.assemblePayload(withMeshState: stateManager.state(), toAddress: destinationAddress)
         for aPayload in payloads! {
@@ -105,12 +93,26 @@ class GenericLevelSetUnacknowledgedControllerState: NSObject, GenericModelContro
                 }
             }
         }
-        
-        target.delegate?.sentGenericLevelSetUnacknowledged(destinationAddress);
-        let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
-        target.switchToState(nextState)
     }
-    
+
+    func receivedData(incomingData : Data) {
+      if incomingData[0] == 0x01 {
+        print("Secure beacon: \(incomingData.hexString())")
+      } else {
+        let strippedOpcode = Data(incomingData.dropFirst())
+        if let result = networkLayer.incomingPDU(strippedOpcode) {
+          if result is BLOBBlockStatus {
+            let status = result as! BLOBBlockStatus
+            target.delegate?.receivedBlobBlockStatusMessage(status)
+            let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
+            target.switchToState(nextState)
+          }
+        } else {
+          print("ignoring non Blob Block status message")
+        }
+      }
+    }
+
     private func calculateDataRanges(_ someData: Data, withSize aChunkSize: Int) -> [Range<Int>] {
         var totalLength = someData.count
         var ranges = [Range<Int>]()
@@ -129,7 +131,7 @@ class GenericLevelSetUnacknowledgedControllerState: NSObject, GenericModelContro
         }
         return ranges
     }
-    
+
     private func acknowlegeSegment(withAckData someData: Data) {
         print("Sending acknowledgement: \(someData.hexString())")
         if someData.count <= self.target.basePeripheral().maximumWriteValueLength(for: .withoutResponse) {
@@ -159,22 +161,48 @@ class GenericLevelSetUnacknowledgedControllerState: NSObject, GenericModelContro
             }
         }
     }
-    
+
     // MARK: - CBPeripheralDelegate
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         //NOOP
     }
-    
+
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         //NOOP
     }
-    
+
     var lastMessageType = 0xC0
-    
+
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         print("Characteristic value updated: \(characteristic.value!.hexString())")
+        //SAR handling
+        if characteristic.value![0] & 0xC0 == 0x40 {
+            if lastMessageType == 0x40 {
+                //Drop repeated 0x40's
+                print("CMP:Reduntand SAR start, dropping")
+                segmentedData = Data()
+            }
+            lastMessageType = 0x40
+            //Add message type header
+            segmentedData.append(Data([characteristic.value![0] & 0x3F]))
+            segmentedData.append(Data(characteristic.value!.dropFirst()))
+        } else if characteristic.value![0] & 0xC0 == 0x80 {
+            lastMessageType = 0x80
+            print("Segmented data cont")
+            segmentedData.append(characteristic.value!.dropFirst())
+        } else if characteristic.value![0] & 0xC0 == 0xC0 {
+            lastMessageType = 0xC0
+            print("Segmented data end")
+            segmentedData.append(Data(characteristic.value!.dropFirst()))
+            print("Reassembled data!: \(segmentedData.hexString())")
+            //Copy data and send it to NetworkLayer
+            receivedData(incomingData: Data(segmentedData))
+            segmentedData = Data()
+        } else {
+            receivedData(incomingData: Data(characteristic.value!))
+        }
     }
-    
+
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
         print("Characteristic notification state changed")
     }

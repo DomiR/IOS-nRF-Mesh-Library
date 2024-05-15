@@ -26,6 +26,8 @@ public struct AccessMessageParser {
                 return TimeStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x5F]):
                 return SchedulerActionStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x67]):
+                return BLOBBlockStatus(withPayload: someData, andSourceAddress: aSourceAddress)
             default:
                 return nil
             }
@@ -82,6 +84,8 @@ public struct AccessMessageParser {
                 return TaiUtcDeltaStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
             case Data([0x82, 0x4A]):
                 return SchedulerStatusMessage(withPayload: someData, andSourceAddress: aSourceAddress)
+            case Data([0x83, 0x03]):
+                return BLOBTransferStatus(withPayload: someData, andSourceAddress: aSourceAddress)
             default:
                 return nil;
             }

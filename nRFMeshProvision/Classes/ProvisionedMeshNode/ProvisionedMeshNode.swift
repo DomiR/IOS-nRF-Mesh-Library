@@ -634,6 +634,41 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState.execute()
     }
 
+    public func blobTransferStart(_ anElementAddress: Data, withBlobData aData: Data, onDestinationAddress anAddress: Data) {
+        let blobTransferState = BLOBTransferStartControllerState(withTargetProxyNode: self,
+                                                                   destinationAddress: anAddress,
+                                                                   andStateManager: stateManager)
+        blobTransferState.setBlobData(withBlobData: aData);
+        genericControllerState = blobTransferState
+        genericControllerState.execute()
+    }
+
+    public func blobBlockStart(_ anElementAddress: Data, withBlobData aData: Data, onDestinationAddress anAddress: Data) {
+        let blobTransferState = BLOBBlockStartControllerState(withTargetProxyNode: self,
+                                                                   destinationAddress: anAddress,
+                                                                   andStateManager: stateManager)
+        blobTransferState.setBlobData(withBlobData: aData)
+        genericControllerState = blobTransferState
+        genericControllerState.execute()
+    }
+  
+  public func blobBlockGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
+    let state = BLOBBlockGetControllerState(withTargetProxyNode: self,
+                                                          destinationAddress: anAddress,
+                                                          andStateManager: stateManager)
+    genericControllerState = state
+    genericControllerState.execute()
+  }
+
+    public func blobChunkTransfer(_ anElementAddress: Data, withChunkData aData: Data, onDestinationAddress anAddress: Data) {
+        let blobTransferState = BLOBChunkTransferControllerState(withTargetProxyNode: self,
+                                                                   destinationAddress: anAddress,
+                                                                   andStateManager: stateManager)
+        blobTransferState.setChunkData(withChunkData: aData)
+        genericControllerState = blobTransferState
+        genericControllerState.execute()
+    }
+
     public func vendorModelMessage(_ anOpcode: Data,
                                    withPayload aParams: Data,
                                    onDestinationAddress anAddress: Data) {
