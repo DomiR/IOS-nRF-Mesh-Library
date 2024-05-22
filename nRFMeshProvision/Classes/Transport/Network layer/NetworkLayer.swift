@@ -24,7 +24,7 @@ public struct NetworkLayer {
                                              andSegmentedAcknowlegdeMent: aSegmentAckBlock)
     }
 
-    public mutating func incomingPDU(_ aPDU : Data) -> Any? {
+    public mutating func incomingPDU(_ aPDU : Data, returnRawAccess returnRawAccess: Bool = false) -> Any? {
         let k2Output = sslHelper.calculateK2(withN: netKey, andP: Data([0x00]))!
         let networkNid = k2Output[0] & 0x7F
         let ivi = ivIndex[3] & 0x01; // least significant bit of IV Index
@@ -55,7 +55,7 @@ public struct NetworkLayer {
         let dst = decryptedNetworkPDU![0...1]
         print("network PDU: \(aPDU.hexString()) encPDU: \(encryptedNetworkPDU.hexString()) netMic: \(netMic.hexString())")
         print("network sequence: \(seq.hexString()), SRC: \(src.hexString()), ttl: \(ttl.hexString()), MICSize: \(micSize), encpduSz: \(encryptedNetworkPDU.count) decrypted network PDU = \(decryptedNetworkPDU!.hexString())")
-        return self.lowerTransport.append(withNetworkLayer: self, withIncomingPDU: Data(decryptedNetworkPDU!), ctl: ctlData, ttl: ttl, src: src, dst: dst, IVIndex: ivIndex, andSEQ: seq)
+        return self.lowerTransport.append(withNetworkLayer: self, withIncomingPDU: Data(decryptedNetworkPDU!), ctl: ctlData, ttl: ttl, src: src, dst: dst, IVIndex: ivIndex, andSEQ: seq, returnRawAccess: returnRawAccess)
     }
 
     public init(withLowerTransportLayer aLowerTransport: LowerTransportLayer, andNetworkKey aNetKey: Data) {

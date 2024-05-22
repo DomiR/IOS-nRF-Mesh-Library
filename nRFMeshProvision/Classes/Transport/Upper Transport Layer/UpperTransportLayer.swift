@@ -78,7 +78,7 @@ public struct UpperTransportLayer {
         sslHelper = OpenSSLHelper()
     }
 
-    public func assembleMessage() -> Any? {
+    public func assembleMessage(returnRawAccess returnRawAccess: Bool = false) -> Any? {
         guard params != nil else {
             return nil;
         }
@@ -96,7 +96,11 @@ public struct UpperTransportLayer {
             print("Received Access PDU \(params!.payload.hexString())")
             //let messageParser = AccessMessageParser()
             let payload = Data(decryptedPayload!.dropFirst(params!.opcode.count))
-            return AccessMessageParser.parseData(payload, withOpcode: params!.opcode, sourceAddress: params!.sourceAddress)
+            if(returnRawAccess) {
+                return AccessMessage(withOpcode: params!.opcode, andPayload: payload)
+            } else {
+                return AccessMessageParser.parseData(payload, withOpcode: params!.opcode, sourceAddress: params!.sourceAddress)
+            }
         }
     }
 

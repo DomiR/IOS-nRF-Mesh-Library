@@ -22,7 +22,7 @@ public class LowerTransportLayer {
         partialIncomingPDU = [Data : Data]()
     }
 
-    public func append(withNetworkLayer networkLayer: NetworkLayer, withIncomingPDU aPDU: Data, ctl aCTL: Data, ttl aTTL: Data, src aSRC: Data, dst aDST: Data, IVIndex anIVIndex: Data, andSEQ aSEQ: Data) -> Any? {
+    public func append(withNetworkLayer networkLayer: NetworkLayer, withIncomingPDU aPDU: Data, ctl aCTL: Data, ttl aTTL: Data, src aSRC: Data, dst aDST: Data, IVIndex anIVIndex: Data, andSEQ aSEQ: Data, returnRawAccess returnRawAccess: Bool = false) -> Any? {
         let dst = Data(aPDU[0...1])
         guard dst == meshStateManager?.state().unicastAddress else {
             print("lower Ignoring message not directed towards us!")
@@ -39,7 +39,7 @@ public class LowerTransportLayer {
             let incomingFullSegment = Data(aPDU[3..<aPDU.count])
             let upperLayer = UpperTransportLayer(withNetworkPdu: aPDU, withIncomingPDU: incomingFullSegment, ctl: ctl, akf: isAppKey, aid: aid, seq: aSEQ, src: aSRC, dst: aDST, szMIC: 0, ivIndex: anIVIndex, andMeshState: meshStateManager)
             //Return a parsed message
-            return upperLayer.assembleMessage()
+            return upperLayer.assembleMessage(returnRawAccess: returnRawAccess)
         } else {
             let szMIC = Data([aPDU[3] >> 7])
             let seqZero = Data([(aPDU[3] & 0x7F) >> 2, ((aPDU[3] << 6) | (aPDU[4] >> 2))])

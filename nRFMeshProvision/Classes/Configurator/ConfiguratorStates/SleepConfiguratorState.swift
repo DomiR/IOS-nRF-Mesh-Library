@@ -52,31 +52,15 @@ class SleepConfiguratorState: NSObject, ConfiguratorStateProtocol {
             target.delegate?.receivedSecureBeacon(strippedOpcode);
             
         } else {
-//            let strippedOpcode = Data(incomingData.dropFirst())
-//            if let result = networkLayer.incomingPDU(strippedOpcode) {
-//                if result is AppKeyStatusMessage {
-//                    let appKeyStatus = result as! AppKeyStatusMessage
-//                    if appKeyStatus.statusCode == .success {
-//                        //Store newly added AppKey to global list
-//                        let state = self.stateManager.state()
-//                        if let anIndex = state.nodes.index(where: { $0.nodeUnicast == destinationAddress}) {
-//                            let aNodeEntry = state.nodes[anIndex]
-//                            state.nodes.remove(at: anIndex)
-//                            if aNodeEntry.appKeys.contains(appKeyStatus.appKeyIndex) == false {
-//                                aNodeEntry.appKeys.append(appKeyStatus.appKeyIndex)
-//                            }
-//                            state.nodes.append(aNodeEntry)
-//                            stateManager.saveState()
-//                        }
-//                    } else {
-//                        print("App key add error : \(appKeyStatus.statusCode)")
-//                        target.shouldDisconnect()
-//                    }
-//                    target.delegate?.receivedAppKeyStatusData(appKeyStatus)
-//                } else {
-//                    print("Ignoring non app key status message")
-//                }
-//            }
+            let strippedOpcode = Data(incomingData.dropFirst())
+            if let result = networkLayer.incomingPDU(strippedOpcode, returnRawAccess: true) {
+                if result is AccessMessage {
+                    let status = result as! AccessMessage
+                    target.delegate?.receivedAccessMessage(status)
+                }
+            } else {
+                print("ignoring unknown status message")
+            }
         }
     }
     

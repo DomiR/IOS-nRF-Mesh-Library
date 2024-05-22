@@ -52,6 +52,11 @@ public protocol ProvisionedMeshNodeDelegate {
     func receivedBlobBlockStatusMessage(_ status: BLOBBlockStatus)
     func sentBlobChunkTransferUnacknowledged(_ destinationAddress: Data)
 
+    // Access messages
+    func sentAccessMessageUnacknowledged(_ destinationAddress: Data)
+    func receivedAccessMessage(_ status: AccessMessage)
+
+
     // Scheduler model
     func receivedSchedulerStatusMessage(_ status: SchedulerStatusMessage)
     func receivedSchedulerActionStatusMessage(_ status: SchedulerActionStatusMessage)
