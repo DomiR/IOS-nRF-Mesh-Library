@@ -669,17 +669,8 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState.execute()
     }
 
-    public func blobBlockStart(_ anElementAddress: Data, withBlobData aData: Data, onDestinationAddress anAddress: Data) {
-        let blobTransferState = BLOBBlockStartControllerState(withTargetProxyNode: self,
-                                                                   destinationAddress: anAddress,
-                                                                   andStateManager: stateManager)
-        blobTransferState.setBlobData(withBlobData: aData)
-        genericControllerState = blobTransferState
-        genericControllerState.execute()
-    }
-
     public func sendAccessMessage(destination destination: Data, opcode opcode: Data, payload payload: Data) {
-        let accessMessageState= AccessMessageControllerState(withTargetProxyNode: self,
+        let accessMessageState = AccessMessageControllerState(withTargetProxyNode: self,
                                                                    destinationAddress: destination,
                                                                    andStateManager: stateManager)
         accessMessageState.setOpcode(opcode: opcode)

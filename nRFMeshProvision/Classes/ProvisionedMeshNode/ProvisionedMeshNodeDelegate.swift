@@ -54,7 +54,7 @@ public protocol ProvisionedMeshNodeDelegate {
 
     // Access messages
     func sentAccessMessageUnacknowledged(_ destinationAddress: Data)
-    func receivedAccessMessage(_ status: AccessMessage)
+    func receivedAccessMessage(_ status: GenericAccessMessage)
 
 
     // Scheduler model

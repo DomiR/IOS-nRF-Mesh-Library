@@ -16,6 +16,7 @@ class SleepConfiguratorState: NSObject, ConfiguratorStateProtocol {
     private var dataOutCharacteristic   : CBCharacteristic!
     private var segmentedData: Data = Data()
     private var lastMessageType = 0xC0
+    private var networkLayer            : NetworkLayer!
 
     // MARK: - ConfiguratorStateProtocol
     var destinationAddress  : Data
@@ -35,6 +36,10 @@ class SleepConfiguratorState: NSObject, ConfiguratorStateProtocol {
         proxyService            = discovery.proxyService
         dataInCharacteristic    = discovery.dataInCharacteristic
         dataOutCharacteristic   = discovery.dataOutCharacteristic
+      
+        networkLayer = NetworkLayer(withStateManager: stateManager, andSegmentAcknowlegdement: { (ackData) -> (Void) in
+          self.acknowlegeSegment(withAckData: ackData)
+        })
     }
     
     func humanReadableName() -> String {
@@ -53,15 +58,66 @@ class SleepConfiguratorState: NSObject, ConfiguratorStateProtocol {
             
         } else {
             let strippedOpcode = Data(incomingData.dropFirst())
-            if let result = networkLayer.incomingPDU(strippedOpcode, returnRawAccess: true) {
-                if result is AccessMessage {
-                    let status = result as! AccessMessage
+            if let result = networkLayer.incomingPDU(strippedOpcode, withRawAccess: true) {
+                if result is GenericAccessMessage {
+                    let status = result as! GenericAccessMessage
                     target.delegate?.receivedAccessMessage(status)
+                    let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
+                    target.switchToState(nextState)
                 }
             } else {
                 print("ignoring unknown status message")
             }
         }
+    }
+  
+    private func calculateDataRanges(_ someData: Data, withSize aChunkSize: Int) -> [Range<Int>] {
+      var totalLength = someData.count
+      var ranges = [Range<Int>]()
+      var partIdx = 0
+      while (totalLength > 0) {
+        var range : Range<Int>
+        if totalLength > aChunkSize {
+          totalLength -= aChunkSize
+          range = (partIdx * aChunkSize) ..< aChunkSize + (partIdx * aChunkSize)
+        } else {
+          range = (partIdx * aChunkSize) ..< totalLength + (partIdx * aChunkSize)
+          totalLength = 0
+        }
+        ranges.append(range)
+        partIdx += 1
+      }
+      return ranges
+    }
+  
+    private func acknowlegeSegment(withAckData someData: Data) {
+      print("Sending acknowledgement: \(someData.hexString())")
+      if someData.count <= self.target.basePeripheral().maximumWriteValueLength(for: .withoutResponse) {
+        self.target.basePeripheral().writeValue(someData, for: self.dataInCharacteristic, type: .withoutResponse)
+      } else {
+        print("Maximum write length is shorter than ACK PDU, will Segment")
+        var segmentedData = [Data]()
+        let dataToSegment = Data(someData.dropFirst()) //Remove old header as it's going to be added in SAR
+        let chunkRanges = self.calculateDataRanges(dataToSegment, withSize: 19)
+        for aRange in chunkRanges {
+          var header = Data()
+          let chunkIndex = chunkRanges.index(of: aRange)!
+          if chunkIndex == 0 {
+            header.append(Data([0x40])) //SAR start
+          } else if chunkIndex == chunkRanges.count - 1 {
+            header.append(Data([0xC0])) //SAR end
+          } else {
+            header.append(Data([0x80])) //SAR cont.
+          }
+          var chunkData = Data(header)
+          chunkData.append(Data(dataToSegment[aRange]))
+          segmentedData.append(Data(chunkData))
+        }
+        for aSegment in segmentedData {
+          print("Sending Ack segment: \(aSegment.hexString())")
+          self.target.basePeripheral().writeValue(aSegment, for: self.dataInCharacteristic, type: .withoutResponse)
+        }
+      }
     }
     
     // MARK: - CBPeripheralDelegate

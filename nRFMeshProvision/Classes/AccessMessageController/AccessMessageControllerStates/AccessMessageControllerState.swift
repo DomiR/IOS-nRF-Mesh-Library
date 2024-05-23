@@ -5,7 +5,7 @@
 import Foundation
 import CoreBluetooth
 
-class AcccessMessgeControllerState: NSObject, GenericModelControllerStateProtocol {
+class AccessMessageControllerState: NSObject, GenericModelControllerStateProtocol {
 
     // MARK: - Properties
     private var proxyService            : CBService!
@@ -55,7 +55,11 @@ class AcccessMessgeControllerState: NSObject, GenericModelControllerStateProtoco
 
     func execute() {
         if let appKey = stateManager.state().appKeys.first?.key {
-            let accessMessage = AccessMessagePDU(withPayload: payload, opcode: opcode, appKey: appKey, netKey: aState.netKeys[0].key, seq: SequenceNumber(), ivIndex: aState.netKeys[0].phase, source: aState.unicastAddress, andDst: aDestinationAddress)
+            let aState = stateManager.state();
+            guard payload != nil && opcode != nil else {
+              return;
+            }
+            let accessMessage = AccessMessagePDU(withPayload: payload!, opcode: opcode!, appKey: appKey, netKey: aState.netKeys[0].key, seq: SequenceNumber(), ivIndex: aState.netKeys[0].phase, source: aState.unicastAddress, andDst: destinationAddress)
             let payloads = accessMessage.assembleNetworkPDU()
             //Send to destination
             for aPayload in payloads! {
@@ -93,7 +97,7 @@ class AcccessMessgeControllerState: NSObject, GenericModelControllerStateProtoco
         } else {
             // TODO handle error
             print("Error: AppKey Not present, returning nil")
-            return nil
+            return
         }
 
         target.delegate?.sentAccessMessageUnacknowledged(destinationAddress);
