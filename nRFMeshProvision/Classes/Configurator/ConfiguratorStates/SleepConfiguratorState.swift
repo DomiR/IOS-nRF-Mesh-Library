@@ -51,6 +51,7 @@ class SleepConfiguratorState: NSObject, ConfiguratorStateProtocol {
     }
     
     func receivedData(incomingData : Data) {
+      print("Received data \(incomingData.hexString())")
         if incomingData[0] == 0x01 {
             print("Secure beacon: \(incomingData.hexString())")
             let strippedOpcode = Data(incomingData.dropFirst())

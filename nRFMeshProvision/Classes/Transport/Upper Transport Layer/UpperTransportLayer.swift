@@ -92,15 +92,16 @@ public struct UpperTransportLayer {
             }
             return nil
         } else {
+            // if we have a raw access, we
+            if (rawAccess) {
+              print("Received Access PDU \(decryptedPayload!.hexString())")
+              return GenericAccessMessage(withPdu: decryptedPayload!, andSourceAddress: params!.sourceAddress)
+            }
+          
             //Assemble access message
             print("Received Access PDU \(params!.payload.hexString())")
-            //let messageParser = AccessMessageParser()
             let payload = Data(decryptedPayload!.dropFirst(params!.opcode.count))
-            if (rawAccess) {
-                return GenericAccessMessage(withOpcode: params!.opcode, andPayload: payload, andSourceAddress: params!.sourceAddress)
-            } else {
-                return AccessMessageParser.parseData(payload, withOpcode: params!.opcode, sourceAddress: params!.sourceAddress)
-            }
+            return AccessMessageParser.parseData(payload, withOpcode: params!.opcode, sourceAddress: params!.sourceAddress)
         }
     }
 

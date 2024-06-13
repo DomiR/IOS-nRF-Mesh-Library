@@ -669,12 +669,14 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState.execute()
     }
 
-    public func sendAccessMessage(destination destination: Data, opcode opcode: Data, payload payload: Data) {
+    public func sendAccessMessage(destination destination: Data, opcode opcode: Data, payload payload: Data, withIsConfig isConfig: Bool, withKey key: Data) {
         let accessMessageState = AccessMessageControllerState(withTargetProxyNode: self,
                                                                    destinationAddress: destination,
                                                                    andStateManager: stateManager)
         accessMessageState.setOpcode(opcode: opcode)
         accessMessageState.setPayload(payload: payload)
+        accessMessageState.setKey(key: key)
+        accessMessageState.setIsConfig(withConfig: isConfig)
         genericControllerState = accessMessageState
         genericControllerState.execute()
     }

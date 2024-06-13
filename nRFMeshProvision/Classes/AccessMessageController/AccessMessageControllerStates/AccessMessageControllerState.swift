@@ -15,6 +15,8 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
     private var segmentedData: Data
     private var opcode: Data?
     private var payload: Data?
+    private var key: Data?
+    private var isConfig: Bool?
 
     // MARK: - ConfiguratorStateProtocol
     var destinationAddress  : Data
@@ -48,6 +50,14 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
     public func setOpcode(opcode opcodeData: Data) {
       opcode = opcodeData;
     }
+  
+    public func setKey(key keyData: Data) {
+      key = keyData;
+    }
+  
+    public func setIsConfig(withConfig isConfig: Bool) {
+      self.isConfig = isConfig;
+    }
 
     func humanReadableName() -> String {
         return "Access message"
@@ -56,10 +66,30 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
     func execute() {
         if let appKey = stateManager.state().appKeys.first?.key {
             let aState = stateManager.state();
-            guard payload != nil && opcode != nil else {
+            guard payload != nil && opcode != nil && key != nil && isConfig != nil else {
               return;
             }
-            let accessMessage = AccessMessagePDU(withPayload: payload!, opcode: opcode!, appKey: appKey, netKey: aState.netKeys[0].key, seq: SequenceNumber(), ivIndex: aState.netKeys[0].phase, source: aState.unicastAddress, andDst: destinationAddress)
+          let accessMessage = isConfig! ? AccessMessagePDU(
+            withPayload: payload!,
+            opcode: opcode!,
+            deviceKey: key!,
+            netKey: aState.netKeys[0].key,
+            seq: SequenceNumber(),
+            ivIndex: aState.netKeys[0].phase,
+            source: aState.unicastAddress,
+            andDst: destinationAddress
+          ) :
+          AccessMessagePDU(
+            withPayload: payload!,
+            opcode: opcode!,
+            appKey: key!,
+            netKey: aState.netKeys[0].key,
+            seq: SequenceNumber(),
+            ivIndex: aState.netKeys[0].phase,
+            source: aState.unicastAddress,
+            andDst: destinationAddress,
+            ttl: Data([0x08])
+          );
             let payloads = accessMessage.assembleNetworkPDU()
             //Send to destination
             for aPayload in payloads! {

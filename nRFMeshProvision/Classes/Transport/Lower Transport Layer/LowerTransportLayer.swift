@@ -78,7 +78,7 @@ public class LowerTransportLayer {
                         fullData.append(partialIncomingPDU![aKey]!)
                     }
                     let upperLayer = UpperTransportLayer(withNetworkPdu: aPDU, withIncomingPDU: fullData, ctl: ctl, akf: isAppKey, aid: aid, seq: sequenceNumber, src: aSRC, dst: aDST, szMIC: Int(szMIC[0]), ivIndex: anIVIndex, andMeshState: meshStateManager!)
-                    return upperLayer.assembleMessage()
+                    return upperLayer.assembleMessage(withRawAccess: rawAccess)
                 }
             }
         }

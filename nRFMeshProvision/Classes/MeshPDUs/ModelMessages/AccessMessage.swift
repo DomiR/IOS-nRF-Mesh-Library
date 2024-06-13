@@ -1,13 +1,11 @@
 import Foundation
 
 public struct GenericAccessMessage {
-    public var opcode: Data
-    public var payload: Data
+    public var pdu: Data;
     public var sourceAddress: Data
 
-    public init(withOpcode aOpcode: Data, andPayload aPayload: Data, andSourceAddress srcAddress: Data) {
-      opcode = aOpcode;
-      payload = aPayload;
+    public init(withPdu pdu: Data, andSourceAddress srcAddress: Data) {
+      self.pdu = pdu;
       sourceAddress = srcAddress;
     }
 }
