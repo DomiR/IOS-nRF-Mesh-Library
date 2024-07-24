@@ -36,9 +36,10 @@ public struct LowerTransportPDUParams {
         opcode              = anOpcode
         appKeyFlag          = anAFK
         seqZero             = aSequence.sequenceData()
-        let dataCount       = upperTransportData.count
-        let segmentCount    = UInt8(ceil(Double(dataCount) / 12.0))
+        let dataCount  = upperTransportData.count
+        let maxSegmentCount = 12
+        let segmentCount    = UInt8(ceil(Double(dataCount) / Double(maxSegmentCount)))
         seqN                = Data([segmentCount])
-        segmented           = upperTransportData.count > (aCTL == Data([0x01]) ? 12 : 15) ? Data([0x01]) : Data([0x00])
+        segmented           = upperTransportData.count > maxSegmentCount ? Data([0x01]) : Data([0x00])
     }
 }
