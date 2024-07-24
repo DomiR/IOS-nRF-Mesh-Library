@@ -96,6 +96,7 @@ public class AccessMessagePDU {
         let upperTransport = UpperTransportLayer(withParams: upperTransportParams)
 
         if let encryptedPDU = upperTransport.encrypt() {
+          print("encrypted upper pdu \(encryptedPDU.hexString())")
             let isAppKeyData = isAppKey ? Data([0x01]) : Data([0x00])
             let lowerTransportParams = LowerTransportPDUParams(withUpperTransportData: Data(encryptedPDU), ttl: ttl, ctl: Data([0x00]), ivIndex: ivIndex, sequenceNumber: seq, sourceAddress: src, destinationAddress: dst, micSize: Data([0x00]), afk: isAppKeyData, aid: upperTransport.params!.aid, andOpcode: opcode)
             let lowerTransport = LowerTransportLayer(withParams: lowerTransportParams)

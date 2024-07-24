@@ -65,6 +65,11 @@ class SleepConfiguratorState: NSObject, ConfiguratorStateProtocol {
                     target.delegate?.receivedAccessMessage(status)
                     let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
                     target.switchToState(nextState)
+                } else if result is SegmentAcknowledgmentMessage {
+                  let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
+                  target.switchToState(nextState)
+                } else {
+                  print("got unhandled message")
                 }
             } else {
                 print("ignoring unknown status message")
