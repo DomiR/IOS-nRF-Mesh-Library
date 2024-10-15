@@ -57,12 +57,18 @@ public class AccessMessagePDU {
         seq         = aSeq
         ttl         = Data([0x08])
     }
-   
+
     public func assembleNetworkPDU() -> [Data]? {
         var nonce : TransportNonce
         let segmented = payload.count > 12
-        print("Created Access PDU " + opcode.hexString() + payload.hexString() + " for " + self.dst.hexString())
-        print("Using ivIndex: \(ivIndex.hexString())")
+        print("""
+        ==========================
+        Access Message PDU:
+          Opcode: \(opcode.hexString())
+          Payload: \(payload.hexString())
+          Destination: \(self.dst.hexString())
+          IV Index: \(ivIndex.hexString())
+        """)
         if isAppKey {
             let addressType = MeshAddressTypes(rawValue: Data(dst))!
             if addressType != .Unassigned {
@@ -89,14 +95,13 @@ public class AccessMessagePDU {
         } else {
             let sslHelper = OpenSSLHelper()
             let aid = sslHelper.calculateK4(withN: key!)
-            
+
             upperTransportParams = UpperTransportPDUParams(withPayload: Data(opcode + payload), opcode: opcode, IVIndex: ivIndex, key: key!, ttl: ttl, seq: seq, src: src, dst: dst, nonce: nonce, ctl: false, afk: isAppKey, aid: aid!)
         }
 
         let upperTransport = UpperTransportLayer(withParams: upperTransportParams)
 
         if let encryptedPDU = upperTransport.encrypt() {
-          print("encrypted upper pdu \(encryptedPDU.hexString())")
             let isAppKeyData = isAppKey ? Data([0x01]) : Data([0x00])
             let lowerTransportParams = LowerTransportPDUParams(withUpperTransportData: Data(encryptedPDU), ttl: ttl, ctl: Data([0x00]), ivIndex: ivIndex, sequenceNumber: seq, sourceAddress: src, destinationAddress: dst, micSize: Data([0x00]), afk: isAppKeyData, aid: upperTransport.params!.aid, andOpcode: opcode)
             let lowerTransport = LowerTransportLayer(withParams: lowerTransportParams)

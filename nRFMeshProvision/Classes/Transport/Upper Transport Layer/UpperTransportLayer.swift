@@ -21,24 +21,38 @@ public struct UpperTransportLayer {
         sslHelper = OpenSSLHelper()
         var key: Data!
         var nonce: TransportNonce!
-        
+
         if isApplicationKey {
             key = stateManager!.state().appKeys.first?.key
             nonce = TransportNonce(appNonceWithIVIndex: anIVIndex, isSegmented: true, seq: aSEQ, src: aSRC, dst: aDST)
         } else {
-            // TODO: 11 sent us package, which it should not have?
+            // Print device keys for all nodes
+            print("""
+Device keys for nodes:
+\(stateManager!.state().nodes.compactMap { node in
+    guard let unicast = node.nodeUnicast else { return nil }
+    return "  \(unicast.hexString()): \(node.deviceKey.hexString())"
+}.joined(separator: "\n"))
+Current aSRC: \(aSRC.hexString())
+""")
             key = stateManager!.state().deviceKeyForUnicast(aSRC)
             nonce = TransportNonce(deviceNonceWithIVIndex: anIVIndex, isSegmented: true, szMIC: UInt8(szMIC), seq: aSEQ, src: aSRC, dst: aDST)
         }
-        
+
         guard key != nil else {
+          print("""
+Upper Transport Layer could not find key
+""")
             params = nil;
             return;
         }
-        
+
         if isControl {
             // Control messages aren't encrypted here, forward as is
-            print("upper control message, TBD")
+            print("""
+Upper Transport Layer control message received:
+  PDU data:    \(aNetPDU.hexString())
+""")
             //let strippedDSTPDU = Data(aPDU[2..<aPDU.count])
             let opcode = Data([aNetPDU[2] & 0x7F])
             params = UpperTransportPDUParams(withPayload: Data(aNetPDU[2..<aNetPDU.count]), opcode: opcode, IVIndex: anIVIndex, key: key, ttl: Data([0x04]), seq: SequenceNumber(), src: aSRC, dst: aDST, nonce: nonce, ctl: isControl, afk: isApplicationKey, aid: applicationId)
@@ -47,27 +61,34 @@ public struct UpperTransportLayer {
             let dataSize = aPDU.count - micLen
             let pduData = aPDU[0..<dataSize]
             let mic = aPDU[aPDU.count - micLen..<aPDU.count]
-            print("upper msg: micLen: \(micLen) dataSize: \(dataSize) pduData: \(pduData.hexString()) mic: \(mic.hexString()) key: \(key.hexString()) nonce: \(nonce.data.hexString())")
             if let decryptedData = sslHelper.calculateDecryptedCCM(pduData, withKey: key, nonce: nonce.data, dataSize: 0, andMIC: mic) {
                 decryptedPayload = Data(decryptedData)
             } else {
                 print("upper Decryption failed")
             }
             var opcode = Data()
-            if let payload = decryptedPayload {
-                if payload.count > 0 {
-                    let opcodeLength = Int((payload[0] & 0xF0) >> 6);
-                    opcode.append(payload[0...max(0, opcodeLength - 1)])
-                    params = UpperTransportPDUParams(withPayload: payload, opcode: opcode, IVIndex: anIVIndex, key: key, ttl: Data([0x04]), seq: SequenceNumber(), src: aSRC, dst: aDST, nonce: nonce, ctl: isControl, afk: isApplicationKey, aid: applicationId)
-                } else {
-                    //No payload, failed to decrypt
-                    print("upper decryption failure, or no payload")
-                    let fixKey: Data! = (key == nil) ? Data() : key;
-                    params = UpperTransportPDUParams(withPayload: Data(), opcode: Data(), IVIndex: anIVIndex, key: fixKey, ttl: Data([0x04]), seq: SequenceNumber(), src: aSRC, dst: aDST, nonce: nonce, ctl: isControl, afk: isApplicationKey, aid: applicationId)
-                }
+            if let payload = decryptedPayload, payload.count > 0, let keyData = key {
+
+                let opcodeLength = Int((payload[0] & 0xF0) >> 6);
+                opcode.append(payload[0...max(0, opcodeLength - 1)])
+                params = UpperTransportPDUParams(withPayload: payload, opcode: opcode, IVIndex: anIVIndex, key: keyData, ttl: Data([0x04]), seq: SequenceNumber(), src: aSRC, dst: aDST, nonce: nonce, ctl: isControl, afk: isApplicationKey, aid: applicationId)
+                print("""
+Upper Transport Layer message received:
+  MIC length:  \(micLen)
+  Data size:   \(dataSize)
+  PDU data:    \(pduData.hexString())
+  MIC:         \(mic.hexString())
+  Key:         \(key.hexString())
+  Nonce:       \(nonce.data.hexString())
+  Opcode:      \(opcode.hexString())
+  Payload:     \(payload.hexString())
+""")
             } else {
                 //no payload, failed to decrypt
-                print("upper decryption failure, or no payload")
+                print("""
+Upper Transport Layer message could not be decrypted
+  PDU data:    \(pduData.hexString())
+""")
                 params = UpperTransportPDUParams(withPayload: Data(), opcode: Data(), IVIndex: anIVIndex, key: key, ttl: Data([0x04]), seq: SequenceNumber(), src: aSRC, dst: aDST, nonce: nonce, ctl: isControl, afk: isApplicationKey, aid: applicationId)
             }
         }
@@ -82,7 +103,7 @@ public struct UpperTransportLayer {
         guard params != nil else {
             return nil;
         }
-        
+
         if params!.ctl {
             //Assemble control message
             print("upper assemble control 0x\(params!.opcode.hexString()), 0x\(params!.payload.hexString())")
@@ -94,12 +115,10 @@ public struct UpperTransportLayer {
         } else {
             // if we have a raw access, we
             if (rawAccess) {
-              print("Received Access PDU \(decryptedPayload!.hexString())")
               return GenericAccessMessage(withPdu: decryptedPayload!, andSourceAddress: params!.sourceAddress)
             }
-          
+
             //Assemble access message
-            print("Received Access PDU \(params!.payload.hexString())")
             let payload = Data(decryptedPayload!.dropFirst(params!.opcode.count))
             return AccessMessageParser.parseData(payload, withOpcode: params!.opcode, sourceAddress: params!.sourceAddress)
         }
@@ -136,20 +155,42 @@ public struct UpperTransportLayer {
         //EncAccessPayload, TransMIC = AES-CCM (AppKey, Application Nonce, AccessPayload, Label UUID)
         return Data()
     }
-   
+
     private func encryptForUnicastOrGroupAddress() -> Data {
         //EncAccessPayload, TransMIC = AES-CCM (AppKey, Application Nonce, AccessPayload)
-        print("upper payload \(params!.payload.hexString())")
-        print("upper key \(params!.key.hexString())")
-        print("upper nonce \(params!.nonce.data.hexString())")
-        return sslHelper.calculateCCM(params!.payload, withKey: params!.key, nonce: params!.nonce.data, dataSize: UInt8(params!.payload.count), andMICSize: 4)
+        let debugInfo = """
+        Upper Transport Layer encryption for Unicast or Group Address:
+          Payload: \(params!.payload.hexString())
+          Key: \(params!.key.hexString())
+          Nonce: \(params!.nonce.data.hexString())
+        """
+
+        let result = sslHelper.calculateCCM(params!.payload, withKey: params!.key, nonce: params!.nonce.data, dataSize: UInt8(params!.payload.count), andMICSize: 4)!
+
+        print("""
+        \(debugInfo)
+          Encrypted result: \(result.hexString())
+        """)
+
+        return result
     }
-   
+
     private func encryptForDevice() -> Data {
         //EncAccessPayload, TransMIC = AES-CCM (DevKey, Device Nonce, AccessPayload)
-        print("upper payload \(params!.payload.hexString())")
-        print("upper key \(params!.key.hexString())")
-        print("upper nonce \(params!.nonce.data.hexString())")
-        return sslHelper.calculateCCM(params!.payload, withKey: params!.key, nonce: params!.nonce.data, dataSize: UInt8(params!.payload.count), andMICSize: 4)
+        let debugInfo = """
+        Upper Transport Layer encryption for Device:
+          Payload: \(params!.payload.hexString())
+          Key: \(params!.key.hexString())
+          Nonce: \(params!.nonce.data.hexString())
+        """
+
+        let result = sslHelper.calculateCCM(params!.payload, withKey: params!.key, nonce: params!.nonce.data, dataSize: UInt8(params!.payload.count), andMICSize: 4)!
+
+        print("""
+        \(debugInfo)
+          Encrypted result: \(result.hexString())
+        """)
+
+        return result
     }
 }
