@@ -29,7 +29,7 @@ public struct ControlMessagePDU {
         dst         = aDST
         ivIndex     = anIVIndex
         seq         = aSeq
-        ttl         = Data([0x04])
+        ttl         = Data([0x08])
     }
    
     public init(withPayload aPayload: Data, opcode anOpcode: Data, deviceKey aDeviceKey: Data, netKey aNetKey: Data, seq aSeq: SequenceNumber, ivIndex anIVIndex: Data, source aSrc: Data, andDst aDST: Data) {
@@ -42,7 +42,7 @@ public struct ControlMessagePDU {
         dst         = aDST
         ivIndex     = anIVIndex
         seq         = aSeq
-        ttl         = Data([0x04])
+        ttl         = Data([0x08])
     }
    
     public func assembleNetworkPDU() -> [Data]? {

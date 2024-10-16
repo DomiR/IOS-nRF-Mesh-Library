@@ -146,15 +146,22 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
     func sendPayload(_ aPayload: Data) {
         var data = Data([0x00]) // Type => Network
         data.append(aPayload)
-        print("Full PDU: \(data.hexString())")
+
+        var debugInfo = """
+        ↗️ Sending Access Message:
+          Full PDU: \(data.hexString())
+        """
+
         if data.count <= target.basePeripheral().maximumWriteValueLength(for: .withoutResponse) {
-            print("Sending  data: \(data.hexString())")
+            debugInfo += "\n  Sending unsegmented data"
             target.basePeripheral().writeValue(data, for: dataInCharacteristic, type: .withoutResponse)
         } else {
-            print("maximum write length is shorter than PDU, will Segment")
+            debugInfo += "\n  Maximum write length is shorter than PDU, segmenting data"
             var segmentedProvisioningData = [Data]()
             data = Data(data.dropFirst()) // Drop old network header, SAR will now set that instead.
             let chunkRanges = calculateDataRanges(data, withSize: 19)
+
+            debugInfo += "\n  Segmented data:"
             for aRange in chunkRanges {
                 var header = Data()
                 let chunkIndex = chunkRanges.index(of: aRange)!
@@ -168,12 +175,16 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
                 var chunkData = Data(header)
                 chunkData.append(Data(data[aRange]))
                 segmentedProvisioningData.append(Data(chunkData))
+
+                debugInfo += "\n    Segment \(chunkIndex + 1): \(chunkData.hexString())"
             }
+
             for aSegment in segmentedProvisioningData {
-                print("Sending segment: \(aSegment.hexString())")
                 target.basePeripheral().writeValue(aSegment, for: dataInCharacteristic, type: .withoutResponse)
             }
         }
+
+        print(debugInfo)
     }
 
     private func calculateDataRanges(_ someData: Data, withSize aChunkSize: Int) -> [Range<Int>] {
@@ -196,7 +207,7 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
     }
 
     private func acknowlegeSegment(withAckData someData: Data) {
-        print("Sending acknowledgement: \(someData.hexString())")
+        print("↗️ Sending acknowledgement: \(someData.hexString())")
         if someData.count <= target.basePeripheral().maximumWriteValueLength(for: .withoutResponse) {
             target.basePeripheral().writeValue(someData, for: dataInCharacteristic, type: .withoutResponse)
         } else {
