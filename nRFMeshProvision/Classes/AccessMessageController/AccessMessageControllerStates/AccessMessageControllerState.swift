@@ -2,16 +2,16 @@
 //  AcccessMessgeController
 //
 
-import Foundation
 import CoreBluetooth
+import Foundation
 
 class AccessMessageControllerState: NSObject, GenericModelControllerStateProtocol {
-
     // MARK: - Properties
-    private var proxyService            : CBService!
-    private var dataInCharacteristic    : CBCharacteristic!
-    private var dataOutCharacteristic   : CBCharacteristic!
-    private var networkLayer            : NetworkLayer!
+
+    private var proxyService: CBService!
+    private var dataInCharacteristic: CBCharacteristic!
+    private var dataOutCharacteristic: CBCharacteristic!
+    private var networkLayer: NetworkLayer!
     private var segmentedData: Data
     private var opcode: Data?
     private var payload: Data?
@@ -19,44 +19,46 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
     private var isConfig: Bool?
 
     // MARK: - ConfiguratorStateProtocol
-    var destinationAddress  : Data
-    var target              : ProvisionedMeshNodeProtocol
-    var stateManager        : MeshStateManager
+
+    var destinationAddress: Data
+    var target: ProvisionedMeshNodeProtocol
+    var stateManager: MeshStateManager
 
     required init(withTargetProxyNode aNode: ProvisionedMeshNodeProtocol,
                   destinationAddress aDestinationAddress: Data,
-                  andStateManager aStateManager: MeshStateManager) {
+                  andStateManager aStateManager: MeshStateManager)
+    {
         target = aNode
         segmentedData = Data()
         stateManager = aStateManager
         destinationAddress = aDestinationAddress
         super.init()
         target.basePeripheral().delegate = self
-        //If services and characteristics are already discovered, set them now
-        let discovery           = target.discoveredServicesAndCharacteristics()
-        proxyService            = discovery.proxyService
-        dataInCharacteristic    = discovery.dataInCharacteristic
-        dataOutCharacteristic   = discovery.dataOutCharacteristic
+        // If services and characteristics are already discovered, set them now
+        let discovery = target.discoveredServicesAndCharacteristics()
+        proxyService = discovery.proxyService
+        dataInCharacteristic = discovery.dataInCharacteristic
+        dataOutCharacteristic = discovery.dataOutCharacteristic
 
-        networkLayer = NetworkLayer(withStateManager: stateManager, andSegmentAcknowlegdement: { (ackData) -> (Void) in
+        networkLayer = NetworkLayer(withStateManager: stateManager, andSegmentAcknowlegdement: { ackData in
             self.acknowlegeSegment(withAckData: ackData)
         })
     }
-  
+
     public func setPayload(payload payloadData: Data) {
-      payload = payloadData;
+        payload = payloadData
     }
-  
+
     public func setOpcode(opcode opcodeData: Data) {
-      opcode = opcodeData;
+        opcode = opcodeData
     }
-  
+
     public func setKey(key keyData: Data) {
-      key = keyData;
+        key = keyData
     }
-  
+
     public func setIsConfig(withConfig isConfig: Bool) {
-      self.isConfig = isConfig;
+        self.isConfig = isConfig
     }
 
     func humanReadableName() -> String {
@@ -65,35 +67,35 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
 
     func execute() {
         if let appKey = stateManager.state().appKeys.first?.key {
-            let aState = stateManager.state();
+            let aState = stateManager.state()
             guard payload != nil && opcode != nil && key != nil && isConfig != nil else {
-              return;
+                return
             }
-          let accessMessage = isConfig! ? AccessMessagePDU(
-            withPayload: payload!,
-            opcode: opcode!,
-            deviceKey: key!,
-            netKey: aState.netKeys[0].key,
-            seq: SequenceNumber(),
-            ivIndex: aState.netKeys[0].phase,
-            source: aState.unicastAddress,
-            andDst: destinationAddress
-          ) :
-          AccessMessagePDU(
-            withPayload: payload!,
-            opcode: opcode!,
-            appKey: key!,
-            netKey: aState.netKeys[0].key,
-            seq: SequenceNumber(),
-            ivIndex: aState.netKeys[0].phase,
-            source: aState.unicastAddress,
-            andDst: destinationAddress,
-            ttl: Data([0x08])
-          );
+            let accessMessage = isConfig! ? AccessMessagePDU(
+                withPayload: payload!,
+                opcode: opcode!,
+                deviceKey: key!,
+                netKey: aState.netKeys[0].key,
+                seq: SequenceNumber(),
+                ivIndex: aState.netKeys[0].phase,
+                source: aState.unicastAddress,
+                andDst: destinationAddress
+            ) :
+                AccessMessagePDU(
+                    withPayload: payload!,
+                    opcode: opcode!,
+                    appKey: key!,
+                    netKey: aState.netKeys[0].key,
+                    seq: SequenceNumber(),
+                    ivIndex: aState.netKeys[0].phase,
+                    source: aState.unicastAddress,
+                    andDst: destinationAddress,
+                    ttl: Data([0x08])
+                )
             let payloads = accessMessage.assembleNetworkPDU()
-            //Send to destination
+            // Send to destination
             for aPayload in payloads! {
-                var data = Data([0x00]) //Type => Network
+                var data = Data([0x00]) // Type => Network
                 data.append(aPayload)
                 print("Full PDU: \(data.hexString())")
                 if data.count <= target.basePeripheral().maximumWriteValueLength(for: .withoutResponse) {
@@ -102,17 +104,17 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
                 } else {
                     print("maximum write length is shorter than PDU, will Segment")
                     var segmentedProvisioningData = [Data]()
-                    data = Data(data.dropFirst()) //Drop old network header, SAR will now set that instead.
-                    let chunkRanges = self.calculateDataRanges(data, withSize: 19)
+                    data = Data(data.dropFirst()) // Drop old network header, SAR will now set that instead.
+                    let chunkRanges = calculateDataRanges(data, withSize: 19)
                     for aRange in chunkRanges {
                         var header = Data()
                         let chunkIndex = chunkRanges.index(of: aRange)!
                         if chunkIndex == 0 {
-                            header.append(Data([0x40])) //SAR start
+                            header.append(Data([0x40])) // SAR start
                         } else if chunkIndex == chunkRanges.count - 1 {
-                            header.append(Data([0xC0])) //SAR end
+                            header.append(Data([0xC0])) // SAR end
                         } else {
-                            header.append(Data([0x80])) //SAR cont.
+                            header.append(Data([0x80])) // SAR cont.
                         }
                         var chunkData = Data(header)
                         chunkData.append(Data(data[aRange]))
@@ -125,19 +127,19 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
                 }
             }
         } else {
-            // TODO handle error
+            // TODO: handle error
             print("Error: AppKey Not present, returning nil")
             return
         }
 
-        target.delegate?.sentAccessMessageUnacknowledged(destinationAddress);
+        target.delegate?.sentAccessMessageUnacknowledged(destinationAddress)
 
         let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
         target.switchToState(nextState)
     }
 
-    func receivedData(incomingData : Data) {
-        // Receiving is 
+    func receivedData(incomingData: Data) {
+        // Receiving is
         if incomingData[0] == 0x01 {
             print("Secure beacon: \(incomingData.hexString())")
         } else {
@@ -159,8 +161,8 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
         var totalLength = someData.count
         var ranges = [Range<Int>]()
         var partIdx = 0
-        while (totalLength > 0) {
-            var range : Range<Int>
+        while totalLength > 0 {
+            var range: Range<Int>
             if totalLength > aChunkSize {
                 totalLength -= aChunkSize
                 range = (partIdx * aChunkSize) ..< aChunkSize + (partIdx * aChunkSize)
@@ -176,22 +178,22 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
 
     private func acknowlegeSegment(withAckData someData: Data) {
         print("Sending acknowledgement: \(someData.hexString())")
-        if someData.count <= self.target.basePeripheral().maximumWriteValueLength(for: .withoutResponse) {
-            self.target.basePeripheral().writeValue(someData, for: self.dataInCharacteristic, type: .withoutResponse)
+        if someData.count <= target.basePeripheral().maximumWriteValueLength(for: .withoutResponse) {
+            target.basePeripheral().writeValue(someData, for: dataInCharacteristic, type: .withoutResponse)
         } else {
             print("Maximum write length is shorter than ACK PDU, will Segment")
             var segmentedData = [Data]()
-            let dataToSegment = Data(someData.dropFirst()) //Remove old header as it's going to be added in SAR
-            let chunkRanges = self.calculateDataRanges(dataToSegment, withSize: 19)
+            let dataToSegment = Data(someData.dropFirst()) // Remove old header as it's going to be added in SAR
+            let chunkRanges = calculateDataRanges(dataToSegment, withSize: 19)
             for aRange in chunkRanges {
                 var header = Data()
                 let chunkIndex = chunkRanges.index(of: aRange)!
                 if chunkIndex == 0 {
-                    header.append(Data([0x40])) //SAR start
+                    header.append(Data([0x40])) // SAR start
                 } else if chunkIndex == chunkRanges.count - 1 {
-                    header.append(Data([0xC0])) //SAR end
+                    header.append(Data([0xC0])) // SAR end
                 } else {
-                    header.append(Data([0x80])) //SAR cont.
+                    header.append(Data([0x80])) // SAR cont.
                 }
                 var chunkData = Data(header)
                 chunkData.append(Data(dataToSegment[aRange]))
@@ -199,33 +201,34 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
             }
             for aSegment in segmentedData {
                 print("Sending Ack segment: \(aSegment.hexString())")
-                self.target.basePeripheral().writeValue(aSegment, for: self.dataInCharacteristic, type: .withoutResponse)
+                target.basePeripheral().writeValue(aSegment, for: dataInCharacteristic, type: .withoutResponse)
             }
         }
     }
 
     // MARK: - CBPeripheralDelegate
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-        //NOOP
+
+    func peripheral(_: CBPeripheral, didDiscoverServices _: Error?) {
+        // NOOP
     }
 
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-        //NOOP
+    func peripheral(_: CBPeripheral, didDiscoverCharacteristicsFor _: CBService, error _: Error?) {
+        // NOOP
     }
 
     var lastMessageType = 0xC0
 
-    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+    func peripheral(_: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error _: Error?) {
         print("Characteristic value updated: \(characteristic.value!.hexString())")
-        //SAR handling
+        // SAR handling
         if characteristic.value![0] & 0xC0 == 0x40 {
             if lastMessageType == 0x40 {
-                //Drop repeated 0x40's
+                // Drop repeated 0x40's
                 print("CMP:Reduntand SAR start, dropping")
                 segmentedData = Data()
             }
             lastMessageType = 0x40
-            //Add message type header
+            // Add message type header
             segmentedData.append(Data([characteristic.value![0] & 0x3F]))
             segmentedData.append(Data(characteristic.value!.dropFirst()))
         } else if characteristic.value![0] & 0xC0 == 0x80 {
@@ -237,7 +240,7 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
             print("Segmented data end")
             segmentedData.append(Data(characteristic.value!.dropFirst()))
             print("Reassembled data!: \(segmentedData.hexString())")
-            //Copy data and send it to NetworkLayer
+            // Copy data and send it to NetworkLayer
             receivedData(incomingData: Data(segmentedData))
             segmentedData = Data()
         } else {
@@ -245,7 +248,7 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
         }
     }
 
-    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+    func peripheral(_: CBPeripheral, didUpdateNotificationStateFor _: CBCharacteristic, error _: Error?) {
         print("Characteristic notification state changed")
     }
 }
