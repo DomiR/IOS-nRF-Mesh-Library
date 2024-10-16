@@ -23,7 +23,8 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
     var destinationAddress: Data
     var target: ProvisionedMeshNodeProtocol
     var stateManager: MeshStateManager
-
+    var payloads: [Data]?
+    var accessMessage: AccessMessagePDU?
     required init(withTargetProxyNode aNode: ProvisionedMeshNodeProtocol,
                   destinationAddress aDestinationAddress: Data,
                   andStateManager aStateManager: MeshStateManager)
@@ -71,7 +72,7 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
             guard payload != nil && opcode != nil && key != nil && isConfig != nil else {
                 return
             }
-            let accessMessage = isConfig! ? AccessMessagePDU(
+            accessMessage = isConfig! ? AccessMessagePDU(
                 withPayload: payload!,
                 opcode: opcode!,
                 deviceKey: key!,
@@ -92,39 +93,10 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
                     andDst: destinationAddress,
                     ttl: Data([0x08])
                 )
-            let payloads = accessMessage.assembleNetworkPDU()
+            payloads = accessMessage?.assembleNetworkPDU()
             // Send to destination
             for aPayload in payloads! {
-                var data = Data([0x00]) // Type => Network
-                data.append(aPayload)
-                print("Full PDU: \(data.hexString())")
-                if data.count <= target.basePeripheral().maximumWriteValueLength(for: .withoutResponse) {
-                    print("Sending  data: \(data.hexString())")
-                    target.basePeripheral().writeValue(data, for: dataInCharacteristic, type: .withoutResponse)
-                } else {
-                    print("maximum write length is shorter than PDU, will Segment")
-                    var segmentedProvisioningData = [Data]()
-                    data = Data(data.dropFirst()) // Drop old network header, SAR will now set that instead.
-                    let chunkRanges = calculateDataRanges(data, withSize: 19)
-                    for aRange in chunkRanges {
-                        var header = Data()
-                        let chunkIndex = chunkRanges.index(of: aRange)!
-                        if chunkIndex == 0 {
-                            header.append(Data([0x40])) // SAR start
-                        } else if chunkIndex == chunkRanges.count - 1 {
-                            header.append(Data([0xC0])) // SAR end
-                        } else {
-                            header.append(Data([0x80])) // SAR cont.
-                        }
-                        var chunkData = Data(header)
-                        chunkData.append(Data(data[aRange]))
-                        segmentedProvisioningData.append(Data(chunkData))
-                    }
-                    for aSegment in segmentedProvisioningData {
-                        print("Sending segment: \(aSegment.hexString())")
-                        target.basePeripheral().writeValue(aSegment, for: dataInCharacteristic, type: .withoutResponse)
-                    }
-                }
+                sendPayload(aPayload)
             }
         } else {
             // TODO: handle error
@@ -132,10 +104,9 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
             return
         }
 
+        // we stay in this state, as we might have to handle acks in this state,
+        // only after receiving a message, we switch to the sleep config state
         target.delegate?.sentAccessMessageUnacknowledged(destinationAddress)
-
-        let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
-        target.switchToState(nextState)
     }
 
     func receivedData(incomingData: Data) {
@@ -144,15 +115,63 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
             print("Secure beacon: \(incomingData.hexString())")
         } else {
             let strippedOpcode = Data(incomingData.dropFirst())
-            if let result = networkLayer.incomingPDU(strippedOpcode) {
-                if result is BLOBBlockStatus {
-                    let status = result as! BLOBBlockStatus
-                    target.delegate?.receivedBlobBlockStatusMessage(status)
+            if let result = networkLayer.incomingPDU(strippedOpcode, withRawAccess: true) {
+                if result is GenericAccessMessage {
+                    let status = result as! GenericAccessMessage
+                    target.delegate?.receivedAccessMessage(status)
                     let nextState = SleepConfiguratorState(withTargetProxyNode: target, destinationAddress: destinationAddress, andStateManager: stateManager)
                     target.switchToState(nextState)
+                } else if result is SegmentAcknowledgmentMessage {
+                    let segmentAckMsg = result as! SegmentAcknowledgmentMessage
+                    if let allPayloads = payloads, allPayloads.count > 0 && !segmentAckMsg.areAllSegmentsReceived(lastSegmentNumber: UInt8(allPayloads.count - 1)) {
+                        print("needs to handle segment ack")
+                        if let msg = accessMessage {
+                            if let payloads = msg.networkLayer?.handleSegmentAcknowledgmentMessage(segmentAckMsg) {
+                                print("re-sending payloads: \(payloads.count)")
+                                for aPayload in payloads {
+                                    sendPayload(aPayload)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    print("got unhandled message")
                 }
             } else {
-                print("ignoring non Blob Block status message")
+                print("ignoring unknown status message")
+            }
+        }
+    }
+
+    func sendPayload(_ aPayload: Data) {
+        var data = Data([0x00]) // Type => Network
+        data.append(aPayload)
+        print("Full PDU: \(data.hexString())")
+        if data.count <= target.basePeripheral().maximumWriteValueLength(for: .withoutResponse) {
+            print("Sending  data: \(data.hexString())")
+            target.basePeripheral().writeValue(data, for: dataInCharacteristic, type: .withoutResponse)
+        } else {
+            print("maximum write length is shorter than PDU, will Segment")
+            var segmentedProvisioningData = [Data]()
+            data = Data(data.dropFirst()) // Drop old network header, SAR will now set that instead.
+            let chunkRanges = calculateDataRanges(data, withSize: 19)
+            for aRange in chunkRanges {
+                var header = Data()
+                let chunkIndex = chunkRanges.index(of: aRange)!
+                if chunkIndex == 0 {
+                    header.append(Data([0x40])) // SAR start
+                } else if chunkIndex == chunkRanges.count - 1 {
+                    header.append(Data([0xC0])) // SAR end
+                } else {
+                    header.append(Data([0x80])) // SAR cont.
+                }
+                var chunkData = Data(header)
+                chunkData.append(Data(data[aRange]))
+                segmentedProvisioningData.append(Data(chunkData))
+            }
+            for aSegment in segmentedProvisioningData {
+                print("Sending segment: \(aSegment.hexString())")
+                target.basePeripheral().writeValue(aSegment, for: dataInCharacteristic, type: .withoutResponse)
             }
         }
     }
