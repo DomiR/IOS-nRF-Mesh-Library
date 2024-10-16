@@ -15,6 +15,7 @@ public class LowerTransportLayer {
     var segmentedMessageAcknowledge: SegmentedMessageAcknowledgeBlock?
     var segAcknowledgeTimeout: DispatchTime?
     var segments: [Data]?
+    var pendingAckWorkItem: DispatchWorkItem?
 
     public init(withStateManager aStateManager: MeshStateManager, andSegmentedAcknowlegdeMent anAcknowledgementBlock: SegmentedMessageAcknowledgeBlock?) {
         segmentedMessageAcknowledge = anAcknowledgementBlock
@@ -73,16 +74,21 @@ public class LowerTransportLayer {
                 if segAcknowledgeTimeout == nil {
                     //Send ack block after this timeout
                     segAcknowledgeTimeout = DispatchTime.now() + .milliseconds(150 + (50 * Int(aTTL[0])))
-                    DispatchQueue.main.asyncAfter(deadline: segAcknowledgeTimeout!) {
-                      print("↘️ Lower Transport Layer sending pending ACK because timeout")
+                    let workItem = DispatchWorkItem {
+                        print("↗️ Lower Transport Layer sending pending ACK for \(seqZero.hexString()) because timeout")
                         //Send the pending acknowledgment after the deadline
                         self.sendPendingAcknowledgement(forSeqZero: seqZero, segmentNumber: segN, andSourceAddrsess: aSRC)
                     }
+
+                    DispatchQueue.main.asyncAfter(deadline: segAcknowledgeTimeout!, execute: workItem)
+
+                    // Store the work item for potential cancellation
+                    self.pendingAckWorkItem = workItem
                 }
 
                 //All segments have arrived
                 if Int((partialIncomingPDU?.count)! - 1) == Int(segN[0]) {
-                    print("↘️ Lower Transport Layer all segmentes arrived")
+                    print("↗️ Lower Transport Layer send complete ACK for \(seqZero.hexString())")
                     //If there is a pending block acknowledgement, cancel timer and perform now.
                     sendPendingAcknowledgement(forSeqZero: seqZero, segmentNumber: segN, andSourceAddrsess: aSRC)
                     let sortedSegmentKeys = Array(partialIncomingPDU!.keys).sorted { (a, b) -> Bool in
@@ -92,6 +98,7 @@ public class LowerTransportLayer {
                     for aKey in sortedSegmentKeys {
                         fullData.append(partialIncomingPDU![aKey]!)
                     }
+                    partialIncomingPDU?.removeAll()
                     let upperLayer = UpperTransportLayer(withNetworkPdu: aPDU, withIncomingPDU: fullData, ctl: ctl, akf: isAppKey, aid: aid, seq: sequenceNumber, src: aSRC, dst: aDST, szMIC: Int(szMIC[0]), ivIndex: anIVIndex, andMeshState: meshStateManager!)
                     return upperLayer.assembleMessage(withRawAccess: rawAccess)
                 }
@@ -101,6 +108,11 @@ public class LowerTransportLayer {
     }
 
     public func sendPendingAcknowledgement(forSeqZero seqZero: Data, segmentNumber segN: Data, andSourceAddrsess aSRC: Data) {
+        if let pendingAckWorkItem = self.pendingAckWorkItem {
+          pendingAckWorkItem.cancel()
+          self.pendingAckWorkItem = nil
+        }
+
         if segAcknowledgeTimeout != nil {
             segAcknowledgeTimeout = nil //Reset timer
             let ackData = acknowlegde(withSeqZero: seqZero, receivedSegments: partialIncomingPDU!, segN: segN, dst: aSRC)
@@ -124,6 +136,7 @@ public class LowerTransportLayer {
 //            UInt8((block & 0x000000FF))
 //            ])
         //First bit of octet 1 is 0 OBO is not implenented yet.
+
         var payload = Data([UInt8((seqZero[0] & 0x1F) << 2) | UInt8((seqZero[1] & 0xC0) >> 6),
                             UInt8(seqZero[1] << 2)])
         payload.append(Data(blockData))
