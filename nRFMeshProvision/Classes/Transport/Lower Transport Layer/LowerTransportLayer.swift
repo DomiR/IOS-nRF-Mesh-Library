@@ -18,7 +18,7 @@ public class LowerTransportLayer {
     var pendingAckWorkItem: DispatchWorkItem?
 
     // New static property to store the last complete message info
-    private static var lastCompleteMessage: (seqZero: Data, src: Data)?
+    private static var lastCompleteMessage: (seqZero: Data, src: Data, blockData: Data)?
 
     public init(withStateManager aStateManager: MeshStateManager, andSegmentedAcknowlegdeMent anAcknowledgementBlock: SegmentedMessageAcknowledgeBlock?) {
         segmentedMessageAcknowledge = anAcknowledgementBlock
@@ -59,8 +59,10 @@ public class LowerTransportLayer {
 
             // Check if this is a duplicate of the last complete message
             if let lastMessage = LowerTransportLayer.lastCompleteMessage,
-               lastMessage.seqZero == seqZero && lastMessage.src == aSRC {
-                print("↘️ Lower Transport Layer ignoring duplicate message with seqZero: \(seqZero.hexString()) from source: \(aSRC.hexString())")
+                lastMessage.seqZero == seqZero && lastMessage.src == aSRC {
+                print("↘️ Lower Transport Layer ignoring duplicate message with seqZero: \(seqZero.hexString()) from source: \(aSRC.hexString()) but resending block ack")
+                let ackData = acknowlegde(withSeqZero: lastMessage.seqZero, blockData: lastMessage.blockData, dst: lastMessage.src)
+                segmentedMessageAcknowledge?(ackData)
                 return nil
             }
 
@@ -111,7 +113,8 @@ public class LowerTransportLayer {
                     partialIncomingPDU?.removeAll()
 
                     // Save the current message info as the last complete message
-                    LowerTransportLayer.lastCompleteMessage = (seqZero: seqZero, src: aSRC)
+                    let blockData = createBlockData(receivedSegments: partialIncomingPDU!, segN: segN)
+                    LowerTransportLayer.lastCompleteMessage = (seqZero: seqZero, src: aSRC, blockData: blockData)
 
                     let upperLayer = UpperTransportLayer(withNetworkPdu: aPDU, withIncomingPDU: fullData, ctl: ctl, akf: isAppKey, aid: aid, seq: sequenceNumber, src: aSRC, dst: aDST, szMIC: Int(szMIC[0]), ivIndex: anIVIndex, andMeshState: meshStateManager!)
                     return upperLayer.assembleMessage(withRawAccess: rawAccess)
@@ -123,43 +126,40 @@ public class LowerTransportLayer {
 
     public func sendPendingAcknowledgement(forSeqZero seqZero: Data, segmentNumber segN: Data, andSourceAddrsess aSRC: Data) {
         if let pendingAckWorkItem = self.pendingAckWorkItem {
-          pendingAckWorkItem.cancel()
-          self.pendingAckWorkItem = nil
+            pendingAckWorkItem.cancel()
+            self.pendingAckWorkItem = nil
         }
 
         if segAcknowledgeTimeout != nil {
             segAcknowledgeTimeout = nil //Reset timer
-            let ackData = acknowlegde(withSeqZero: seqZero, receivedSegments: partialIncomingPDU!, segN: segN, dst: aSRC)
+            let blockData = createBlockData(receivedSegments: partialIncomingPDU!, segN: segN)
+            let ackData = acknowlegde(withSeqZero: seqZero, blockData: blockData, dst: aSRC)
             segmentedMessageAcknowledge?(ackData)
         }
     }
 
-    public func acknowlegde(withSeqZero seqZero: Data, receivedSegments: [Data : Data], segN: Data, dst: Data) -> Data {
+    public func acknowlegde(withSeqZero seqZero: Data, blockData: Data, dst: Data) -> Data {
         let aState = meshStateManager!.state()
-        var block : UInt32 = 0x00000000
-        for aSegmentIndex in 0...segN[0] {
-            if receivedSegments[Data([aSegmentIndex])] != nil {
-                block = block + UInt32((1 << aSegmentIndex))
-            }
-        }
-        let blockData = Data(fromInt32: block)
-//        Data([
-//            UInt8((block & 0xFF000000) >> 24),
-//            UInt8((block & 0x00FF0000) >> 16),
-//            UInt8((block & 0x0000FF00) >> 8),
-//            UInt8((block & 0x000000FF))
-//            ])
-        //First bit of octet 1 is 0 OBO is not implenented yet.
 
         var payload = Data([UInt8((seqZero[0] & 0x1F) << 2) | UInt8((seqZero[1] & 0xC0) >> 6),
                             UInt8(seqZero[1] << 2)])
-        payload.append(Data(blockData))
+        payload.append(blockData)
         let opcode  = Data([0x00]) //Segment ACK Opcode
         let ackMessage = ControlMessagePDU(withPayload: payload, opcode: opcode, netKey: aState.netKeys[0].key, seq: SequenceNumber(), ivIndex: aState.netKeys[0].phase, source: aState.unicastAddress, andDst: dst)
         var ackData = Data([0x00]) //Network PDU
         let networkPDU = ackMessage.assembleNetworkPDU()!.first!
         ackData.append(Data(networkPDU))
         return Data(ackData)
+    }
+
+    private func createBlockData(receivedSegments: [Data : Data], segN: Data) -> Data {
+        var block: UInt32 = 0x00000000
+        for aSegmentIndex in 0...segN[0] {
+            if receivedSegments[Data([aSegmentIndex])] != nil {
+                block = block + UInt32((1 << aSegmentIndex))
+            }
+        }
+        return Data(fromInt32: block)
     }
 
     public func handleSegmentAcknowledgmentMessage(_ ackMsg: SegmentAcknowledgmentMessage) -> [Data] {
