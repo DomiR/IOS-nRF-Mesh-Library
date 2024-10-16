@@ -17,6 +17,9 @@ public class LowerTransportLayer {
     var segments: [Data]?
     var pendingAckWorkItem: DispatchWorkItem?
 
+    // New static property to store the last complete message info
+    private static var lastCompleteMessage: (seqZero: Data, src: Data)?
+
     public init(withStateManager aStateManager: MeshStateManager, andSegmentedAcknowlegdeMent anAcknowledgementBlock: SegmentedMessageAcknowledgeBlock?) {
         segmentedMessageAcknowledge = anAcknowledgementBlock
         meshStateManager = aStateManager
@@ -53,6 +56,13 @@ public class LowerTransportLayer {
             let segN = Data([aPDU[5] & 0x1F])
             let segment = Data(aPDU[6..<aPDU.count])
             let sequenceNumber = Data([aSEQ.first!, aSEQ[2] | seqZero[0], seqZero[1]])
+
+            // Check if this is a duplicate of the last complete message
+            if let lastMessage = LowerTransportLayer.lastCompleteMessage,
+               lastMessage.seqZero == seqZero && lastMessage.src == aSRC {
+                print("↘️ Lower Transport Layer ignoring duplicate message with seqZero: \(seqZero.hexString()) from source: \(aSRC.hexString())")
+                return nil
+            }
 
             if partialIncomingPDU![segO] == nil {
                 print("""
@@ -99,6 +109,10 @@ public class LowerTransportLayer {
                         fullData.append(partialIncomingPDU![aKey]!)
                     }
                     partialIncomingPDU?.removeAll()
+
+                    // Save the current message info as the last complete message
+                    LowerTransportLayer.lastCompleteMessage = (seqZero: seqZero, src: aSRC)
+
                     let upperLayer = UpperTransportLayer(withNetworkPdu: aPDU, withIncomingPDU: fullData, ctl: ctl, akf: isAppKey, aid: aid, seq: sequenceNumber, src: aSRC, dst: aDST, szMIC: Int(szMIC[0]), ivIndex: anIVIndex, andMeshState: meshStateManager!)
                     return upperLayer.assembleMessage(withRawAccess: rawAccess)
                 }
