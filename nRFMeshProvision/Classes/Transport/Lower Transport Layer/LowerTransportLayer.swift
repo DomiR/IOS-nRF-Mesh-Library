@@ -37,7 +37,7 @@ public class LowerTransportLayer {
         if segmented == Data([0x00]) {
             //Unsegmented Message
             print("""
-Lower Transport Layer unsegmented received:
+↘️ Lower Transport Layer unsegmented received:
   PDU:           \(aPDU.hexString())
   Raw:           \(rawAccess)
 """)
@@ -55,7 +55,7 @@ Lower Transport Layer unsegmented received:
 
             if partialIncomingPDU![segO] == nil {
                 print("""
-Lower Transport Layer segmented received:
+↘️ Lower Transport Layer segmented received:
   PDU:           \(aPDU.hexString())
   Sequence num:  \(sequenceNumber.hexString())
   SzMIC:         \(szMIC.hexString())
@@ -67,13 +67,14 @@ Lower Transport Layer segmented received:
 """)
                 partialIncomingPDU![segO] = segment
             } else {
-                print("Lower Transport Layer segmented duplicate \(segO.hexString()) received, dropping...")
+                print("↘️ Lower Transport Layer segmented duplicate \(segO.hexString()) received, dropping...")
             }
             if segmentedMessageAcknowledge != nil {
                 if segAcknowledgeTimeout == nil {
                     //Send ack block after this timeout
                     segAcknowledgeTimeout = DispatchTime.now() + .milliseconds(150 + (50 * Int(aTTL[0])))
                     DispatchQueue.main.asyncAfter(deadline: segAcknowledgeTimeout!) {
+                      print("↘️ Lower Transport Layer sending pending ACK because timeout")
                         //Send the pending acknowledgment after the deadline
                         self.sendPendingAcknowledgement(forSeqZero: seqZero, segmentNumber: segN, andSourceAddrsess: aSRC)
                     }
@@ -81,6 +82,7 @@ Lower Transport Layer segmented received:
 
                 //All segments have arrived
                 if Int((partialIncomingPDU?.count)! - 1) == Int(segN[0]) {
+                    print("↘️ Lower Transport Layer all segmentes arrived")
                     //If there is a pending block acknowledgement, cancel timer and perform now.
                     sendPendingAcknowledgement(forSeqZero: seqZero, segmentNumber: segN, andSourceAddrsess: aSRC)
                     let sortedSegmentKeys = Array(partialIncomingPDU!.keys).sorted { (a, b) -> Bool in
@@ -190,7 +192,7 @@ Lower Transport Layer segmented received:
         lowerData.append(Data(headerByte))
         lowerData.append(Data(params.upperTransportData))
         print("""
-Lower Transport Layer unsegmented access message:
+↗️ Lower Transport Layer unsegmented access message:
   Header byte: \(headerByte.hexString())
   AKF: \(params.appKeyFlag == Data([0x01]) ? "Set" : "Not set")
   AID: \(params.appKeyFlag == Data([0x01]) ? String(format: "0x%02X", params.aid[0]) : "N/A")
@@ -205,7 +207,7 @@ Lower Transport Layer unsegmented access message:
         let chunkSize   = 12 //12 bytes is the max
         let chunkRanges = calculateDataRanges(params.upperTransportData, withSize: chunkSize)
         let sequenceData = params.sequenceNumber.sequenceData()
-        var debugInfo = "Lower Transport Layer segmented access message:\n"
+        var debugInfo = "↗️ Lower Transport Layer segmented access message:"
 
         for (index, aChunkRange) in chunkRanges.enumerated() {
             var headerByte  = Data()
@@ -236,11 +238,12 @@ Lower Transport Layer unsegmented access message:
             chunkedData.append(chunk)
 
             debugInfo += """
+
   Chunk \(index + 1):
     Data: \(chunk.hexString())
     Sequence Zero: \(Data.init(fromInt16: sequenceZero).hexString())
     SegO: \(segO)
-    SegN: \(segN)\n
+    SegN: \(segN)
 """
         }
 
@@ -254,7 +257,7 @@ Lower Transport Layer unsegmented access message:
         pdu.append(Data(params.upperTransportData))
 
         print("""
-        Lower Transport Layer unsegmented control message:
+        ↗️ Lower Transport Layer unsegmented control message:
           Opcode: \(Data([0x7F & params.opcode[0]]).hexString())
           Payload: \(params.upperTransportData.hexString())
           PDU: \(pdu.hexString())
@@ -271,7 +274,7 @@ Lower Transport Layer unsegmented access message:
         let sequenceZero = UInt16((sequenceData[1] << 6) | (sequenceData[2] >> 2))
 
         var debugInfo = """
-        Lower Transport Layer segmented control message:
+        ↗️ Lower Transport Layer segmented control message:
           Chunk size: \(chunkSize)
           Number of chunks: \(chunkRanges.count)
           Sequence Zero: \(Data.init(fromInt16: sequenceZero).hexString())

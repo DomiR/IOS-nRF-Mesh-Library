@@ -63,7 +63,7 @@ public class AccessMessagePDU {
         let segmented = payload.count > 12
         print("""
         ==========================
-        Access Message PDU:
+        ↗️ Create Access Message PDU:
           Opcode: \(opcode.hexString())
           Payload: \(payload.hexString())
           Destination: \(self.dst.hexString())

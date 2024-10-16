@@ -50,7 +50,7 @@ Upper Transport Layer could not find key
         if isControl {
             // Control messages aren't encrypted here, forward as is
             print("""
-Upper Transport Layer control message received:
+↘️ Upper Transport Layer control message received:
   PDU data:    \(aNetPDU.hexString())
 """)
             //let strippedDSTPDU = Data(aPDU[2..<aPDU.count])
@@ -73,7 +73,7 @@ Upper Transport Layer control message received:
                 opcode.append(payload[0...max(0, opcodeLength - 1)])
                 params = UpperTransportPDUParams(withPayload: payload, opcode: opcode, IVIndex: anIVIndex, key: keyData, ttl: Data([0x04]), seq: SequenceNumber(), src: aSRC, dst: aDST, nonce: nonce, ctl: isControl, afk: isApplicationKey, aid: applicationId)
                 print("""
-Upper Transport Layer message received:
+↘️ Upper Transport Layer message received:
   MIC length:  \(micLen)
   Data size:   \(dataSize)
   PDU data:    \(pduData.hexString())
@@ -86,7 +86,7 @@ Upper Transport Layer message received:
             } else {
                 //no payload, failed to decrypt
                 print("""
-Upper Transport Layer message could not be decrypted
+↘️ Upper Transport Layer message could not be decrypted
   PDU data:    \(pduData.hexString())
 """)
                 params = UpperTransportPDUParams(withPayload: Data(), opcode: Data(), IVIndex: anIVIndex, key: key, ttl: Data([0x04]), seq: SequenceNumber(), src: aSRC, dst: aDST, nonce: nonce, ctl: isControl, afk: isApplicationKey, aid: applicationId)
@@ -159,7 +159,7 @@ Upper Transport Layer message could not be decrypted
     private func encryptForUnicastOrGroupAddress() -> Data {
         //EncAccessPayload, TransMIC = AES-CCM (AppKey, Application Nonce, AccessPayload)
         let debugInfo = """
-        Upper Transport Layer encryption for Unicast or Group Address:
+        ↗️ Upper Transport Layer encryption for Unicast or Group Address:
           Payload: \(params!.payload.hexString())
           Key: \(params!.key.hexString())
           Nonce: \(params!.nonce.data.hexString())

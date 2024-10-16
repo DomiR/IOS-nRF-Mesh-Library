@@ -54,7 +54,7 @@ public struct NetworkLayer {
                                                                   dataSize: UInt8(encryptedNetworkPDU.count), andMIC: netMic)
         let dst = decryptedNetworkPDU![0...1]
         print("""
-Network Layer message received:
+↘️ Network Layer message received:
   PDU:           \(aPDU.hexString())
   Encrypted PDU: \(encryptedNetworkPDU.hexString())
   Net MIC:       \(netMic.hexString()) (Size: \(micSize))
@@ -91,12 +91,11 @@ Network Layer message received:
         let ctlTtl = Data([(lowerTransport.params.ctl[0] << 7) | (lowerTransport.params.ttl[0] & 0x7F)])
 
         var debugInfo = """
-Network Layer message sending:
+↗️ Network Layer message sending:
   NetKey: \(netKey.hexString())
   K2: \((k2 ?? Data()).hexString())
   Encryption Key: \(encryptionKey.hexString())
   Privacy Key: \(privacyKey.hexString())
-
   Encrypted PDUs:
 """
 
@@ -123,12 +122,13 @@ Network Layer message sending:
                     aNetworkPDU.append(encryptedData)
                     networkPDUs.append(aNetworkPDU)
                     debugInfo += """
+
     PDU \(networkPDUs.count):
       Sequence number: \(sequenceNumber.hexString())
       Data to encrypt: \(dataToEncrypt.hexString())
       Nonce: \(nonce.data.hexString())
       MIC size: \(micSize)
-      Encrypted PDU: \(aNetworkPDU.hexString())\n
+      Encrypted PDU: \(aNetworkPDU.hexString())
 """
                     //Increment sequence number
                     lowerTransport.params.sequenceNumber.incrementSequneceNumber()
@@ -144,7 +144,7 @@ Network Layer message sending:
     public func handleSegmentAcknowledgmentMessage(_ ackMsg: SegmentAcknowledgmentMessage) -> [Data]? {
         let resendSegements = lowerTransport.handleSegmentAcknowledgmentMessage(ackMsg);
         var debugInfo = """
-Network Layer handling segment acknowledgment:
+↗️ Network Layer handling segment acknowledgment:
   Segments to resend: \(resendSegements.count)
 """
         if (resendSegements.count > 0) {

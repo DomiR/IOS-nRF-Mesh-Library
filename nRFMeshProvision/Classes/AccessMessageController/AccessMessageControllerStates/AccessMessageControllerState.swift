@@ -148,7 +148,7 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
         data.append(aPayload)
 
         var debugInfo = """
-        Sending Access Message:
+        ↗️ Sending Access Message:
           Full PDU: \(data.hexString())
         """
 
@@ -207,7 +207,7 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
     }
 
     private func acknowlegeSegment(withAckData someData: Data) {
-        print("Sending acknowledgement: \(someData.hexString())")
+        print("↗️ Sending acknowledgement: \(someData.hexString())")
         if someData.count <= target.basePeripheral().maximumWriteValueLength(for: .withoutResponse) {
             target.basePeripheral().writeValue(someData, for: dataInCharacteristic, type: .withoutResponse)
         } else {
