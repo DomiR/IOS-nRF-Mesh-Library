@@ -17,6 +17,7 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
     private var payload: Data?
     private var key: Data?
     private var isConfig: Bool?
+    private var ttl = Data([0x08])
 
     // MARK: - ConfiguratorStateProtocol
 
@@ -44,6 +45,10 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
         networkLayer = NetworkLayer(withStateManager: stateManager, andSegmentAcknowlegdement: { ackData in
             self.acknowlegeSegment(withAckData: ackData)
         })
+    }
+
+    public func setTTL(_ ttl: Data) {
+        self.ttl = ttl
     }
 
     public func setPayload(payload payloadData: Data) {
@@ -80,7 +85,8 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
                 seq: SequenceNumber(),
                 ivIndex: aState.netKeys[0].phase,
                 source: aState.unicastAddress,
-                andDst: destinationAddress
+                andDst: destinationAddress,
+                ttl: self.ttl
             ) :
                 AccessMessagePDU(
                     withPayload: payload!,
@@ -91,7 +97,7 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
                     ivIndex: aState.netKeys[0].phase,
                     source: aState.unicastAddress,
                     andDst: destinationAddress,
-                    ttl: Data([0x08])
+                    ttl: self.ttl
                 )
             payloads = accessMessage?.assembleNetworkPDU()
             // Send to destination

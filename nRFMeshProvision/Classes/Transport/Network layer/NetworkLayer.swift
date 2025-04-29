@@ -88,7 +88,9 @@ public struct NetworkLayer {
         let encryptionKey = k2![1..<17]
         let privacyKey = k2![17..<33]
         var micSize: UInt8
-        let ctlTtl = Data([(lowerTransport.params.ctl[0] << 7) | (lowerTransport.params.ttl[0] & 0x7F)])
+        let ctl = UInt8(lowerTransport.params.ctl[0] << 7)
+        let ttl = UInt8(lowerTransport.params.ttl[0] & 0x7F);
+        let ctlTtl = Data([ctl | ttl])
 
         var debugInfo = """
 ↗️ Network Layer message sending:
@@ -96,6 +98,8 @@ public struct NetworkLayer {
   K2: \((k2 ?? Data()).hexString())
   Encryption Key: \(encryptionKey.hexString())
   Privacy Key: \(privacyKey.hexString())
+  CTL: \(ctl)
+  TTL: \(ttl)
   Encrypted PDUs:
 """
 

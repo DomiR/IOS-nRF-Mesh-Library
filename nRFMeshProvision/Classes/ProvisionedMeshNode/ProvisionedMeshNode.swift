@@ -651,7 +651,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState = blobTransferState
         genericControllerState.execute()
     }
-  
+
   public func blobBlockGet(_ anElementAddress: Data, onDestinationAddress anAddress: Data) {
     let state = BLOBBlockGetControllerState(withTargetProxyNode: self,
                                                           destinationAddress: anAddress,
@@ -669,7 +669,11 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         genericControllerState.execute()
     }
 
-    public func sendAccessMessage(destination destination: Data, opcode opcode: Data, payload payload: Data, withIsConfig isConfig: Bool, withKey key: Data) {
+    public func sendAccessMessage(destination: Data, opcode: Data, payload: Data, withIsConfig isConfig: Bool, withKey key: Data) {
+        self.sendAccessMessage(destination: destination, opcode: opcode, payload: payload, withIsConfig: isConfig, withKey: key, withTTL: nil)
+    }
+
+    public func sendAccessMessage(destination: Data, opcode: Data, payload: Data, withIsConfig isConfig: Bool, withKey key: Data, withTTL ttl: Data?) {
         let accessMessageState = AccessMessageControllerState(withTargetProxyNode: self,
                                                                    destinationAddress: destination,
                                                                    andStateManager: stateManager)
@@ -677,6 +681,7 @@ public class ProvisionedMeshNode: NSObject, ProvisionedMeshNodeProtocol {
         accessMessageState.setPayload(payload: payload)
         accessMessageState.setKey(key: key)
         accessMessageState.setIsConfig(withConfig: isConfig)
+        accessMessageState.setTTL(ttl ?? Data([0x08]))
         genericControllerState = accessMessageState
         genericControllerState.execute()
     }

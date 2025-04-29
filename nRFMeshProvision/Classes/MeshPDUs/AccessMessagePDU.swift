@@ -58,6 +58,20 @@ public class AccessMessagePDU {
         ttl         = Data([0x08])
     }
 
+    public init(withPayload aPayload: Data, opcode anOpcode: Data, deviceKey aDeviceKey: Data, netKey aNetKey: Data, seq aSeq: SequenceNumber, ivIndex anIVIndex: Data, source aSrc: Data, andDst aDST: Data, ttl aTTL: Data) {
+        isAppKey    = false
+        opcode      = anOpcode
+        payload     = aPayload
+        key         = aDeviceKey
+        netKey      = aNetKey
+        src         = aSrc
+        dst         = aDST
+        ivIndex     = anIVIndex
+        seq         = aSeq
+        ttl         = aTTL
+    }
+
+
     public func assembleNetworkPDU() -> [Data]? {
         var nonce : TransportNonce
         let segmented = payload.count > 12
