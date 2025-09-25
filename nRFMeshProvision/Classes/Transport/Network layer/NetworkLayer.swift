@@ -27,12 +27,24 @@ public struct NetworkLayer {
     public mutating func incomingPDU(_ aPDU : Data, withRawAccess rawAccess: Bool = false) -> Any? {
         let k2Output = sslHelper.calculateK2(withN: netKey, andP: Data([0x00]))!
         let networkNid = k2Output[0] & 0x7F
-        let ivi = ivIndex[3] & 0x01; // least significant bit of IV Index
-        let calculactedIVINid = (ivi << 7) | networkNid
-        guard calculactedIVINid == aPDU.first else {
-            print("network Expected IV Index||NID did not match packet data, message is malfromed. NOOP")
+        guard let receivedIviNid = aPDU.first else {
+            print("network Malformed packet: missing IVI|NID byte. NOOP")
             return nil
         }
+        let receivedNetworkNid = receivedIviNid & 0x7F
+        let receivedIvIndexLSB = (receivedIviNid & 0x80) >> 7
+        guard receivedNetworkNid == networkNid else {
+            print("network Expected NID did not match packet data, message is malformed. NOOP")
+            return nil
+        }
+
+        // Adjust IV Index used for deobfuscation and nonce building to match received IVI.
+        var currentIvIndex: UInt32 = ivIndex.uint32BigEndian
+        if ((currentIvIndex & 0x01) != UInt32(receivedIvIndexLSB)) && currentIvIndex > 0 {
+            currentIvIndex = currentIvIndex - 1
+        }
+        let ivIndex = Data(fromInt32: currentIvIndex)
+
         let encryptionKey = k2Output[1..<17]
         let privacyKey = k2Output[17..<33]
         let deobfuscatedPDU = sslHelper.deobfuscateENCPDU(aPDU, ivIndex: ivIndex, privacyKey: privacyKey)!
@@ -60,6 +72,7 @@ public struct NetworkLayer {
   Net MIC:       \(netMic.hexString()) (Size: \(micSize))
   Sequence:      \(seq.hexString())
   SRC:           \(src.hexString())
+  IV:            \(ivIndex.hexString())
   TTL:           \(ttl.hexString())
   Decrypted PDU: \(decryptedNetworkPDU!.hexString())
 """)
