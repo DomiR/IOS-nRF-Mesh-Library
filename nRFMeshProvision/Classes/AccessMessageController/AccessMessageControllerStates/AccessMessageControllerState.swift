@@ -99,10 +99,12 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
                     andDst: destinationAddress,
                     ttl: self.ttl
                 )
-            payloads = accessMessage?.assembleNetworkPDU()
-            // Send to destination
-            for aPayload in payloads! {
-                sendPayload(aPayload)
+            if let payloads = accessMessage?.assembleNetworkPDU() {
+                self.payloads = payloads
+                // Send to destination
+                for aPayload in payloads {
+                    sendPayload(aPayload)
+                }
             }
         } else {
             // TODO: handle error
