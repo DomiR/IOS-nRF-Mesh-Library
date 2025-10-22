@@ -25,6 +25,16 @@ public struct NetworkLayer {
     }
 
     public mutating func incomingPDU(_ aPDU : Data, withRawAccess rawAccess: Bool = false) -> Any? {
+        // Sentry bug CONNECT-MESH-H6
+        // Validate minimum PDU length
+        // Network PDU needs at least:
+        // 1 byte (IVI+NID) + 6 bytes (obfuscated header) + 7 bytes (minimum encrypted payload)
+        // Total minimum: 14 bytes
+        guard aPDU.count >= 14 else {
+            print("Network Layer: PDU too short (\(aPDU.count) bytes). Minimum required: 14 bytes")
+            return nil
+        }
+
         let k2Output = sslHelper.calculateK2(withN: netKey, andP: Data([0x00]))!
         let networkNid = k2Output[0] & 0x7F
         guard let receivedIviNid = aPDU.first else {
@@ -47,7 +57,11 @@ public struct NetworkLayer {
 
         let encryptionKey = k2Output[1..<17]
         let privacyKey = k2Output[17..<33]
-        let deobfuscatedPDU = sslHelper.deobfuscateENCPDU(aPDU, ivIndex: ivIndex, privacyKey: privacyKey)!
+
+        guard let deobfuscatedPDU = sslHelper.deobfuscateENCPDU(aPDU, ivIndex: ivIndex, privacyKey: privacyKey) else {
+            print("Network Layer: Failed to deobfuscate PDU")
+            return nil
+        }
         let ctlttl = deobfuscatedPDU[0]
         let ctl = UInt8(ctlttl >> 7) == 0x01 ? true : false
         let ctlData = ctl ? Data([0x01]) : Data([0x00])
@@ -56,15 +70,28 @@ public struct NetworkLayer {
         let src = deobfuscatedPDU[4..<6]
         let micSize: Int = ctl ? 8 : 4
 
+        // Validate PDU length for extracting encrypted payload and MIC
+        let requiredLength = 7 + micSize
+        guard aPDU.count >= requiredLength else {
+            print("Network Layer: PDU too short for MIC size (\(aPDU.count) bytes). Required: \(requiredLength) bytes")
+            return nil
+        }
+
         //Decrypt network PDU
         let encryptedNetworkPDU = Data(aPDU[7...(aPDU.count - micSize - 1)]) //7 first bytes are not a part of the ENCPDU
         let netMic = Data(aPDU[(7 + encryptedNetworkPDU.count)..<(7 + encryptedNetworkPDU.count + micSize)])
         let nonceData = TransportNonce(networkNonceWithIVIndex: ivIndex, ctl: ctlData, ttl: ttl, seq: seq, src: src).data
-        let decryptedNetworkPDU = sslHelper.calculateDecryptedCCM(encryptedNetworkPDU,
-                                                                  withKey: encryptionKey,
-                                                                  nonce: nonceData,
-                                                                  dataSize: UInt8(encryptedNetworkPDU.count), andMIC: netMic)
-        let dst = decryptedNetworkPDU![0...1]
+
+        guard let decryptedNetworkPDU = sslHelper.calculateDecryptedCCM(encryptedNetworkPDU,
+                                                                        withKey: encryptionKey,
+                                                                        nonce: nonceData,
+                                                                        dataSize: UInt8(encryptedNetworkPDU.count), andMIC: netMic),
+              decryptedNetworkPDU.count >= 2 else {
+            print("Network Layer: Failed to decrypt PDU or decrypted PDU too short")
+            return nil
+        }
+
+        let dst = decryptedNetworkPDU[0...1]
         print("""
 ↘️ Network Layer message received:
   PDU:           \(aPDU.hexString())
@@ -74,9 +101,9 @@ public struct NetworkLayer {
   SRC:           \(src.hexString())
   IV:            \(ivIndex.hexString())
   TTL:           \(ttl.hexString())
-  Decrypted PDU: \(decryptedNetworkPDU!.hexString())
+  Decrypted PDU: \(decryptedNetworkPDU.hexString())
 """)
-        return self.lowerTransport.append(withNetworkLayer: self, withIncomingPDU: Data(decryptedNetworkPDU!), ctl: ctlData, ttl: ttl, src: src, dst: dst, IVIndex: ivIndex, andSEQ: seq, withRawAccess: rawAccess)
+        return self.lowerTransport.append(withNetworkLayer: self, withIncomingPDU: Data(decryptedNetworkPDU), ctl: ctlData, ttl: ttl, src: src, dst: dst, IVIndex: ivIndex, andSEQ: seq, withRawAccess: rawAccess)
     }
 
     public init(withLowerTransportLayer aLowerTransport: LowerTransportLayer, andNetworkKey aNetKey: Data) {
