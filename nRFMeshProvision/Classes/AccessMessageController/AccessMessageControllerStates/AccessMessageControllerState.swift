@@ -77,6 +77,10 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
             guard payload != nil && opcode != nil && key != nil && isConfig != nil else {
                 return
             }
+            guard !aState.netKeys.isEmpty else {
+                print("Error: No network keys available")
+                return
+            }
             accessMessage = isConfig! ? AccessMessagePDU(
                 withPayload: payload!,
                 opcode: opcode!,
@@ -118,7 +122,13 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
     }
 
     func receivedData(incomingData: Data) {
+        // Fixing Sentry bug CONNECT-MESH-H7
         // Receiving is
+        guard !incomingData.isEmpty else {
+            print("Received empty data, ignoring")
+            return
+        }
+
         if incomingData[0] == 0x01 {
             print("Secure beacon: \(incomingData.hexString())")
         } else {
@@ -215,6 +225,11 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
     }
 
     private func acknowlegeSegment(withAckData someData: Data) {
+        guard !someData.isEmpty else {
+            print("Cannot acknowledge with empty data")
+            return
+        }
+
         print("↗️ Sending acknowledgement: \(someData.hexString())")
         if someData.count <= target.basePeripheral().maximumWriteValueLength(for: .withoutResponse) {
             target.basePeripheral().writeValue(someData, for: dataInCharacteristic, type: .withoutResponse)
@@ -257,9 +272,14 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
     var lastMessageType = 0xC0
 
     func peripheral(_: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error _: Error?) {
-        print("Characteristic value updated: \(characteristic.value!.hexString())")
+        guard let value = characteristic.value, !value.isEmpty else {
+            print("Characteristic value is nil or empty")
+            return
+        }
+
+        print("Characteristic value updated: \(value.hexString())")
         // SAR handling
-        if characteristic.value![0] & 0xC0 == 0x40 {
+        if value[0] & 0xC0 == 0x40 {
             if lastMessageType == 0x40 {
                 // Drop repeated 0x40's
                 print("CMP:Reduntand SAR start, dropping")
@@ -267,22 +287,22 @@ class AccessMessageControllerState: NSObject, GenericModelControllerStateProtoco
             }
             lastMessageType = 0x40
             // Add message type header
-            segmentedData.append(Data([characteristic.value![0] & 0x3F]))
-            segmentedData.append(Data(characteristic.value!.dropFirst()))
-        } else if characteristic.value![0] & 0xC0 == 0x80 {
+            segmentedData.append(Data([value[0] & 0x3F]))
+            segmentedData.append(Data(value.dropFirst()))
+        } else if value[0] & 0xC0 == 0x80 {
             lastMessageType = 0x80
             print("Segmented data cont")
-            segmentedData.append(characteristic.value!.dropFirst())
-        } else if characteristic.value![0] & 0xC0 == 0xC0 {
+            segmentedData.append(value.dropFirst())
+        } else if value[0] & 0xC0 == 0xC0 {
             lastMessageType = 0xC0
             print("Segmented data end")
-            segmentedData.append(Data(characteristic.value!.dropFirst()))
+            segmentedData.append(Data(value.dropFirst()))
             print("Reassembled data!: \(segmentedData.hexString())")
             // Copy data and send it to NetworkLayer
             receivedData(incomingData: Data(segmentedData))
             segmentedData = Data()
         } else {
-            receivedData(incomingData: Data(characteristic.value!))
+            receivedData(incomingData: Data(value))
         }
     }
 
